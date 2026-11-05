@@ -182,15 +182,18 @@ internal fun ToolbarFrame(
             }
         } else {
             Row(
-                stretch.height(bar.thickness).then(surface),
+                (if (separateSections) Modifier.fillMaxWidth() else stretch.height(bar.thickness)).then(surface),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(
-                    Modifier
-                        .weight(1f, fill = !look.floating)
-                        .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = 4.dp)
-                        .toolGlide(glide, armed),
+                    (if (separateSections) {
+                        Modifier.fillMaxWidth().padding(horizontal = 4.dp)
+                    } else {
+                        Modifier
+                            .weight(1f, fill = !look.floating)
+                            .horizontalScroll(rememberScrollState())
+                            .padding(horizontal = 4.dp)
+                    }).toolGlide(glide, armed),
                     verticalAlignment = Alignment.CenterVertically,
                 ) { content() }
                 trailing?.invoke()
