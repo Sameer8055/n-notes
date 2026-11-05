@@ -132,6 +132,7 @@ internal fun ColumnScope.ToolbarAround(
 internal fun ToolbarFrame(
     armed: Any?,
     trailing: (@Composable () -> Unit)? = null,
+    separateSections: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val look = LocalToolbarLook.current
@@ -140,10 +141,10 @@ internal fun ToolbarFrame(
     val palette = LocalPalette.current
     val shape = MaterialTheme.shapes.extraLarge
     // Docked, the strip fills its edge; floating, a pill only as long as its tools, up to that edge.
-    val surface = if (!look.floating) {
-        Modifier.background(palette.panel.toComposeColor())
-    } else {
-        Modifier
+    val surface = when {
+        !look.floating -> Modifier.background(palette.panel.toComposeColor())
+        separateSections -> Modifier
+        else -> Modifier
             .shadow(6.dp, shape)
             .clip(shape)
             .background(palette.panel.toComposeColor())
