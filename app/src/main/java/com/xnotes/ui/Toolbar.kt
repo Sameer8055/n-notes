@@ -182,18 +182,21 @@ fun Toolbar(
             trailing = onClosePane?.let { { ClosePaneButton(it) } },
             separateSections = true,
         ) {
-            // The bar is driven by the user-customisable layout; separators sit between non-empty
-            // sections, and each item dispatches to its renderer (see ToolbarItemView).
-            editor.toolbarLayout.visibleSections.forEachIndexed { si, section ->
-                // The three zones are intentionally separated by real empty space, not divider
-                // lines: page overview | everyday tools | page controls.
-                if (si > 0) Spacer(Modifier.width(14.dp))
-                ToolbarSectionSurface {
-                    section.visibleEntries.forEach { entry ->
-                        if (entry.item == ToolbarItem.PAGE_NAV) {
-                            ToolbarIcon(XnotesIcons.plus, stringResource(R.string.add_page)) { editor.addPage() }
+            // Keep the three independent islands anchored to the screen edges:
+            // left and right hug the bottom corners while the everyday tools stay centered.
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                editor.toolbarLayout.visibleSections.forEach { section ->
+                    ToolbarSectionSurface {
+                        section.visibleEntries.forEach { entry ->
+                            if (entry.item == ToolbarItem.PAGE_NAV) {
+                                ToolbarIcon(XnotesIcons.plus, stringResource(R.string.add_page)) { editor.addPage() }
+                            }
+                            Item(entry.item)
                         }
-                        Item(entry.item)
                     }
                 }
             }
