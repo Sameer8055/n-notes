@@ -190,22 +190,44 @@ data class ToolbarLayout(val sections: List<ToolbarSection>) {
         val NOTE_ITEMS: Set<ToolbarItem> =
             ToolbarItem.entries.toSet() - setOf(ToolbarItem.WAYPOINTS, ToolbarItem.MINIMAP)
 
-        /** Mirrors the hardcoded bar exactly (see Toolbar.kt) so existing users see no change. */
-        val DEFAULT: ToolbarLayout = of(
-            listOf(ToolbarItem.HOME, ToolbarItem.TITLE),
-            listOf(ToolbarItem.SIDEBAR),
+        /**
+         * Three deliberate zones: document/page overview on the left, the eight everyday tools
+         * in the centre, and page navigation on the right. Other tools remain available but start
+         * hidden in the customizer, so the default bar stays clean and balanced.
+         */
+        val DEFAULT: ToolbarLayout = ToolbarLayout(
             listOf(
-                ToolbarItem.PEN, ToolbarItem.DASHED, ToolbarItem.CALLIGRAPHY, ToolbarItem.SPEED,
-                ToolbarItem.TAPER, ToolbarItem.HIGHLIGHTER, ToolbarItem.ERASER,
+                ToolbarSection(
+                    listOf(ToolbarItem.HOME, ToolbarItem.TITLE, ToolbarItem.SIDEBAR)
+                        .map { ToolbarEntry(it, it == ToolbarItem.HOME || it == ToolbarItem.SIDEBAR) },
+                ),
+                ToolbarSection(
+                    listOf(
+                        ToolbarItem.PEN, ToolbarItem.DASHED, ToolbarItem.CALLIGRAPHY, ToolbarItem.SPEED,
+                        ToolbarItem.TAPER, ToolbarItem.HIGHLIGHTER, ToolbarItem.ERASER, ToolbarItem.PAN,
+                        ToolbarItem.READER, ToolbarItem.SELECT, ToolbarItem.LASSO, ToolbarItem.INSERT_SPACE,
+                        ToolbarItem.SCREENSHOT, ToolbarItem.WAND, ToolbarItem.TAPE, ToolbarItem.SHAPE,
+                        ToolbarItem.RULER, ToolbarItem.TEXT, ToolbarItem.TEXT_BOX, ToolbarItem.MARKUP,
+                        ToolbarItem.IMAGE, ToolbarItem.TABLE,
+                    ).map {
+                        ToolbarEntry(
+                            it,
+                            it in setOf(
+                                ToolbarItem.TAPER, ToolbarItem.HIGHLIGHTER, ToolbarItem.ERASER,
+                                ToolbarItem.SHAPE, ToolbarItem.TAPE, ToolbarItem.PAN,
+                                ToolbarItem.SELECT, ToolbarItem.LASSO,
+                            ),
+                        )
+                    },
+                ),
+                ToolbarSection(
+                    listOf(
+                        ToolbarItem.COLORS, ToolbarItem.UNDO, ToolbarItem.REDO, ToolbarItem.PAGE_NAV,
+                        ToolbarItem.SEARCH, ToolbarItem.STYLES, ToolbarItem.MARGINS, ToolbarItem.VIEW,
+                        ToolbarItem.ZOOM, ToolbarItem.FIT, ToolbarItem.ZOOM_LOCK, ToolbarItem.FULLSCREEN,
+                    ).map { ToolbarEntry(it, it == ToolbarItem.PAGE_NAV) },
+                ),
             ),
-            listOf(ToolbarItem.PAN, ToolbarItem.READER, ToolbarItem.SELECT, ToolbarItem.LASSO, ToolbarItem.INSERT_SPACE, ToolbarItem.SCREENSHOT),
-            listOf(ToolbarItem.WAND, ToolbarItem.TAPE, ToolbarItem.SHAPE, ToolbarItem.RULER, ToolbarItem.TEXT, ToolbarItem.TEXT_BOX, ToolbarItem.MARKUP),
-            listOf(ToolbarItem.IMAGE, ToolbarItem.TABLE),
-            listOf(ToolbarItem.COLORS),
-            listOf(ToolbarItem.UNDO, ToolbarItem.REDO),
-            listOf(ToolbarItem.PAGE_NAV, ToolbarItem.SEARCH, ToolbarItem.STYLES, ToolbarItem.MARGINS, ToolbarItem.VIEW),
-            listOf(ToolbarItem.ZOOM, ToolbarItem.FIT, ToolbarItem.ZOOM_LOCK),
-            listOf(ToolbarItem.FULLSCREEN),
         )
 
         /** Mirrors the hardcoded canvas bar (see InfiniteToolbar.kt). */
