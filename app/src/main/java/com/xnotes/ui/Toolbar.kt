@@ -222,7 +222,7 @@ private fun ToolbarSectionSurface(content: @Composable () -> Unit) {
         Modifier
             .shadow(6.dp, shape)
             .clip(shape)
-            .background(palette.panel.toComposeColor().copy(alpha = 0.94f))
+            .background(palette.panel.toComposeColor().copy(alpha = 0.82f))
             .border(1.dp, palette.border.toComposeColor(), shape)
             .padding(horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -257,7 +257,7 @@ private fun ToolbarItemView(
         // Canvas-only items; a stored paged layout can never hold one, so nothing is drawn.
         ToolbarItem.WAYPOINTS, ToolbarItem.MINIMAP -> Unit
 
-        ToolbarItem.HOME -> ToolbarIcon(XnotesIcons.prev, stringResource(R.string.toolbar_home)) { onOpenBackstage() }
+        ToolbarItem.HOME -> ToolbarIcon(XnotesIcons.home, stringResource(R.string.toolbar_home)) { onOpenBackstage() }
         // A name has no room down a side rail.
         ToolbarItem.TITLE -> if (!LocalBar.current.vertical) Tooltip(stringResource(R.string.rename_note)) {
             Label(
