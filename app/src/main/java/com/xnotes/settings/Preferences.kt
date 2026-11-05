@@ -303,10 +303,12 @@ data class Preferences(
                 materialSurfaceSeed = Rgba.fromHex(o.optString("material_surface_seed"))
                     ?: if (legacyDual && !o.has("material_mode")) Rgba(33, 150, 243, 255) else DEFAULT_MATERIAL_SURFACE,
                 cornerStyle = CornerStyle.fromId(o.optString("corner_style")),
+                // The floating bottom toolbar is the app's fixed editor layout. Older saved
+                // preferences may contain docked/top/side values; normalize them on load.
                 toolbarLook = ToolbarLook(
-                    position = ToolbarPosition.fromId(o.optString("toolbar_position")),
+                    position = ToolbarPosition.BOTTOM,
                     size = ToolbarSize.fromId(o.optString("toolbar_size")),
-                    floating = o.optBoolean("toolbar_floating", false),
+                    floating = true,
                 ),
                 hideWindowDecoration = o.optBoolean("hide_window_decoration", false),
                 pageColor = if (o.isNull("page_color")) null else Rgba.fromHex(o.optString("page_color")),
