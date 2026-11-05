@@ -118,8 +118,8 @@ class ToolbarLayoutTest {
     }
 
     @Test fun hiddenFlagSurvivesRaw() {
-        val hidden = ToolbarLayout.DEFAULT.toggleVisible(1, 4)
-        assertFalse(hidden.sections[1].entries[4].visible)
+        val hidden = ToolbarLayout.DEFAULT.toggleVisible(1, 0)
+        assertFalse(hidden.sections[1].entries[0].visible)
         assertEquals(hidden, ToolbarLayout.fromRaw(hidden.toRaw()))
     }
 
