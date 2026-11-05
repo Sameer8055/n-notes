@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -178,8 +179,15 @@ fun Toolbar(
             // The bar is driven by the user-customisable layout; separators sit between non-empty
             // sections, and each item dispatches to its renderer (see ToolbarItemView).
             editor.toolbarLayout.visibleSections.forEachIndexed { si, section ->
-                if (si > 0) Separator()
-                section.visibleEntries.forEach { entry -> Item(entry.item) }
+                // The three zones are intentionally separated by real empty space, not divider
+                // lines: page overview | everyday tools | page controls.
+                if (si > 0) Spacer(Modifier.width(14.dp))
+                section.visibleEntries.forEach { entry ->
+                    if (entry.item == ToolbarItem.PAGE_NAV) {
+                        ToolbarIcon(XnotesIcons.plus, stringResource(R.string.add_page)) { editor.addPage() }
+                    }
+                    Item(entry.item)
+                }
             }
         }
     }
@@ -236,7 +244,19 @@ private fun ToolbarItemView(
         ToolbarItem.READER ->
             ToolbarIcon(Icons.Outlined.AutoStories, stringResource(R.string.tool_reader)) { editor.enterReader() }
         ToolbarItem.SIDEBAR ->
-            ToolbarIcon(XnotesIcons.sidebar, stringResource(R.string.side_panel), active = editor.sidebarVisible, shortcut = Keys.SIDEBAR) { editor.toggleSidebar() }
+            ToolbarIcon(
+                XnotesIcons.sidebar,
+                stringResource(R.string.side_panel),
+                active = editor.sidebarVisible && editor.sidePanelTab == SidePanelTab.PAGES,
+                shortcut = Keys.SIDEBAR,
+            ) {
+                if (editor.sidebarVisible && editor.sidePanelTab == SidePanelTab.PAGES) {
+                    editor.sidebarVisible = false
+                } else {
+                    editor.sidePanelTab = SidePanelTab.PAGES
+                    editor.sidebarVisible = true
+                }
+            }
 
         ToolbarItem.PEN, ToolbarItem.DASHED, ToolbarItem.CALLIGRAPHY, ToolbarItem.SPEED,
         ToolbarItem.TAPER, ToolbarItem.HIGHLIGHTER, ToolbarItem.ERASER, ToolbarItem.PAN,
