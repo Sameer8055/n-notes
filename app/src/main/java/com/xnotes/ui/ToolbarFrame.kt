@@ -182,7 +182,7 @@ internal fun ToolbarFrame(
             }
         } else {
             Row(
-                (if (separateSections) Modifier.fillMaxWidth() else stretch.height(bar.thickness)).then(surface),
+                (if (separateSections) Modifier.fillMaxWidth().height(bar.thickness) else stretch.height(bar.thickness)).then(surface),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(
