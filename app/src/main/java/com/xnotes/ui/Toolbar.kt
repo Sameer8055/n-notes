@@ -51,6 +51,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -175,18 +176,24 @@ fun Toolbar(
         }
     } else {
         // Pinned outside the scrolling strip so closing a split pane is always one tap away.
-        ToolbarFrame(armed = editor.tool, trailing = onClosePane?.let { { ClosePaneButton(it) } }) {
+        ToolbarFrame(
+            armed = editor.tool,
+            trailing = onClosePane?.let { { ClosePaneButton(it) } },
+            separateSections = true,
+        ) {
             // The bar is driven by the user-customisable layout; separators sit between non-empty
             // sections, and each item dispatches to its renderer (see ToolbarItemView).
             editor.toolbarLayout.visibleSections.forEachIndexed { si, section ->
                 // The three zones are intentionally separated by real empty space, not divider
                 // lines: page overview | everyday tools | page controls.
                 if (si > 0) Spacer(Modifier.width(14.dp))
-                section.visibleEntries.forEach { entry ->
-                    if (entry.item == ToolbarItem.PAGE_NAV) {
-                        ToolbarIcon(XnotesIcons.plus, stringResource(R.string.add_page)) { editor.addPage() }
+                ToolbarSectionSurface {
+                    section.visibleEntries.forEach { entry ->
+                        if (entry.item == ToolbarItem.PAGE_NAV) {
+                            ToolbarIcon(XnotesIcons.plus, stringResource(R.string.add_page)) { editor.addPage() }
+                        }
+                        Item(entry.item)
                     }
-                    Item(entry.item)
                 }
             }
         }
@@ -202,6 +209,25 @@ fun Toolbar(
             },
             onDismiss = { renaming = false },
         )
+    }
+}
+
+/** One independently floating island in the three-zone editor toolbar. */
+@Composable
+private fun ToolbarSectionSurface(content: @Composable () -> Unit) {
+    val palette = LocalPalette.current
+    val shape = MaterialTheme.shapes.extraLarge
+    Row(
+        Modifier
+            .shadow(6.dp, shape)
+            .clip(shape)
+            .background(palette.panel.toComposeColor().copy(alpha = 0.94f))
+            .border(1.dp, palette.border.toComposeColor(), shape)
+            .padding(horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(0.dp),
+    ) {
+        content()
     }
 }
 
