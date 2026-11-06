@@ -1112,7 +1112,7 @@ private fun EditorScreen(
                 onImportCodeTheme = { importCodeThemeLauncher.launch(arrayOf("*/*")) },
                 onImportFont = { importFontLauncher.launch(arrayOf("*/*")) },
                 onBackup = { export ->
-                    if (export) exportSettingsLauncher.launch("n-notes-settings-${java.time.LocalDate.now()}.zip")
+                    if (export) exportSettingsLauncher.launch("sameer-notes-settings-${java.time.LocalDate.now()}.zip")
                     else importSettingsLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
                 },
                 onImportPdf = { importPdfLauncher.launch(importMimeTypes) },
