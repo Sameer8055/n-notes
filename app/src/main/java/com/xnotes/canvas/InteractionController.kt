@@ -2876,9 +2876,36 @@ class InteractionController(
         requestRender()
     }
 
-    /** A tap with the shape tool peels a tape lying on top there, or else picks up the shape under it. */
+    /** A tap with the shape tool peels a tape, applies the active fill to a closed shape, or picks it up. */
     private fun shapeTap(pi: Int, local: Pt) {
-        if (tapeOnTopAt(pi, local)) peelTapeAt(pi, local) else selectShapeAt(pi, local)
+        if (tapeOnTopAt(pi, local)) {
+            peelTapeAt(pi, local)
+            return
+        }
+        if (shapeConfig.fill) {
+            val page = state.document.pages.getOrNull(pi)
+            val reach = OUTLINE_GRAB / state.zoom
+            val target = page?.items?.lastOrNull {
+                it is ShapeItem && !it.locked && it.shape.isClosed && it.touches(local, reach)
+            } as? ShapeItem
+            if (page != null && target != null) {
+                val before = target.fillRgba
+                val color = shapeConfig.fillColor ?: target.strokeRgba
+                val after = color.copy(a = (shapeConfig.fillAlpha * 255.0).toInt().coerceIn(0, 255))
+                if (before != after) {
+                    target.fillRgba = after
+                    history.push(RefillShapes(listOf(RefillShapes.Entry(target, before, after))))
+                    state.document.dirty = true
+                    if (!state.repairRegion(page, target.paintBounds())) state.invalidatePage(page)
+                    onContentChanged()
+                }
+                setSelection(listOf(Selected(pi, target)))
+                refreshSelectionMenu()
+                requestRender()
+                return
+            }
+        }
+        selectShapeAt(pi, local)
     }
 
     // --- TAPE ---
