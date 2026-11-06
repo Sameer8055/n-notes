@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -28,6 +29,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,16 +70,10 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
         editor.updateShapeConfig(next)
     }
 
-    // Keep the picker focused on the everyday shapes. No connector catalogue or
-    // advanced controls are composed in this compact panel.
-    val essentialKeys = listOf(
-        "line", "arrow", "rectangle", "rounded_rect",
-        "ellipse", "circle", "triangle", "right_triangle",
-        "diamond", "trapezoid", "star", ShapePresets.FREE_POLYGON,
-    )
-    val shapes = ShapePresets.basic.presets.filter {
-        it.key in essentialKeys && it.key !in editor.hostHiddenShapes
-    }
+    // Show every enabled built-in N Notes shape, in the catalogue's native order.
+    // Connectors remain intentionally excluded from this panel.
+    val shapes = ShapePresets.shown(editor.hostHiddenShapes, editor.hostShapeOrder)
+        .flatMap { it.presets }
     val paletteColors = listOf(
         Rgba(245, 20, 24), Rgba(255, 145, 20), Rgba(255, 215, 20),
         Rgba(45, 205, 65), Rgba(35, 65, 235), Rgba(20, 145, 235),
@@ -133,18 +129,32 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                             color = LocalPalette.current.textDim.toComposeColor(),
                             fontSize = 11.sp,
                         )
-                        shapes.chunked(4).forEach { rowShapes ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(5.dp),
-                            ) {
-                                rowShapes.forEach { preset ->
-                                    KindChip(
-                                        ShapeIcons.of(preset),
-                                        chipLabel(preset),
-                                        selected = preset.key == config.preset,
-                                        latex = chipLatex(preset),
-                                    ) { emit(config.choose(preset)) }
+                        // Twelve shapes per view: four columns by three rows. Swipe
+                        // horizontally to browse the rest without changing panel dimensions.
+                        BoxWithConstraints(Modifier.fillMaxWidth()) {
+                            val pageWidth = maxWidth
+                            Row(Modifier.horizontalScroll(rememberScrollState())) {
+                                shapes.chunked(12).forEach { pageShapes ->
+                                    Column(
+                                        Modifier.width(pageWidth),
+                                        verticalArrangement = Arrangement.spacedBy(5.dp),
+                                    ) {
+                                        pageShapes.chunked(4).forEach { rowShapes ->
+                                            Row(
+                                                Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                                            ) {
+                                                rowShapes.forEach { preset ->
+                                                    KindChip(
+                                                        ShapeIcons.of(preset),
+                                                        chipLabel(preset),
+                                                        selected = preset.key == config.preset,
+                                                        latex = chipLatex(preset),
+                                                    ) { emit(config.choose(preset)) }
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -163,6 +173,22 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                                 onCheckedChange = { emit(config.copy(fill = it)) },
                             )
                         }
+                        if (config.fill) {
+                            SliderRow("Fill opacity", (config.fillAlpha * 100.0).toFloat(), 5f..100f) {
+                                emit(config.copy(fillAlpha = (it / 100.0).coerceIn(0.05, 1.0)))
+                            }
+                        }
+                    }
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text("Dashed line", color = LocalPalette.current.text.toComposeColor(), fontSize = 12.sp)
+                        androidx.compose.material3.Switch(
+                            checked = config.dashed,
+                            onCheckedChange = { emit(config.copy(dashed = it)) },
+                        )
                     }
                 }
 
