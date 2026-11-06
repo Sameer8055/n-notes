@@ -60,6 +60,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
@@ -187,10 +188,17 @@ fun Toolbar(
             // left and right hug the bottom corners while the everyday tools stay centered.
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                editor.toolbarLayout.visibleSections.forEach { section ->
+                editor.toolbarLayout.visibleSections.forEachIndexed { index, section ->
+                    if (index > 0) {
+                        // The empty lanes between the three floating islands must be real canvas
+                        // touch-through areas, not an invisible toolbar hit target.
+                        Spacer(
+                            Modifier.weight(1f).fillMaxHeight()
+                                .pointerInteropFilter { false },
+                        )
+                    }
                     ToolbarSectionSurface {
                         section.visibleEntries.forEach { entry ->
                             if (entry.item == ToolbarItem.PAGE_NAV) {
