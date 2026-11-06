@@ -260,7 +260,8 @@ fun Backstage(
     // Home must follow the user's saved appearance settings just like the editor.
     // Keep the established dark luxury layout, but derive its actual tones from Preferences.
     val homePrefs = editor.preferences
-    val homePalette = remember(editor.prefsVersion, homePrefs.uiAppearance, homePrefs.materialMode,
+    val systemDark = isSystemInDarkTheme()
+    val homePalette = remember(editor.prefsVersion, systemDark, homePrefs.uiAppearance,
         homePrefs.materialSingleSeed, homePrefs.materialDualSeed, homePrefs.materialSurfaceSeed,
         homePrefs.materialStyle, homePrefs.materialContrast) {
         val homeSeed = when (homePrefs.materialMode) {
@@ -271,7 +272,7 @@ fun Backstage(
         val homeDark = when (homePrefs.uiAppearance) {
             "light" -> false
             "dark", "oled" -> true
-            else -> isSystemInDarkTheme()
+            else -> systemDark
         }
         Palette.material(
             if (homePrefs.uiAppearance == "oled") "oled" else if (homeDark) "dark" else "light",
