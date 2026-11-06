@@ -324,6 +324,29 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                             }
                         }
                     }
+                    // Show the active custom ink explicitly; otherwise no built-in swatch
+                    // can communicate which custom colour is currently selected.
+                    if (ink !in paletteColors) {
+                        val customColor = ink.toComposeColor()
+                        val customCheck = if (
+                            customColor.red * 0.299f + customColor.green * 0.587f + customColor.blue * 0.114f > 0.55f
+                        ) Color.Black else Color.White
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                        ) {
+                            Box(
+                                Modifier.size(28.dp).clip(RoundedCornerShape(5.dp))
+                                    .background(customColor)
+                                    .border(2.dp, if (LocalPalette.current.isDark) Color.White else Color.Black, RoundedCornerShape(5.dp)),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text("✓", color = customCheck, fontSize = 16.sp)
+                            }
+                            Text("  Current", color = LocalPalette.current.textDim.toComposeColor(), fontSize = 10.sp)
+                        }
+                    }
                     Text(
                         "Custom colour",
                         color = LocalPalette.current.textDim.toComposeColor(),
