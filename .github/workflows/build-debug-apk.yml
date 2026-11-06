@@ -1,8 +1,10 @@
 name: Build Debug APK
 
-# Temporarily pause automatic APK builds while the toolbox redesign is in progress.
-# Re-enable push and pull_request triggers only after the redesigned panel is complete.
+# Build automatically when the completed toolbox redesign is pushed to its feature branch.
 on:
+  push:
+    branches:
+      - feature/floating-three-section-toolbar
   workflow_dispatch:
 
 permissions:
