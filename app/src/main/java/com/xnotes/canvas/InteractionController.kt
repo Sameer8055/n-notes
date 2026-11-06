@@ -2082,8 +2082,8 @@ class InteractionController(
         if (lassoErasing) {
             if (lassoPoints.size >= 3) {
                 val drawable = state.drawablePageRange()
-                // Lasso erasing is contact-based: any stroke or shape outline crossed by the
-                // lasso is erased. Requiring full enclosure made short touches appear to do nothing.
+                // Lasso erasing is contact-based: any unlocked item outline or frame crossed
+                // by the loop is erased, including placed text, images and non-ink objects.
                 // The lasso eraser removes every unlocked object it touches, not just ink:
                 // text boxes, images, audio, connectors, tape and all shape types are included.
                 val members = SelectionMath.lassoMembers(state.document.pages, state.pageRects, lassoPoints, false) { i, p ->
