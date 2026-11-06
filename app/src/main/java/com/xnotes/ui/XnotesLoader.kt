@@ -18,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -31,7 +30,6 @@ import com.xnotes.R
 /** A short, premium brand lockup entrance: the mark settles left as its name types in. */
 @Composable
 fun XnotesLoader(modifier: Modifier = Modifier) {
-    val context = LocalContext.current
     // A restrained editorial serif gives the wordmark a premium, crafted contrast to the geometric mark.
     val brandTypeface = remember {
         Typeface.create("serif", Typeface.BOLD)
