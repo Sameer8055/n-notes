@@ -94,6 +94,25 @@ class EraseSession(private val doc: InfiniteDocument) {
     }
 
     /**
+     * Remove complete items selected by the eraser's freeform lasso. Unlike the circular eraser,
+     * this mode deliberately includes placed text, images, audio and every shape type. Locked
+     * items remain protected. Each removal is recorded in the same coalesced undo entry list used
+     * by the stroke/area eraser, preserving z-order on undo.
+     */
+    fun eraseItems(items: List<CanvasItem>): Rect? {
+        var dirty: Rect? = null
+        for (item in items) {
+            if (item.locked) continue
+            val touched = item.paintBounds()
+            val at = doc.replaceItem(item, emptyList())
+            if (at < 0) continue
+            record(item, at, emptyList())
+            dirty = dirty?.union(touched) ?: touched
+        }
+        return dirty
+    }
+
+    /**
      * The single undoable edit for the whole drag, or null when it took nothing. A fill comes off
      * before any cut, as it did in the drag, so undo puts it back on a shape that is on the canvas.
      */
