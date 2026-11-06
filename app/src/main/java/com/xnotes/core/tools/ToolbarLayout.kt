@@ -205,10 +205,12 @@ data class ToolbarLayout(val sections: List<ToolbarSection>) {
                     listOf(
                         // The visible everyday tools lead in the exact requested order.
                         ToolbarItem.TAPER, ToolbarItem.HIGHLIGHTER, ToolbarItem.ERASER, ToolbarItem.SHAPE,
-                        ToolbarItem.TAPE, ToolbarItem.PAN, ToolbarItem.SELECT, ToolbarItem.LASSO,
+                        // Wand is hidden by default, but Tape is kept immediately after it in the
+                        // persisted order so older/custom layouts migrate consistently.
+                        ToolbarItem.WAND, ToolbarItem.TAPE, ToolbarItem.PAN, ToolbarItem.SELECT, ToolbarItem.LASSO,
                         // Remaining tools stay available in the customizer, but start hidden.
                         ToolbarItem.PEN, ToolbarItem.DASHED, ToolbarItem.CALLIGRAPHY, ToolbarItem.SPEED,
-                        ToolbarItem.READER, ToolbarItem.INSERT_SPACE, ToolbarItem.SCREENSHOT, ToolbarItem.WAND,
+                        ToolbarItem.READER, ToolbarItem.INSERT_SPACE, ToolbarItem.SCREENSHOT,
                         ToolbarItem.RULER, ToolbarItem.TEXT, ToolbarItem.TEXT_BOX, ToolbarItem.MARKUP,
                         ToolbarItem.IMAGE, ToolbarItem.TABLE,
                     ).map {
