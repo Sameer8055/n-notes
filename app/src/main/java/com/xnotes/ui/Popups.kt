@@ -39,6 +39,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -114,7 +115,28 @@ import kotlin.math.roundToInt
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ToolConfigPopup(editor: ToolPopupHost, tool: Tool, onDismiss: () -> Unit) {
+fun ToolConfigPopup(
+    editor: ToolPopupHost,
+    tool: Tool,
+    onSelectTool: (Tool) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var selectedTool by remember(tool) { mutableStateOf(tool) }
+    key(selectedTool) {
+        ToolConfigPopupContent(
+            editor = editor,
+            tool = selectedTool,
+            onSelectTool = { next ->
+                selectedTool = next
+                onSelectTool(next)
+            },
+            onDismiss = onDismiss,
+        )
+    }
+}
+
+@Composable
+private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTool: (Tool) -> Unit, onDismiss: () -> Unit) {
     val base = remember { editor.toolConfig(tool) }
     var pressure by remember { mutableStateOf(base.pressureEnabled) }
     var sensitivity by remember { mutableStateOf(ToolConversions.minFactorToSensitivity(base.pressureMinFactor).toFloat()) }
@@ -162,8 +184,62 @@ fun ToolConfigPopup(editor: ToolPopupHost, tool: Tool, onDismiss: () -> Unit) {
     }
 
     DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
-        Column(Modifier.width(250.dp).padding(horizontal = 14.dp, vertical = 8.dp)) {
-            PopupTitle(stringResource(tool.labelRes))
+        Column(Modifier.width(620.dp).padding(horizontal = 16.dp, vertical = 10.dp)) {
+            PopupTitle("Tools")
+            // Keep the complete family of ink tools together in the toolbox, rather than
+            // requiring users to hunt for alternate pens in the toolbar customizer.
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                listOf(Tool.PEN, Tool.CALLIGRAPHY, Tool.SPEED, Tool.TAPER, Tool.HIGHLIGHTER).forEach { candidate ->
+                    ModeChip(
+                        stringResource(candidate.labelRes),
+                        selected = candidate == tool,
+                    ) { onSelectTool(candidate) }
+                }
+            }
+            Spacer(Modifier.size(10.dp))
+            StyleCaption(stringResource(R.string.caption_colour))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                editor.shownSwatches.forEachIndexed { index, color ->
+                    Box(
+                        Modifier.size(28.dp).clip(CircleShape)
+                            .background(color.toComposeColor())
+                            .border(
+                                if (index == editor.hostActiveColorIndex) 3.dp else 1.dp,
+                                (if (index == editor.hostActiveColorIndex) LocalPalette.current.accent else LocalPalette.current.border).toComposeColor(),
+                                CircleShape,
+                            )
+                            .clickable { editor.setSwatchColor(index, color) },
+                    )
+                }
+                ColorPickerDot(
+                    null,
+                    custom = false,
+                    onPick = { editor.setSwatchColor(editor.hostActiveColorIndex, it) },
+                    dismissOnPick = false,
+                ) { dismissPicker, pick ->
+                    ColorPickerPopup(
+                        initial = editor.hostToolbarColors.getOrNull(editor.hostActiveColorIndex),
+                        recents = editor.hostRecentColors,
+                        onDismiss = dismissPicker,
+                        onPick = pick,
+                    )
+                }
+                Spacer(Modifier.weight(1f))
+                Text(
+                    stringResource(tool.labelRes),
+                    color = LocalPalette.current.text.toComposeColor(),
+                    fontSize = 13.sp,
+                )
+            }
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = LocalPalette.current.border.toComposeColor())
             // COLOUR override: "Default" follows the toolbar's active ink colour; pick a hue to pin
             // this tool to it regardless of the toolbar selection.
             StyleCaption(stringResource(R.string.caption_colour))
