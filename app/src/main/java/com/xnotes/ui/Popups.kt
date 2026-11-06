@@ -200,10 +200,9 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
         Column(
             Modifier.widthIn(min = 410.dp, max = 560.dp)
                 .liquidGlassSurface(
-                    RoundedCornerShape(22.dp),
+                    RoundedCornerShape(26.dp),
                     LocalPalette.current.panel.toComposeColor(),
-                    edge = LocalPalette.current.border.toComposeColor(),
-                    elevation = 12.dp,
+                    elevation = 14.dp,
                 )
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
