@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -36,6 +37,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,6 +61,7 @@ import androidx.compose.ui.layout.MeasurePolicy
 import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -154,6 +157,7 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
     var inverse by remember { mutableStateOf(base.highlighterInverse) }
     var colorOverride by remember { mutableStateOf(base.colorOverride) }
     var snapShapes by remember { mutableStateOf(editor.snapHeldToShapes) }
+    var advancedExpanded by remember(tool) { mutableStateOf(false) }
 
     fun emit() {
         val m = ToolConversions.sensitivityToMinFactor(sensitivity.toDouble())
@@ -183,58 +187,66 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
         )
     }
 
+    val paletteColors = listOf(
+        Rgba(244, 28, 48), Rgba(255, 145, 24), Rgba(255, 205, 24), Rgba(42, 210, 72),
+        Rgba(0, 190, 72), Rgba(0, 190, 220), Rgba(20, 110, 240), Rgba(48, 45, 235),
+        Rgba(154, 35, 235), Rgba(235, 35, 205), Rgba(245, 125, 205), Rgba(255, 255, 255),
+        Rgba(35, 35, 38), Rgba(135, 135, 140), Rgba(245, 220, 165),
+    )
+    val penTools = listOf(Tool.PEN, Tool.CALLIGRAPHY, Tool.SPEED, Tool.TAPER, Tool.HIGHLIGHTER)
+
     DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
         Column(
-            Modifier.widthIn(min = 300.dp, max = 620.dp).padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            Modifier.widthIn(min = 350.dp, max = 520.dp).padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                PopupTitle("Tools")
-                Text(stringResource(tool.labelRes), color = LocalPalette.current.textDim.toComposeColor(), fontSize = 12.sp)
-            }
-
-            // The pen family is a single selector row at the top of the toolbox.
-            FlowRow(
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(7.dp),
-                verticalArrangement = Arrangement.spacedBy(7.dp),
             ) {
-                listOf(Tool.PEN, Tool.CALLIGRAPHY, Tool.SPEED, Tool.TAPER, Tool.HIGHLIGHTER).forEach { candidate ->
-                    ModeChip(stringResource(candidate.labelRes), selected = candidate == tool) { onSelectTool(candidate) }
+                PopupTitle("Tools")
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(tool.labelRes), color = LocalPalette.current.textDim.toComposeColor(), fontSize = 11.sp)
+                    Text("×", color = LocalPalette.current.text.toComposeColor(), fontSize = 20.sp,
+                        modifier = Modifier.clip(CircleShape).clickable { onDismiss() }.padding(horizontal = 5.dp))
                 }
             }
 
-            HorizontalDivider(color = LocalPalette.current.border.toComposeColor())
-
-            // Main controls sit side by side: thickness slider on the left, colour palette on the right.
+            // Compact primary area: a continuous size control beside a square colour grid.
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(Modifier.weight(1f)) {
-                    SliderRow(
-                        "Size",
-                        width,
-                        ToolConversions.widthRange(tool).let { it.start.toFloat()..it.endInclusive.toFloat() },
-                    ) { width = it; emit() }
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                        StyleCaption("Size")
+                        Text("%.1f".format(width), color = LocalPalette.current.text.toComposeColor(), fontSize = 11.sp)
+                    }
+                    Slider(
+                        value = width,
+                        onValueChange = { width = it; emit() },
+                        valueRange = ToolConversions.widthRange(tool).let { it.start.toFloat()..it.endInclusive.toFloat() },
+                        colors = SliderDefaults.colors(
+                            thumbColor = LocalPalette.current.accent.toComposeColor(),
+                            activeTrackColor = LocalPalette.current.accent.toComposeColor(),
+                            inactiveTrackColor = LocalPalette.current.border.toComposeColor(),
+                        ),
+                    )
                 }
-                Column(Modifier.widthIn(min = 112.dp, max = 220.dp)) {
+                Column(Modifier.width(142.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     StyleCaption(stringResource(R.string.caption_colour))
                     FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(7.dp),
-                        verticalArrangement = Arrangement.spacedBy(7.dp),
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        verticalArrangement = Arrangement.spacedBy(5.dp),
                     ) {
-                        editor.shownSwatches.forEachIndexed { index, color ->
+                        paletteColors.forEach { swatch ->
                             Box(
-                                Modifier.size(27.dp).clip(CircleShape)
-                                    .background(color.toComposeColor())
-                                    .border(
-                                        if (index == editor.hostActiveColorIndex) 3.dp else 1.dp,
-                                        (if (index == editor.hostActiveColorIndex) LocalPalette.current.accent else LocalPalette.current.border).toComposeColor(),
-                                        CircleShape,
-                                    )
-                                    .clickable { editor.setSwatchColor(index, color) },
+                                Modifier.size(22.dp).clip(RoundedCornerShape(5.dp))
+                                    .background(swatch.toComposeColor())
+                                    .border(1.dp, LocalPalette.current.border.toComposeColor(), RoundedCornerShape(5.dp))
+                                    .clickable { editor.setSwatchColor(editor.hostActiveColorIndex, swatch) },
                             )
                         }
                         ColorPickerDot(
@@ -255,61 +267,102 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
             }
 
             HorizontalDivider(color = LocalPalette.current.border.toComposeColor())
-            StyleCaption("Advanced settings")
 
-            // Optional per-tool colour override remains available without crowding the main palette.
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                StyleCaption(stringResource(R.string.caption_colour))
-                ModeChip(stringResource(R.string.default_choice), colorOverride == null) { colorOverride = null; emit() }
-                ColorPickerDot(
-                    colorOverride,
-                    custom = colorOverride != null,
-                    onPick = { colorOverride = it; emit() },
-                    dismissOnPick = false,
-                ) { d, p ->
-                    ColorPickerPopup(
-                        initial = colorOverride ?: editor.hostToolbarColors.getOrNull(editor.hostActiveColorIndex),
-                        recents = editor.hostRecentColors,
-                        onDismiss = d,
-                        onPick = p,
-                    )
+            // Icon-led pen selector, matching the compact horizontal tool tray in the reference.
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                penTools.forEach { candidate ->
+                    ToolModeButton(candidate, selected = candidate == tool) { onSelectTool(candidate) }
                 }
             }
 
-            val hasPressure = tool == Tool.PEN || tool == Tool.CALLIGRAPHY || tool == Tool.SPEED || tool == Tool.TAPER
-            if (hasPressure) {
-                ToggleRow(stringResource(R.string.caption_pressure), pressure) { pressure = it; emit() }
-                SliderRow(stringResource(R.string.caption_sensitivity), sensitivity, 0f..100f, enabled = pressure) { sensitivity = it; emit() }
+            Row(
+                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
+                    .clickable { advancedExpanded = !advancedExpanded }
+                    .padding(vertical = 5.dp, horizontal = 2.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text("Advanced settings", color = LocalPalette.current.text.toComposeColor(), fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                Text(if (advancedExpanded) "⌃" else "⌄", color = LocalPalette.current.textDim.toComposeColor(), fontSize = 16.sp)
             }
-            if (tool == Tool.CALLIGRAPHY) {
-                SliderRow(stringResource(R.string.caption_multiplier), multiplier, 1f..5f) { multiplier = it; emit() }
-            }
-            if (tool == Tool.SPEED) {
-                SliderRow(stringResource(R.string.caption_speed), speed, 0f..100f) { speed = it; emit() }
-            }
-            if (tool == Tool.TAPER) {
-                SliderRow(stringResource(R.string.caption_tip_width), taperTip, 0f..100f) { taperTip = it; emit() }
-            }
-            ToggleRow(stringResource(R.string.caption_scale), scale) { scale = it; emit() }
-            if (tool.isStroke && tool != Tool.HIGHLIGHTER) {
-                ToggleRow(stringResource(R.string.caption_snap_to_shapes), snapShapes) { snapShapes = it; editor.snapHeldToShapes = it }
-            }
-            if (tool == Tool.DASHED) {
-                SliderRow(stringResource(R.string.caption_dash), dashLen, 2f..40f) { dashLen = it; emit() }
-                SliderRow(stringResource(R.string.caption_gap), gapLen, 2f..40f) { gapLen = it; emit() }
-            }
-            if (tool == Tool.HIGHLIGHTER) {
-                SliderRow(stringResource(R.string.caption_intensity), intensity, 10f..100f) { intensity = it; emit() }
-                ToggleRow(stringResource(R.string.caption_straight_line), straight) { straight = it; emit() }
-                ToggleRow(stringResource(R.string.caption_inverse), inverse) { inverse = it; emit() }
-            }
-            if (tool.isStroke && tool != Tool.HIGHLIGHTER && tool != Tool.DASHED) {
-                ToggleRow(stringResource(R.string.caption_neon), glow) { glow = it; emit() }
-                if (glow) {
-                    SliderRow(stringResource(R.string.caption_glow_intensity), glowIntensity, 0f..100f) { glowIntensity = it; emit() }
+
+            if (advancedExpanded) {
+                HorizontalDivider(color = LocalPalette.current.border.toComposeColor())
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    StyleCaption(stringResource(R.string.caption_colour))
+                    ModeChip(stringResource(R.string.default_choice), colorOverride == null) { colorOverride = null; emit() }
+                    ColorPickerDot(
+                        colorOverride,
+                        custom = colorOverride != null,
+                        onPick = { colorOverride = it; emit() },
+                        dismissOnPick = false,
+                    ) { d, p ->
+                        ColorPickerPopup(
+                            initial = colorOverride ?: editor.hostToolbarColors.getOrNull(editor.hostActiveColorIndex),
+                            recents = editor.hostRecentColors,
+                            onDismiss = d,
+                            onPick = p,
+                        )
+                    }
+                }
+
+                val hasPressure = tool == Tool.PEN || tool == Tool.CALLIGRAPHY || tool == Tool.SPEED || tool == Tool.TAPER
+                if (hasPressure) {
+                    ToggleRow(stringResource(R.string.caption_pressure), pressure) { pressure = it; emit() }
+                    SliderRow(stringResource(R.string.caption_sensitivity), sensitivity, 0f..100f, enabled = pressure) { sensitivity = it; emit() }
+                }
+                if (tool == Tool.CALLIGRAPHY) SliderRow(stringResource(R.string.caption_multiplier), multiplier, 1f..5f) { multiplier = it; emit() }
+                if (tool == Tool.SPEED) SliderRow(stringResource(R.string.caption_speed), speed, 0f..100f) { speed = it; emit() }
+                if (tool == Tool.TAPER) SliderRow(stringResource(R.string.caption_tip_width), taperTip, 0f..100f) { taperTip = it; emit() }
+                ToggleRow(stringResource(R.string.caption_scale), scale) { scale = it; emit() }
+                if (tool.isStroke && tool != Tool.HIGHLIGHTER) {
+                    ToggleRow(stringResource(R.string.caption_snap_to_shapes), snapShapes) { snapShapes = it; editor.snapHeldToShapes = it }
+                }
+                if (tool == Tool.DASHED) {
+                    SliderRow(stringResource(R.string.caption_dash), dashLen, 2f..40f) { dashLen = it; emit() }
+                    SliderRow(stringResource(R.string.caption_gap), gapLen, 2f..40f) { gapLen = it; emit() }
+                }
+                if (tool == Tool.HIGHLIGHTER) {
+                    SliderRow(stringResource(R.string.caption_intensity), intensity, 10f..100f) { intensity = it; emit() }
+                    ToggleRow(stringResource(R.string.caption_straight_line), straight) { straight = it; emit() }
+                    ToggleRow(stringResource(R.string.caption_inverse), inverse) { inverse = it; emit() }
+                }
+                if (tool.isStroke && tool != Tool.HIGHLIGHTER && tool != Tool.DASHED) {
+                    ToggleRow(stringResource(R.string.caption_neon), glow) { glow = it; emit() }
+                    if (glow) SliderRow(stringResource(R.string.caption_glow_intensity), glowIntensity, 0f..100f) { glowIntensity = it; emit() }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ToolModeButton(tool: Tool, selected: Boolean, onClick: () -> Unit) {
+    val palette = LocalPalette.current
+    val icon = when (tool) {
+        Tool.PEN -> ImageVector.vectorResource(R.drawable.ic_stroke_regular)
+        Tool.CALLIGRAPHY -> ImageVector.vectorResource(R.drawable.ic_stroke_calligraphy)
+        Tool.SPEED -> ImageVector.vectorResource(R.drawable.ic_stroke_speed)
+        Tool.TAPER -> ImageVector.vectorResource(R.drawable.ic_stroke_taper)
+        Tool.HIGHLIGHTER -> ImageVector.vectorResource(R.drawable.ic_stroke_highlighter)
+        else -> XnotesIcons.pen
+    }
+    val label = stringResource(tool.labelRes)
+    Column(
+        modifier = Modifier.clip(RoundedCornerShape(9.dp))
+            .background(if (selected) palette.selectionBackground.toComposeColor() else Color.Transparent)
+            .border(1.dp, if (selected) palette.accent.toComposeColor() else Color.Transparent, RoundedCornerShape(9.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 9.dp, vertical = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
+        Icon(icon, contentDescription = label, tint = if (selected) palette.selectionForeground.toComposeColor() else palette.text.toComposeColor(), modifier = Modifier.size(25.dp))
+        Text(label, color = if (selected) palette.selectionForeground.toComposeColor() else palette.textDim.toComposeColor(), fontSize = 10.sp, maxLines = 1)
     }
 }
 
