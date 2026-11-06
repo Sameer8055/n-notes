@@ -61,25 +61,35 @@ import com.xnotes.ui.theme.toComposeColor
 @Composable
 fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
     var config by remember { mutableStateOf(editor.hostShapeConfig) }
-    var advanced by remember { mutableStateOf(false) }
     var colorPickerOpen by remember { mutableStateOf(false) }
+
     fun emit(next: ShapeConfig) {
         config = next
         editor.updateShapeConfig(next)
     }
-    val chip = config.chip
-    val connecting = config.connector != null
-    val ink = editor.hostToolbarColors.getOrNull(editor.hostActiveColorIndex) ?: Rgba(0, 0, 0)
+
+    // Keep the picker focused on the everyday shapes. No connector catalogue or
+    // advanced controls are composed in this compact panel.
+    val essentialKeys = listOf(
+        "line", "arrow", "rectangle", "rounded_rect",
+        "ellipse", "circle", "triangle", "right_triangle",
+        "diamond", "trapezoid", "star", ShapePresets.FREE_POLYGON,
+    )
+    val shapes = ShapePresets.basic.presets.filter {
+        it.key in essentialKeys && it.key !in editor.hostHiddenShapes
+    }
     val paletteColors = listOf(
         Rgba(245, 20, 24), Rgba(255, 145, 20), Rgba(255, 215, 20),
         Rgba(45, 205, 65), Rgba(35, 65, 235), Rgba(20, 145, 235),
         Rgba(20, 185, 195), Rgba(225, 25, 185), Rgba(35, 115, 45),
         Rgba(25, 25, 28), Rgba(135, 135, 140), Rgba(255, 255, 255),
     )
+    val ink = editor.hostToolbarColors.getOrNull(editor.hostActiveColorIndex) ?: Rgba(0, 0, 0)
 
     DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
         Column(
-            Modifier.widthIn(max = 560.dp).fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
+            Modifier.widthIn(max = 560.dp).fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(
@@ -92,7 +102,8 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                     "×",
                     color = LocalPalette.current.text.toComposeColor(),
                     fontSize = 20.sp,
-                    modifier = Modifier.clip(CircleShape).clickable { onDismiss() }.padding(horizontal = 5.dp),
+                    modifier = Modifier.clip(CircleShape).clickable { onDismiss() }
+                        .padding(horizontal = 5.dp),
                 )
             }
 
@@ -101,33 +112,47 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.Top,
             ) {
-                BoxWithConstraints(Modifier.weight(1f)) {
-                    // A phone-sized menu leaves roughly 150–180 dp beside the colour panel.
-                    // Four 38 dp chips fit when possible; fall back to three on narrower windows.
-                    val columns = if (maxWidth >= 175.dp) 4 else 3
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        SliderRow("Outline size", config.strokeWidth.toFloat(), 1f..20f) {
-                            emit(config.copy(strokeWidth = it.toDouble()))
-                        }
+                Column(
+                    Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    SliderRow("Outline size", config.strokeWidth.toFloat(), 1f..20f) {
+                        emit(config.copy(strokeWidth = it.toDouble()))
+                    }
 
-                        Column(
-                            Modifier.fillMaxWidth()
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(Color(0xFFF1F2F4))
-                                .border(1.dp, Color(0xFFD2D4D8), RoundedCornerShape(10.dp))
-                                .padding(horizontal = 7.dp, vertical = 7.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp),
-                        ) {
-                            ShapePager(
-                                config, editor.hostHiddenShapes, editor.hostShapeOrder, columns,
-                                onPage = { emit(config.copy(shapePage = it)) },
-                                onPick = { emit(config.choose(it)) },
-                            )
+                    Column(
+                        Modifier.fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFFF1F2F4))
+                            .border(1.dp, Color(0xFFD2D4D8), RoundedCornerShape(10.dp))
+                            .padding(horizontal = 7.dp, vertical = 7.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Text(
+                            "Basic shapes",
+                            color = LocalPalette.current.textDim.toComposeColor(),
+                            fontSize = 11.sp,
+                        )
+                        shapes.chunked(4).forEach { rowShapes ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                            ) {
+                                rowShapes.forEach { preset ->
+                                    KindChip(
+                                        ShapeIcons.of(preset),
+                                        chipLabel(preset),
+                                        selected = preset.key == config.preset,
+                                        latex = chipLatex(preset),
+                                    ) { emit(config.choose(preset)) }
+                                }
+                            }
                         }
+                    }
 
-                        if (!connecting && chip.kind.isClosed) {
-                            ToggleRow("Fill shape", config.fill) { emit(config.copy(fill = it)) }
-                        }
+                    val selected = ShapePresets.byKey(config.preset)
+                    if (selected?.kind?.isClosed == true && config.connector == null) {
+                        ToggleRow("Fill shape", config.fill) { emit(config.copy(fill = it)) }
                     }
                 }
 
@@ -151,9 +176,7 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                                     .border(1.dp, LocalPalette.current.border.toComposeColor(), RoundedCornerShape(5.dp))
                                     .clickable {
                                         editor.setSwatchColor(editor.hostActiveColorIndex, color)
-                                        if (!connecting && chip.kind.isClosed && config.fill) {
-                                            emit(config.copy(fillColor = color))
-                                        }
+                                        if (config.fill) emit(config.copy(fillColor = color))
                                     },
                             )
                         }
@@ -171,83 +194,10 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                             onDismiss = { colorPickerOpen = false },
                             onPick = { picked ->
                                 editor.setSwatchColor(editor.hostActiveColorIndex, picked)
-                                if (!connecting && chip.kind.isClosed && config.fill) emit(config.copy(fillColor = picked))
+                                if (config.fill) emit(config.copy(fillColor = picked))
                                 colorPickerOpen = false
                             },
                         )
-                    }
-                    if (!connecting && chip.kind.isClosed && config.fill) {
-                        androidx.compose.material3.HorizontalDivider(color = LocalPalette.current.border.toComposeColor())
-                        Text("Fill colour", color = LocalPalette.current.textDim.toComposeColor(), fontSize = 10.sp)
-                        FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            listOf(ink) .plus(paletteColors.take(11)).forEach { fill ->
-                                Box(
-                                    Modifier.size(18.dp).clip(CircleShape)
-                                        .background(fill.toComposeColor())
-                                        .border(1.dp, LocalPalette.current.border.toComposeColor(), CircleShape)
-                                        .clickable { emit(config.copy(fillColor = fill)) },
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            androidx.compose.material3.HorizontalDivider(color = LocalPalette.current.border.toComposeColor())
-            Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
-                    .clickable { advanced = !advanced }.padding(vertical = 5.dp, horizontal = 2.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text("Advanced settings", color = LocalPalette.current.text.toComposeColor(), fontSize = 12.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium)
-                Text(if (advanced) "⌃" else "⌄", color = LocalPalette.current.textDim.toComposeColor(), fontSize = 16.sp)
-            }
-
-            if (advanced) {
-                androidx.compose.material3.HorizontalDivider(color = LocalPalette.current.border.toComposeColor())
-                Text("Connectors", color = LocalPalette.current.text.toComposeColor(), fontSize = 12.sp)
-                Column(
-                    Modifier.fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xFFF1F2F4))
-                        .border(1.dp, Color(0xFFD2D4D8), RoundedCornerShape(10.dp))
-                        .padding(horizontal = 7.dp, vertical = 7.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    BoxWithConstraints(Modifier.fillMaxWidth()) {
-                        val connectorColumns = if (maxWidth >= 175.dp) 4 else 3
-                        ConnectorPager(
-                            config, editor.hostHiddenShapes, editor.hostShapeOrder, connectorColumns,
-                            onPage = { emit(config.copy(connectorPage = it)) },
-                            onPick = { emit(config.choose(it)) },
-                        )
-                    }
-                }
-                if (!connecting && chip.counted) CountRow(config) { emit(config.copy(n = it)) }
-                if (!connecting && !config.placesCorners) {
-                    ToggleRow(stringResource(R.string.caption_perfect), config.perfect) { emit(config.copy(perfect = it)) }
-                }
-                if (!connecting && chip.kind.isClosed && config.fill) {
-                    val minPct = (ShapeConfig.FILL_ALPHA_MIN * 100).toFloat()
-                    SliderRow(stringResource(R.string.caption_opacity), (config.fillAlpha * 100).toFloat(), minPct..100f) {
-                        emit(config.copy(fillAlpha = (it / 100.0).coerceIn(ShapeConfig.FILL_ALPHA_MIN, ShapeConfig.FILL_ALPHA_MAX)))
-                    }
-                }
-                if (connecting || !chip.kind.isClosed) {
-                    HeadRow(stringResource(R.string.caption_head_start), config.headStart, atStart = true) { emit(config.copy(headStart = it)) }
-                    HeadRow(stringResource(R.string.caption_head_end), config.headEnd, atStart = false) { emit(config.copy(headEnd = it)) }
-                }
-                ToggleRow(stringResource(R.string.caption_dashed), config.dashed) { emit(config.copy(dashed = it)) }
-                if (config.dashed) {
-                    SliderRow(stringResource(R.string.caption_dash), config.dashLength.toFloat(), 2f..40f) { emit(config.copy(dashLength = it.toDouble())) }
-                    SliderRow(stringResource(R.string.caption_gap), config.dashGap.toFloat(), 2f..40f) { emit(config.copy(dashGap = it.toDouble())) }
-                }
-                ToggleRow(stringResource(R.string.caption_neon), config.neon) { emit(config.copy(neon = it)) }
-                if (config.neon) {
-                    val intensity = ToolConversions.neonStrengthToIntensity(config.neonStrength).toFloat()
-                    SliderRow(stringResource(R.string.caption_glow_intensity), intensity, 0f..100f) {
-                        emit(config.copy(neonStrength = ToolConversions.intensityToNeonStrength(it.toDouble())))
                     }
                 }
             }
