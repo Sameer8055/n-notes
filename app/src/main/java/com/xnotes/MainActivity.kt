@@ -160,7 +160,8 @@ class MainActivity : ComponentActivity() {
         com.xnotes.platform.TemplateLibrary.init(this)
         com.xnotes.ui.AudioPlayback.init(this)
         com.xnotes.ui.AudioRecording.init(this)
-        setTheme(com.xnotes.R.style.Theme_Xnotes) // leave the dark launch/splash theme behind
+        // Keep the splash window background until Compose draws its first frame. Swapping
+        // to the plain app theme here exposed a black frame on slower cold starts.
         applyFullscreen(!deviceHasDisplayCutout(this)) // provisional; reconciled once the editor loads prefs
         // Some Android builds briefly reveal the navigation bar on an edge swipe even in immersive
         // mode. Re-apply the editor's system-bar policy as soon as that visibility change is reported.
