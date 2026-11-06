@@ -490,7 +490,7 @@ class SettingsTest {
         val junk = JSONObject().put("toolbar_size", "huge").put("toolbar_position", "middle")
         assertEquals(ToolbarLook(), Preferences.fromJson(junk).toolbarLook)
         assertFalse(Preferences().toJson().has("toolbar_size"))
-        assertFalse(Preferences().toJson().has("toolbar_position"))
+        assertEquals("bottom", Preferences().toJson().optString("toolbar_position"))
         assertTrue(Preferences().toJson().optBoolean("toolbar_floating"))
     }
 
