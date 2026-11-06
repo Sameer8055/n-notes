@@ -243,6 +243,34 @@ internal fun ThumbImage(img: ImageBitmap?, whole: Boolean, modifier: Modifier = 
     }
 }
 
+/**
+ * A restrained notebook-cover treatment for explorer thumbnails: two paper leaves sit
+ * just behind the preview, giving notes and folders the layered, tactile card treatment
+ * used by notebook apps without changing their hit targets or preview rendering.
+ */
+@Composable
+private fun StackedTileSurface(
+    shape: androidx.compose.ui.graphics.Shape,
+    content: @Composable () -> Unit,
+) {
+    val palette = LocalPalette.current
+    Box(Modifier.fillMaxSize()) {
+        Box(
+            Modifier.fillMaxSize().padding(horizontal = 9.dp, vertical = 5.dp)
+                .offset(y = 5.dp).clip(shape)
+                .background(palette.surfaceHi.toComposeColor())
+                .border(1.dp, palette.border.toComposeColor(), shape),
+        )
+        Box(
+            Modifier.fillMaxSize().padding(horizontal = 6.dp, vertical = 3.dp)
+                .offset(y = 2.dp).clip(shape)
+                .background(palette.paper.toComposeColor())
+                .border(1.dp, palette.paperBorder.toComposeColor(), shape),
+        )
+        content()
+    }
+}
+
 /** The kind and page-count badges a thumbnail carries, as far as the view shows them. */
 @Composable
 internal fun ThumbBadges(b: ExplorerBody, e: BrowseEntry, inset: Dp = 8.dp) {
@@ -339,7 +367,9 @@ internal fun GridFileTile(b: ExplorerBody, e: BrowseEntry) {
             Modifier.fillMaxWidth().aspectRatio(if (b.view.thumb == ThumbShape.PAGE) 100f / 141f else 1f)
                 .liquidGlassSurface(shape, palette.surface.toComposeColor(), edge = if (selected) accent else (code ?: palette.border.toComposeColor()), elevation = 6.dp),
         ) {
-            EntryThumb(b.editor, e, b.view.thumb, Modifier.fillMaxSize())
+            StackedTileSurface(RoundedCornerShape(12.dp)) {
+                EntryThumb(b.editor, e, b.view.thumb, Modifier.fillMaxSize().padding(4.dp).clip(RoundedCornerShape(12.dp)))
+            }
             if (selected) Box(Modifier.fillMaxSize().background(palette.selectionBackground.withAlpha(77).toComposeColor()))
             ThumbBadges(b, e)
             if (selecting) CheckRing(selected, Modifier.align(Alignment.TopStart).padding(8.dp))
@@ -459,7 +489,11 @@ internal fun FolderCardTile(b: ExplorerBody, e: BrowseEntry) {
                 ),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(XnotesIcons.folder, null, tint = code ?: palette.textDim.toComposeColor(), modifier = Modifier.size(44.dp))
+            StackedTileSurface(RoundedCornerShape(12.dp)) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Icon(XnotesIcons.folder, null, tint = code ?: palette.textDim.toComposeColor(), modifier = Modifier.size(44.dp))
+                }
+            }
             if (selecting) CheckRing(b.host.isSelected(e), Modifier.align(Alignment.TopStart).padding(8.dp))
         }
         Row(
