@@ -248,9 +248,9 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
                     // Light, inset pen tray echoes the original X Notes illustrated selector.
                     Row(
                         modifier = Modifier.fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0xFFF1F2F4))
-                            .border(1.dp, Color(0xFFD2D4D8), RoundedCornerShape(10.dp))
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(LocalPalette.current.surface.toComposeColor())
+                            .border(1.dp, LocalPalette.current.border.toComposeColor(), RoundedCornerShape(16.dp))
                             .padding(horizontal = 6.dp, vertical = 7.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically,
