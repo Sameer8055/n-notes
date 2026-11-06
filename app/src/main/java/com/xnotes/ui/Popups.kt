@@ -196,7 +196,14 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
     )
     val penTools = listOf(Tool.PEN, Tool.CALLIGRAPHY, Tool.SPEED, Tool.TAPER, Tool.HIGHLIGHTER)
 
-    DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
+    DropdownMenu(
+        expanded = true,
+        onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(26.dp),
+        containerColor = Color.Transparent,
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp,
+    ) {
         Column(
             Modifier.widthIn(min = 410.dp, max = 560.dp)
                 .liquidGlassSurface(
@@ -1168,7 +1175,14 @@ fun EraserConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
         ),
     )
 
-    DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
+    DropdownMenu(
+        expanded = true,
+        onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(26.dp),
+        containerColor = Color.Transparent,
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp,
+    ) {
         Column(
             Modifier.widthIn(min = 410.dp, max = 560.dp)
                 .liquidGlassSurface(
