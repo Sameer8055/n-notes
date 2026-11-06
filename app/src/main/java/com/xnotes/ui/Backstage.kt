@@ -15,6 +15,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -267,7 +268,11 @@ fun Backstage(
             com.xnotes.settings.MaterialColourMode.DUAL -> homePrefs.materialDualSeed
             com.xnotes.settings.MaterialColourMode.SYSTEM -> homePrefs.materialDualSeed
         }
-        val homeDark = homePrefs.uiAppearance != "light"
+        val homeDark = when (homePrefs.uiAppearance) {
+            "light" -> false
+            "dark", "oled" -> true
+            else -> isSystemInDarkTheme()
+        }
         Palette.material(
             if (homePrefs.uiAppearance == "oled") "oled" else if (homeDark) "dark" else "light",
             MaterialColors.seeded(
