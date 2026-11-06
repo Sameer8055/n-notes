@@ -75,12 +75,11 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
         Rgba(45, 205, 65), Rgba(35, 65, 235), Rgba(20, 145, 235),
         Rgba(20, 185, 195), Rgba(225, 25, 185), Rgba(35, 115, 45),
         Rgba(25, 25, 28), Rgba(135, 135, 140), Rgba(255, 255, 255),
-        Rgba(100, 65, 170), Rgba(70, 175, 125), Rgba(230, 230, 235),
     )
 
     DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
         Column(
-            Modifier.widthIn(max = 560.dp).fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
+            Modifier.widthIn(min = 410.dp, max = 560.dp).padding(horizontal = 12.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(
@@ -106,16 +105,24 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                     // A phone-sized menu leaves roughly 150–180 dp beside the colour panel.
                     // Four 38 dp chips fit when possible; fall back to three on narrower windows.
                     val columns = if (maxWidth >= 175.dp) 4 else 3
-                    Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
-                        SliderRow("Outline size", config.strokeWidth.toFloat(), 1f..20f) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text("Outline size", color = LocalPalette.current.text.toComposeColor(), fontSize = 12.sp)
+                            Text("%.1f".format(config.strokeWidth), color = LocalPalette.current.text.toComposeColor(), fontSize = 11.sp)
+                        }
+                        SliderRow("", config.strokeWidth.toFloat(), 1f..20f) {
                             emit(config.copy(strokeWidth = it.toDouble()))
                         }
 
                         Column(
                             Modifier.fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
+                                .clip(RoundedCornerShape(10.dp))
                                 .background(Color(0xFFF1F2F4))
-                                .border(1.dp, Color(0xFFD2D4D8), RoundedCornerShape(12.dp))
+                                .border(1.dp, Color(0xFFD2D4D8), RoundedCornerShape(10.dp))
                                 .padding(horizontal = 7.dp, vertical = 7.dp),
                             verticalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
@@ -124,18 +131,10 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                                 onPage = { emit(config.copy(shapePage = it)) },
                                 onPick = { emit(config.choose(it)) },
                             )
-                            ConnectorPager(
-                                config, editor.hostHiddenShapes, editor.hostShapeOrder, columns,
-                                onPage = { emit(config.copy(connectorPage = it)) },
-                                onPick = { emit(config.choose(it)) },
-                            )
                         }
 
                         if (!connecting && chip.kind.isClosed) {
                             ToggleRow("Fill shape", config.fill) { emit(config.copy(fill = it)) }
-                            if (config.fill) {
-                                FillColourRow(config.fillColor, ink, editor) { emit(config.copy(fillColor = it)) }
-                            }
                         }
                     }
                 }
@@ -180,24 +179,59 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                             onDismiss = { colorPickerOpen = false },
                             onPick = { picked ->
                                 editor.setSwatchColor(editor.hostActiveColorIndex, picked)
+                                if (!connecting && chip.kind.isClosed && config.fill) emit(config.copy(fillColor = picked))
                                 colorPickerOpen = false
                             },
                         )
                     }
+                    if (!connecting && chip.kind.isClosed && config.fill) {
+                        androidx.compose.material3.HorizontalDivider(color = LocalPalette.current.border.toComposeColor())
+                        Text("Fill colour", color = LocalPalette.current.textDim.toComposeColor(), fontSize = 10.sp)
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            listOf(ink) .plus(paletteColors.take(11)).forEach { fill ->
+                                Box(
+                                    Modifier.size(18.dp).clip(CircleShape)
+                                        .background(fill.toComposeColor())
+                                        .border(1.dp, LocalPalette.current.border.toComposeColor(), CircleShape)
+                                        .clickable { emit(config.copy(fillColor = fill)) },
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
+            androidx.compose.material3.HorizontalDivider(color = LocalPalette.current.border.toComposeColor())
             Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp))
-                    .clickable { advanced = !advanced }.padding(vertical = 7.dp),
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
+                    .clickable { advanced = !advanced }.padding(vertical = 5.dp, horizontal = 2.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text("Advanced settings", color = LocalPalette.current.text.toComposeColor(), fontSize = 13.sp)
-                Text(if (advanced) "⌃" else "⌄", color = LocalPalette.current.textDim.toComposeColor(), fontSize = 14.sp)
+                Text("Advanced settings", color = LocalPalette.current.text.toComposeColor(), fontSize = 12.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium)
+                Text(if (advanced) "⌃" else "⌄", color = LocalPalette.current.textDim.toComposeColor(), fontSize = 16.sp)
             }
 
             if (advanced) {
+                androidx.compose.material3.HorizontalDivider(color = LocalPalette.current.border.toComposeColor())
+                Text("Connectors", color = LocalPalette.current.text.toComposeColor(), fontSize = 12.sp)
+                Column(
+                    Modifier.fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color(0xFFF1F2F4))
+                        .border(1.dp, Color(0xFFD2D4D8), RoundedCornerShape(10.dp))
+                        .padding(horizontal = 7.dp, vertical = 7.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    BoxWithConstraints(Modifier.fillMaxWidth()) {
+                        val connectorColumns = if (maxWidth >= 175.dp) 4 else 3
+                        ConnectorPager(
+                            config, editor.hostHiddenShapes, editor.hostShapeOrder, connectorColumns,
+                            onPage = { emit(config.copy(connectorPage = it)) },
+                            onPick = { emit(config.choose(it)) },
+                        )
+                    }
+                }
                 if (!connecting && chip.counted) CountRow(config) { emit(config.copy(n = it)) }
                 if (!connecting && !config.placesCorners) {
                     ToggleRow(stringResource(R.string.caption_perfect), config.perfect) { emit(config.copy(perfect = it)) }
