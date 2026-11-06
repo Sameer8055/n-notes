@@ -299,7 +299,7 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                     ) {
                         paletteColors.forEach { color ->
                             val swatchColor = color.toComposeColor()
-                            val selected = if (config.fill) color == config.fillColor else color == ink
+                            val selected = color == (if (config.fill) config.fillColor ?: ink else ink)
                             val checkColor = if (
                                 swatchColor.red * 0.299f + swatchColor.green * 0.587f + swatchColor.blue * 0.114f > 0.55f
                             ) Color.Black else Color.White
