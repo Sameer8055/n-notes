@@ -1,14 +1,8 @@
 name: Build Debug APK
 
-# Build automatically when the completed toolbox redesign is pushed to its feature branch.
-# The Sameer Notes branch is included so every polish commit gets a debug APK artifact.
-# Rebuild after correcting the shape-panel bucket-fill state reference.
+# Builds are intentionally manual: polish commits must not start an APK build
+# until the user explicitly approves it with "Start build".
 on:
-  push:
-    branches:
-      - feature/floating-three-section-toolbar
-      - feature/final-shape-lasso-polish
-      - feature/sameer-notes-shape-branding
   workflow_dispatch:
 
 permissions:
