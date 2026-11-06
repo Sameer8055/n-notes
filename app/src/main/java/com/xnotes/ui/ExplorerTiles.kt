@@ -440,7 +440,33 @@ internal fun FolderChipTile(b: ExplorerBody, e: BrowseEntry, height: Dp = 60.dp)
             .padding(start = 12.dp, end = 2.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(XnotesIcons.folder, null, tint = if (active) onAccent else (code ?: palette.textDim.toComposeColor()), modifier = Modifier.size(22.dp))
+        Box(
+            Modifier.size(38.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(
+                    Brush.linearGradient(
+                        listOf(
+                            (if (active) accent else (code ?: accent)).copy(alpha = if (active) 0.48f else 0.20f),
+                            palette.surfaceHi.toComposeColor(),
+                        ),
+                    ),
+                )
+                .border(1.dp, if (active) accent else palette.border.toComposeColor(), RoundedCornerShape(10.dp)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Box(
+                Modifier.size(21.dp, 27.dp).offset(x = 3.dp, y = (-1).dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(palette.paper.toComposeColor().copy(alpha = 0.92f))
+                    .border(0.7.dp, palette.paperBorder.toComposeColor(), RoundedCornerShape(4.dp)),
+            )
+            Icon(
+                XnotesIcons.folder,
+                null,
+                tint = if (active) onAccent else (code ?: palette.textDim.toComposeColor()),
+                modifier = Modifier.size(23.dp).align(Alignment.BottomEnd).padding(end = 2.dp, bottom = 1.dp),
+            )
+        }
         Spacer(Modifier.width(10.dp))
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(b.label(e), color = if (active) onAccent else palette.text.toComposeColor(), fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
