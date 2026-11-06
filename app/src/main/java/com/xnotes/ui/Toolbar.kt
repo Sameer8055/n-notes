@@ -415,7 +415,7 @@ private fun ToolButton(
                 tool == Tool.TEXT -> TextToolConfigPopup(editor) { setConfigForTool(null) }
                 tool == Tool.MARKUP -> MarkupToolPopup(editor) { setConfigForTool(null) }
                 tool == Tool.TAPE -> TapeConfigPopup(editor) { setConfigForTool(null) }
-                else -> ToolConfigPopup(editor, tool) { setConfigForTool(null) }
+                else -> ToolConfigPopup(editor, tool, onSelectTool = { editor.selectTool(it) }) { setConfigForTool(null) }
             }
         }
     }
