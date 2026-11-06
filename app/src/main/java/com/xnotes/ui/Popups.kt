@@ -278,12 +278,27 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
                         verticalArrangement = Arrangement.spacedBy(5.dp),
                     ) {
                         paletteColors.forEach { swatch ->
+                            val swatchColor = swatch.toComposeColor()
+                            val selected = editor.hostToolbarColors.getOrNull(editor.hostActiveColorIndex) == swatch
+                            val checkColor = if (
+                                swatchColor.red * 0.299f + swatchColor.green * 0.587f + swatchColor.blue * 0.114f > 0.55f
+                            ) Color.Black else Color.White
                             Box(
-                                Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
-                                    .background(swatch.toComposeColor())
-                                    .border(1.dp, LocalPalette.current.border.toComposeColor(), RoundedCornerShape(5.dp))
+                                Modifier.size(28.dp).clip(RoundedCornerShape(5.dp))
+                                    .background(swatchColor)
+                                    .border(
+                                        if (selected) 2.dp else 1.dp,
+                                        if (selected) (if (LocalPalette.current.isDark) Color.White else Color.Black)
+                                        else LocalPalette.current.border.toComposeColor(),
+                                        RoundedCornerShape(5.dp),
+                                    )
                                     .clickable { editor.setSwatchColor(editor.hostActiveColorIndex, swatch) },
-                            )
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                if (selected) {
+                                    Text("✓", color = checkColor, fontSize = 16.sp)
+                                }
+                            }
                         }
                     }
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
