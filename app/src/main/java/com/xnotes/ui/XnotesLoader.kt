@@ -15,6 +15,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,6 +27,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.xnotes.R
@@ -33,6 +39,15 @@ fun XnotesLoader(modifier: Modifier = Modifier) {
     val cfg = LocalConfiguration.current
     val shortEdge = minOf(cfg.screenWidthDp, cfg.screenHeightDp)
     val side = minOf(shortEdge * 0.34f, 180f).dp
+
+    var visibleCharacters by remember { mutableIntStateOf(0) }
+    LaunchedEffect(Unit) {
+        val title = "Sameer Notes"
+        for (index in 1..title.length) {
+            visibleCharacters = index
+            kotlinx.coroutines.delay(72L)
+        }
+    }
 
     val transition = rememberInfiniteTransition(label = "sameer-notes-loader")
     val scale by transition.animateFloat(
@@ -57,10 +72,13 @@ fun XnotesLoader(modifier: Modifier = Modifier) {
         )
         Spacer(Modifier.height(18.dp))
         Text(
-            "Sameer Notes",
+            "Sameer Notes".take(visibleCharacters),
             color = Color.White,
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp,
+            fontFamily = FontFamily.Serif,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 23.sp,
+            letterSpacing = 0.35.sp,
+            textAlign = TextAlign.Center,
         )
     }
 }
