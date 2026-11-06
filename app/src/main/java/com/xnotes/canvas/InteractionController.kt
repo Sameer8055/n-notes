@@ -843,6 +843,11 @@ class InteractionController(
             hasSelection && drawingIsStylus && (tool.isStroke || tool == Tool.SHAPE || tool == Tool.TAPE) &&
                 drawingGrabsSelection(content) -> Tool.SELECT
             hasSelection && tool == Tool.TABLE && fingerHitsSelection(content) -> Tool.SELECT
+            // A shape that has just been auto-selected must be directly editable with a finger,
+            // even while the Shape tool remains armed. Route presses on its body/handles through
+            // the normal selection gesture state machine instead of dismissing the selection.
+            hasSelection && tool == Tool.SHAPE && toolType == MotionEvent.TOOL_TYPE_FINGER &&
+                fingerHitsSelection(content) -> Tool.SELECT
             // A finger may grab/resize the ACTIVE selection even when finger-draw is off;
             // off the selection it still pans.
             toolType == MotionEvent.TOOL_TYPE_FINGER && !fingerDraws && tool.fingerPansWhenOff &&
