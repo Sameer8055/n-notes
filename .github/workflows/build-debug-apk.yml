@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - feature/floating-three-section-toolbar
+      - feature/final-shape-lasso-polish
   workflow_dispatch:
 
 permissions:
