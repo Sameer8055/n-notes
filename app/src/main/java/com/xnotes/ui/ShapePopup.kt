@@ -6,14 +6,12 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,7 +29,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -132,34 +129,40 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                             color = LocalPalette.current.textDim.toComposeColor(),
                             fontSize = 11.sp,
                         )
-                        // Twelve shapes per view: four columns by three rows. Swipe
-                        // horizontally to browse the rest without changing panel dimensions.
-                        BoxWithConstraints(Modifier.fillMaxWidth()) {
-                            val pageWidth = maxWidth
-                            Row(Modifier.horizontalScroll(rememberScrollState())) {
-                                shapes.chunked(12).forEach { pageShapes ->
-                                    Column(
-                                        Modifier.width(pageWidth),
-                                        verticalArrangement = Arrangement.spacedBy(5.dp),
-                                    ) {
-                                        pageShapes.chunked(4).forEach { rowShapes ->
-                                            Row(
-                                                Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.spacedBy(5.dp),
-                                            ) {
-                                                rowShapes.forEach { preset ->
-                                                    KindChip(
-                                                        ShapeIcons.of(preset),
-                                                        chipLabel(preset),
-                                                        selected = preset.key == config.preset,
-                                                        latex = chipLatex(preset),
-                                                    ) { emit(config.choose(preset)) }
-                                                }
+                        // Compose only the current 12-chip page. A horizontal scroll
+                        // Row eagerly composed the entire catalogue on popup open, which
+                        // could freeze/crash the app while building every custom glyph.
+                        val shapePages = remember(shapes) { shapes.chunked(12) }
+                        if (shapePages.isNotEmpty()) {
+                            val shapePager = rememberPagerState(pageCount = { shapePages.size })
+                            HorizontalPager(
+                                state = shapePager,
+                                modifier = Modifier.fillMaxWidth().height(124.dp),
+                            ) { page ->
+                                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                                    shapePages[page].chunked(4).forEach { rowShapes ->
+                                        Row(
+                                            Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(5.dp),
+                                        ) {
+                                            rowShapes.forEach { preset ->
+                                                KindChip(
+                                                    ShapeIcons.of(preset),
+                                                    chipLabel(preset),
+                                                    selected = preset.key == config.preset,
+                                                    latex = chipLatex(preset),
+                                                ) { emit(config.choose(preset)) }
                                             }
                                         }
                                     }
                                 }
                             }
+                        } else {
+                            Text(
+                                "No shapes available",
+                                color = LocalPalette.current.textDim.toComposeColor(),
+                                fontSize = 11.sp,
+                            )
                         }
                     }
 
