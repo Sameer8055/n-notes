@@ -581,9 +581,11 @@ private fun BackstageSidebar(modifier: Modifier, editor: Editor, nav: SidebarNav
                 Typeface.createFromAsset(context.assets, "fonts/inter/regular.ttf")
             }
             val brandTypeface = remember(inter) { Typeface.create(inter, Typeface.BOLD) }
-            NLogo(
-                modifier = Modifier.size(27.dp),
-                color = palette.text.toComposeColor(),
+            Image(
+                painter = painterResource(R.drawable.sameer_notes_logo),
+                contentDescription = "Sameer Notes logo",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(30.dp),
             )
             Spacer(Modifier.width(9.dp))
             Text(
