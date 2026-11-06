@@ -162,6 +162,15 @@ class MainActivity : ComponentActivity() {
         com.xnotes.ui.AudioRecording.init(this)
         setTheme(com.xnotes.R.style.Theme_Xnotes) // leave the dark launch/splash theme behind
         applyFullscreen(!deviceHasDisplayCutout(this)) // provisional; reconciled once the editor loads prefs
+        // Some Android builds briefly reveal the navigation bar on an edge swipe even in immersive
+        // mode. Re-apply the editor's system-bar policy as soon as that visibility change is reported.
+        // The OS still owns Home/Back gestures; this only keeps the persistent bar out of the canvas.
+        window.decorView.setOnSystemUiVisibilityChangeListener {
+            val active = editor
+            if (active != null && active.noteOpen) {
+                applyEditorSystemBars(fullscreen = active.fullscreen, noteOpen = true)
+            }
+        }
         // The intent that started the task comes back whenever Android rebuilds it, from a saved state
         // or from Recents after the process died or the app was updated; it was handled the first time.
         val rebuilt = savedInstanceState != null || (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0
