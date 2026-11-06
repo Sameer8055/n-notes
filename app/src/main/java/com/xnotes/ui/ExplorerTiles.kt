@@ -582,7 +582,7 @@ internal fun FolderCardTile(b: ExplorerBody, e: BrowseEntry) {
     ) {
         Box(
             Modifier.fillMaxWidth()
-                .height(94.dp)
+                .height(100.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .background(
                     Brush.linearGradient(
@@ -597,19 +597,19 @@ internal fun FolderCardTile(b: ExplorerBody, e: BrowseEntry) {
         ) {
             // Layered paper previews give the folder a recognisable cover, not a generic app icon.
             Box(
-                Modifier.size(61.dp, 68.dp).offset(x = 12.dp, y = 5.dp)
+                Modifier.size(64.dp, 70.dp).offset(x = 12.dp, y = 5.dp)
                     .clip(RoundedCornerShape(7.dp))
                     .background(Color.White.copy(alpha = 0.20f))
                     .border(1.dp, Color.White.copy(alpha = 0.20f), RoundedCornerShape(7.dp)),
             )
             Box(
-                Modifier.size(61.dp, 68.dp).offset(x = 5.dp, y = 2.dp)
+                Modifier.size(64.dp, 70.dp).offset(x = 5.dp, y = 2.dp)
                     .clip(RoundedCornerShape(7.dp))
                     .background(palette.paper.toComposeColor().copy(alpha = 0.72f))
                     .border(1.dp, palette.paperBorder.toComposeColor().copy(alpha = 0.65f), RoundedCornerShape(7.dp)),
             )
             Box(
-                Modifier.size(61.dp, 68.dp).offset(x = (-2).dp, y = (-1).dp)
+                Modifier.size(64.dp, 70.dp).offset(x = (-2).dp, y = (-1).dp)
                     .clip(RoundedCornerShape(7.dp))
                     .background(palette.paper.toComposeColor().copy(alpha = 0.94f))
                     .border(1.dp, palette.paperBorder.toComposeColor(), RoundedCornerShape(7.dp)),
@@ -632,7 +632,7 @@ internal fun FolderCardTile(b: ExplorerBody, e: BrowseEntry) {
                 XnotesIcons.folder,
                 contentDescription = null,
                 tint = accent,
-                modifier = Modifier.size(43.dp).align(Alignment.BottomEnd).padding(end = 10.dp, bottom = 7.dp),
+                modifier = Modifier.size(44.dp).align(Alignment.BottomEnd).padding(end = 10.dp, bottom = 7.dp),
             )
             val count = b.counts[e.documentUri]
             if (count != null) {
