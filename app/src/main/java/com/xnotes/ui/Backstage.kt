@@ -336,6 +336,17 @@ private fun BackstageContent(
     onBackup: (Boolean) -> Unit,
 ) {
     val palette = LocalPalette.current
+    val homeBackdrop = remember(palette, view) {
+        if (view == BackstageView.HOME) {
+            Brush.radialGradient(
+                colors = listOf(palette.accent.toComposeColor().copy(alpha = 0.065f), palette.bg.toComposeColor()),
+                center = Offset.Zero,
+                radius = 1200f,
+            )
+        } else {
+            SolidColor(palette.bg.toComposeColor())
+        }
+    }
     var createMode by remember { mutableStateOf(CreateMode.NONE) }
     var drawerOpen by remember { mutableStateOf(false) }
     val railed = editor.backstageRail
@@ -429,7 +440,7 @@ private fun BackstageContent(
     }
 
     if (compact) {
-        Box(Modifier.fillMaxSize().background(palette.bg.toComposeColor())) {
+        Box(Modifier.fillMaxSize().background(homeBackdrop)) {
             BackstageMain(
                 Modifier.fillMaxSize(), editor, view, compact, drawerOpen, { animateClose = true; drawerOpen = true }, dismissDrawer, { selectView(BackstageView.HOME) },
                 calls, createMode, { createMode = it }, onImportCodeTheme, onImportFont, onBackup, link, { selectView(BackstageView.PREFERENCES) },
@@ -456,7 +467,7 @@ private fun BackstageContent(
         // folds away over it, as the old sidebar did, since resizing the grid on every frame is what a fold costs.
         // The width is read only in layout, so neither direction recomposes anything.
         val width = animateDpAsState(if (railed) RAIL_WIDTH else SIDEBAR_WIDTH, tween(SIDEBAR_ANIM_MS), label = "sidebarWidth")
-        Box(Modifier.fillMaxSize().background(palette.bg.toComposeColor())) {
+        Box(Modifier.fillMaxSize().background(homeBackdrop)) {
             // A navigation surface is always on screen here, so the panes never need their own menu button.
             BackstageMain(
                 Modifier.fillMaxSize().layout { measurable, constraints ->
