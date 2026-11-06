@@ -19,7 +19,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -50,6 +53,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -174,12 +178,28 @@ fun Toolbar(
         }
     } else {
         // Pinned outside the scrolling strip so closing a split pane is always one tap away.
-        ToolbarFrame(armed = editor.tool, trailing = onClosePane?.let { { ClosePaneButton(it) } }) {
-            // The bar is driven by the user-customisable layout; separators sit between non-empty
-            // sections, and each item dispatches to its renderer (see ToolbarItemView).
-            editor.toolbarLayout.visibleSections.forEachIndexed { si, section ->
-                if (si > 0) Separator()
-                section.visibleEntries.forEach { entry -> Item(entry.item) }
+        ToolbarFrame(
+            armed = editor.tool,
+            trailing = onClosePane?.let { { ClosePaneButton(it) } },
+            separateSections = true,
+        ) {
+            // Keep the three independent islands anchored to the screen edges:
+            // left and right hug the bottom corners while the everyday tools stay centered.
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                editor.toolbarLayout.visibleSections.forEach { section ->
+                    ToolbarSectionSurface {
+                        section.visibleEntries.forEach { entry ->
+                            if (entry.item == ToolbarItem.PAGE_NAV) {
+                                ToolbarIcon(XnotesIcons.plus, stringResource(R.string.add_page)) { editor.addPage() }
+                            }
+                            Item(entry.item)
+                        }
+                    }
+                }
             }
         }
     }
@@ -194,6 +214,25 @@ fun Toolbar(
             },
             onDismiss = { renaming = false },
         )
+    }
+}
+
+/** One independently floating island in the three-zone editor toolbar. */
+@Composable
+private fun ToolbarSectionSurface(content: @Composable () -> Unit) {
+    val palette = LocalPalette.current
+    val shape = MaterialTheme.shapes.extraLarge
+    Row(
+        Modifier
+            .shadow(6.dp, shape)
+            .clip(shape)
+            .background(palette.panel.toComposeColor().copy(alpha = 0.82f))
+            .border(1.dp, palette.border.toComposeColor(), shape)
+            .padding(horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(0.dp),
+    ) {
+        content()
     }
 }
 
@@ -222,7 +261,7 @@ private fun ToolbarItemView(
         // Canvas-only items; a stored paged layout can never hold one, so nothing is drawn.
         ToolbarItem.WAYPOINTS, ToolbarItem.MINIMAP -> Unit
 
-        ToolbarItem.HOME -> ToolbarIcon(XnotesIcons.prev, stringResource(R.string.toolbar_home)) { onOpenBackstage() }
+        ToolbarItem.HOME -> ToolbarIcon(XnotesIcons.home, stringResource(R.string.toolbar_home)) { onOpenBackstage() }
         // A name has no room down a side rail.
         ToolbarItem.TITLE -> if (!LocalBar.current.vertical) Tooltip(stringResource(R.string.rename_note)) {
             Label(
@@ -236,7 +275,19 @@ private fun ToolbarItemView(
         ToolbarItem.READER ->
             ToolbarIcon(Icons.Outlined.AutoStories, stringResource(R.string.tool_reader)) { editor.enterReader() }
         ToolbarItem.SIDEBAR ->
-            ToolbarIcon(XnotesIcons.sidebar, stringResource(R.string.side_panel), active = editor.sidebarVisible, shortcut = Keys.SIDEBAR) { editor.toggleSidebar() }
+            ToolbarIcon(
+                XnotesIcons.sidebar,
+                stringResource(R.string.side_panel),
+                active = editor.sidebarVisible && editor.sidePanelTab == SidePanelTab.PAGES,
+                shortcut = Keys.SIDEBAR,
+            ) {
+                if (editor.sidebarVisible && editor.sidePanelTab == SidePanelTab.PAGES) {
+                    editor.sidebarVisible = false
+                } else {
+                    editor.sidePanelTab = SidePanelTab.PAGES
+                    editor.sidebarVisible = true
+                }
+            }
 
         ToolbarItem.PEN, ToolbarItem.DASHED, ToolbarItem.CALLIGRAPHY, ToolbarItem.SPEED,
         ToolbarItem.TAPER, ToolbarItem.HIGHLIGHTER, ToolbarItem.ERASER, ToolbarItem.PAN,
@@ -364,7 +415,7 @@ private fun ToolButton(
                 tool == Tool.TEXT -> TextToolConfigPopup(editor) { setConfigForTool(null) }
                 tool == Tool.MARKUP -> MarkupToolPopup(editor) { setConfigForTool(null) }
                 tool == Tool.TAPE -> TapeConfigPopup(editor) { setConfigForTool(null) }
-                else -> ToolConfigPopup(editor, tool) { setConfigForTool(null) }
+                else -> ToolConfigPopup(editor, tool, onSelectTool = { editor.selectTool(it) }) { setConfigForTool(null) }
             }
         }
     }

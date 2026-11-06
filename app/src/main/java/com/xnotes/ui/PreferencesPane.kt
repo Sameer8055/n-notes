@@ -104,7 +104,6 @@ import com.xnotes.settings.HOME_SWIPES
 import com.xnotes.settings.Preferences
 import com.xnotes.settings.MaterialStyle
 import com.xnotes.settings.CornerStyle
-import com.xnotes.settings.ToolbarPosition
 import com.xnotes.settings.ToolbarSize
 import com.xnotes.settings.MaterialColourMode
 import com.xnotes.settings.SwatchRole
@@ -728,22 +727,11 @@ fun PreferencesPane(
                 if (all) SectionTitle(stringResource(R.string.pref_toolbar))
                 // The look, like the swatch count below, is one setting for both bars.
                 val look = prefs.toolbarLook
-                FieldLabel(stringResource(R.string.pref_toolbar_style))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Chip(stringResource(R.string.toolbar_docked), !look.floating) { updateHome(prefs.copy(toolbarLook = look.copy(floating = false))) }
-                    Chip(stringResource(R.string.toolbar_floating), look.floating) { updateHome(prefs.copy(toolbarLook = look.copy(floating = true))) }
-                }
-                FieldLabel(stringResource(R.string.pref_toolbar_position))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    for ((position, label) in listOf(
-                        ToolbarPosition.TOP to R.string.edge_top,
-                        ToolbarPosition.BOTTOM to R.string.edge_bottom,
-                        ToolbarPosition.LEFT to R.string.edge_left,
-                        ToolbarPosition.RIGHT to R.string.edge_right,
-                    )) {
-                        Chip(stringResource(label), look.position == position) { updateHome(prefs.copy(toolbarLook = look.copy(position = position))) }
-                    }
-                }
+                Text(
+                    "Floating toolbar · Bottom aligned",
+                    color = palette.textDim.toComposeColor(),
+                    fontSize = 13.sp,
+                )
                 FieldLabel(stringResource(R.string.pref_toolbar_size))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     for ((size, label) in listOf(

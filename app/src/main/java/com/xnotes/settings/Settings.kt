@@ -485,7 +485,34 @@ data class Settings(
                 }
                 raw.add(entries)
             }
+            // Migrate the exact pre-three-zone default layout. Existing installations store
+            // the old 11 groups explicitly, so changing ToolbarLayout.DEFAULT alone would not
+            // update them. Keep genuinely customized layouts untouched.
+            if (among == ToolbarLayout.NOTE_ITEMS && isLegacyDefaultToolbarLayout(raw)) {
+                return fallback
+            }
             return ToolbarLayout.fromRaw(raw, among, fallback)
+        }
+
+        private fun isLegacyDefaultToolbarLayout(
+            raw: List<List<Pair<String, Boolean>>>,
+        ): Boolean {
+            val legacyGroups = listOf(
+                listOf("home", "title"),
+                listOf("sidebar"),
+                listOf("pen", "dashed", "calligraphy", "speed", "taper", "highlighter", "eraser"),
+                listOf("pan", "reader", "select", "lasso", "insert_space", "screenshot"),
+                listOf("wand", "tape", "shape", "ruler", "text", "text_box", "markup"),
+                listOf("image", "table"),
+                listOf("colors"),
+                listOf("undo", "redo"),
+                listOf("page_nav", "search", "styles", "margins", "view"),
+                listOf("zoom", "fit", "zoom_lock"),
+                listOf("fullscreen"),
+            )
+            return raw.size == legacyGroups.size && raw.indices.all { index ->
+                raw[index].map { it.first } == legacyGroups[index]
+            }
         }
     }
 }

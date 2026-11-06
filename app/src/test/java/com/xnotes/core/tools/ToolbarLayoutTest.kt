@@ -12,26 +12,26 @@ class ToolbarLayoutTest {
         sections.map { s -> s.entries.map { it.item.id to it.visible } }
     private fun ToolbarLayout.items() = sections.flatMap { it.entries }.map { it.item }
 
-    @Test fun defaultMirrorsToolbarGrouping() {
+    @Test fun defaultHasThreeGappedZonesAndOnlyEverydayToolsVisible() {
         val d = ToolbarLayout.DEFAULT
-        assertEquals(11, d.sections.size)
-        assertEquals(listOf(ToolbarItem.HOME, ToolbarItem.TITLE), d.sections[0].entries.map { it.item })
+        assertEquals(3, d.sections.size)
+        assertEquals(
+            listOf(ToolbarItem.HOME, ToolbarItem.TITLE, ToolbarItem.SIDEBAR),
+            d.sections[0].entries.map { it.item },
+        )
+        assertEquals(
+            listOf(ToolbarItem.HOME, ToolbarItem.SIDEBAR),
+            d.sections[0].visibleEntries.map { it.item },
+        )
         assertEquals(
             listOf(
-                ToolbarItem.PEN, ToolbarItem.DASHED, ToolbarItem.CALLIGRAPHY, ToolbarItem.SPEED,
                 ToolbarItem.TAPER, ToolbarItem.HIGHLIGHTER, ToolbarItem.ERASER,
+                ToolbarItem.SHAPE, ToolbarItem.TAPE, ToolbarItem.PAN,
+                ToolbarItem.SELECT, ToolbarItem.LASSO,
             ),
-            d.sections[2].entries.map { it.item },
+            d.sections[1].visibleEntries.map { it.item },
         )
-        assertEquals(
-            listOf(ToolbarItem.PAN, ToolbarItem.READER, ToolbarItem.SELECT, ToolbarItem.LASSO, ToolbarItem.INSERT_SPACE, ToolbarItem.SCREENSHOT),
-            d.sections[3].entries.map { it.item },
-        )
-        assertEquals(
-            listOf(ToolbarItem.WAND, ToolbarItem.TAPE, ToolbarItem.SHAPE, ToolbarItem.RULER, ToolbarItem.TEXT, ToolbarItem.TEXT_BOX, ToolbarItem.MARKUP),
-            d.sections[4].entries.map { it.item },
-        )
-        assertEquals(listOf(ToolbarItem.FULLSCREEN), d.sections[10].entries.map { it.item })
+        assertEquals(listOf(ToolbarItem.PAGE_NAV), d.sections[2].visibleEntries.map { it.item })
     }
 
     @Test fun defaultContainsEveryItemOnce() {
@@ -118,8 +118,8 @@ class ToolbarLayoutTest {
     }
 
     @Test fun hiddenFlagSurvivesRaw() {
-        val hidden = ToolbarLayout.DEFAULT.toggleVisible(2, 0)
-        assertFalse(hidden.sections[2].entries[0].visible)
+        val hidden = ToolbarLayout.DEFAULT.toggleVisible(1, 0)
+        assertFalse(hidden.sections[1].entries[0].visible)
         assertEquals(hidden, ToolbarLayout.fromRaw(hidden.toRaw()))
     }
 

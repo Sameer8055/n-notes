@@ -84,6 +84,7 @@ internal val LocalToolbarCover = compositionLocalOf { PaddingValues(0.dp) }
 internal fun ColumnScope.ToolbarAround(
     bar: @Composable () -> Unit,
     onCover: (Double, Double, Double, Double) -> Unit,
+    allowCanvasUnderFloatingBar: Boolean = false,
     content: @Composable (floatingBar: @Composable BoxScope.() -> Unit) -> Unit,
 ) {
     val look = LocalToolbarLook.current
@@ -109,7 +110,7 @@ internal fun ColumnScope.ToolbarAround(
             if (position == ToolbarPosition.LEFT) px else 0.0,
             if (position == ToolbarPosition.TOP) px else 0.0,
             if (position == ToolbarPosition.RIGHT) px else 0.0,
-            if (position == ToolbarPosition.BOTTOM) px else 0.0,
+            if (position == ToolbarPosition.BOTTOM && !allowCanvasUnderFloatingBar) px else 0.0,
         )
     }
     val (cover, edge) = when (position) {
@@ -132,6 +133,7 @@ internal fun ColumnScope.ToolbarAround(
 internal fun ToolbarFrame(
     armed: Any?,
     trailing: (@Composable () -> Unit)? = null,
+    separateSections: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val look = LocalToolbarLook.current
@@ -140,10 +142,10 @@ internal fun ToolbarFrame(
     val palette = LocalPalette.current
     val shape = MaterialTheme.shapes.extraLarge
     // Docked, the strip fills its edge; floating, a pill only as long as its tools, up to that edge.
-    val surface = if (!look.floating) {
-        Modifier.background(palette.panel.toComposeColor())
-    } else {
-        Modifier
+    val surface = when {
+        !look.floating -> Modifier.background(palette.panel.toComposeColor())
+        separateSections -> Modifier
+        else -> Modifier
             .shadow(6.dp, shape)
             .clip(shape)
             .background(palette.panel.toComposeColor())
@@ -181,15 +183,18 @@ internal fun ToolbarFrame(
             }
         } else {
             Row(
-                stretch.height(bar.thickness).then(surface),
+                (if (separateSections) Modifier.fillMaxWidth().height(bar.thickness) else stretch.height(bar.thickness)).then(surface),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(
-                    Modifier
-                        .weight(1f, fill = !look.floating)
-                        .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = 4.dp)
-                        .toolGlide(glide, armed),
+                    (if (separateSections) {
+                        Modifier.fillMaxWidth().padding(horizontal = 4.dp)
+                    } else {
+                        Modifier
+                            .weight(1f, fill = !look.floating)
+                            .horizontalScroll(rememberScrollState())
+                            .padding(horizontal = 4.dp)
+                    }).toolGlide(glide, armed),
                     verticalAlignment = Alignment.CenterVertically,
                 ) { content() }
                 trailing?.invoke()
