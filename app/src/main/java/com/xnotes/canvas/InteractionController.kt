@@ -4997,6 +4997,7 @@ class InteractionController(
         dwellEligible = false
         bandRect = null
         lassoPoints.clear()
+        lassoErasing = false
         if (mode == PointerMode.SHOT) clearScreenshot() // a second finger turns the drag into a zoom
         clearOverscroll() // a second finger ends any bottom-pull; the elastic snaps away
         clearFlipPull() // ...and any paginated edge-pull folds back into the scroll
@@ -5128,6 +5129,7 @@ class InteractionController(
         dropConnectorDraft()
         bandRect = null
         lassoPoints.clear()
+        lassoErasing = false
         textDragRect = null
         // Cancel an in-progress capture drag; a frozen capture (mode IDLE) survives.
         if (mode == PointerMode.SHOT) { screenshotRect = null; onScreenshotMenu(null) }
