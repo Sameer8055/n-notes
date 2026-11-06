@@ -124,21 +124,7 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                     Column(
                         Modifier.fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
-                            .pointerInput(shapes.size) {
-                                var drag = 0f
-                                detectHorizontalDragGestures(
-                                    onDragStart = { drag = 0f },
-                                    onHorizontalDrag = { change, amount ->
-                                        drag += amount
-                                        if (kotlin.math.abs(drag) > 48.dp.toPx()) {
-                                            visibleShapePage = (visibleShapePage + if (drag < 0f) 1 else -1)
-                                                .coerceIn(0, (shapes.size + 11) / 12 - 1)
-                                            drag = 0f
-                                            change.consume()
-                                        }
-                                    },
-                                )
-                            }
+
                             .background(Color(0xFFF1F2F4))
                             .border(1.dp, Color(0xFFD2D4D8), RoundedCornerShape(10.dp))
                             .padding(horizontal = 7.dp, vertical = 7.dp),
@@ -156,7 +142,24 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                         var visibleShapePage by remember(shapes) { mutableStateOf(0) }
                         if (shapePages.isNotEmpty()) {
                             val page = visibleShapePage.coerceIn(0, shapePages.lastIndex)
-                            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                            Column(
+                                Modifier.pointerInput(shapes.size) {
+                                    var drag = 0f
+                                    detectHorizontalDragGestures(
+                                        onDragStart = { drag = 0f },
+                                        onHorizontalDrag = { change, amount ->
+                                            drag += amount
+                                            if (kotlin.math.abs(drag) > 48.dp.toPx()) {
+                                                visibleShapePage = (visibleShapePage + if (drag < 0f) 1 else -1)
+                                                    .coerceIn(0, shapePages.lastIndex)
+                                                drag = 0f
+                                                change.consume()
+                                            }
+                                        },
+                                    )
+                                },
+                                verticalArrangement = Arrangement.spacedBy(5.dp),
+                            ) {
                                 shapePages[page].chunked(4).forEach { rowShapes ->
                                     Row(
                                         Modifier.fillMaxWidth(),
