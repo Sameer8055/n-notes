@@ -79,7 +79,7 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
 
     DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
         Column(
-            Modifier.widthIn(min = 410.dp, max = 560.dp).padding(horizontal = 12.dp, vertical = 10.dp),
+            Modifier.widthIn(max = 560.dp).fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(
