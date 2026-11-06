@@ -86,11 +86,10 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
 
     DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
         Column(
-            Modifier.widthIn(max = 560.dp).fillMaxWidth()
+            Modifier.widthIn(min = 600.dp, max = 760.dp).fillMaxWidth()
                 .liquidGlassSurface(
                     RoundedCornerShape(22.dp),
                     LocalPalette.current.panel.toComposeColor(),
-                    edge = LocalPalette.current.border.toComposeColor(),
                     elevation = 12.dp,
                 )
                 .padding(horizontal = 14.dp, vertical = 12.dp),
@@ -128,7 +127,6 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                         Modifier.fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
                             .background(LocalPalette.current.surface.toComposeColor())
-                            .border(1.dp, LocalPalette.current.border.toComposeColor(), RoundedCornerShape(16.dp))
                             .padding(horizontal = 7.dp, vertical = 7.dp),
                         verticalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
@@ -290,7 +288,6 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                 Column(
                     Modifier.width(112.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .border(1.dp, LocalPalette.current.border.toComposeColor(), RoundedCornerShape(10.dp))
                         .padding(6.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
