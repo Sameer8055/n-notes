@@ -106,15 +106,7 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                     // Four 38 dp chips fit when possible; fall back to three on narrower windows.
                     val columns = if (maxWidth >= 175.dp) 4 else 3
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text("Outline size", color = LocalPalette.current.text.toComposeColor(), fontSize = 12.sp)
-                            Text("%.1f".format(config.strokeWidth), color = LocalPalette.current.text.toComposeColor(), fontSize = 11.sp)
-                        }
-                        SliderRow("", config.strokeWidth.toFloat(), 1f..20f) {
+                        SliderRow("Outline size", config.strokeWidth.toFloat(), 1f..20f) {
                             emit(config.copy(strokeWidth = it.toDouble()))
                         }
 
