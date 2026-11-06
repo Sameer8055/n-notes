@@ -87,6 +87,10 @@ interface ColorDropHost {
     fun endColorDrag(window: Offset)
     fun cancelColorDrag()
 
+    /** One-shot tap-to-fill mode, armed from the shape panel. */
+    val bucketFillArmed: Boolean get() = false
+    fun bucketFillAt(window: Offset) {}
+
     /** The canvas view's bounds, in window pixels. */
     fun canvasInWindow(): androidx.compose.ui.geometry.Rect
 
@@ -283,13 +287,38 @@ internal class ColorDropper(private val surface: DropSurface) {
 /** The disc a swatch drag carries and, under it, what a drop there would do; drawn over [host]'s pane. */
 @Composable
 fun ColorDropOverlay(host: ColorDropHost) {
-    val drag = host.colorDrag ?: return
+    val drag = host.colorDrag
+    val bucketArmed = host.bucketFillArmed
+    if (drag == null && !bucketArmed) return
     val ring = LocalPalette.current.text
     val origin = remember { arrayOf(Offset.Zero) }
     val tint = remember { Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG) }
-    Canvas(Modifier.fillMaxSize().onGloballyPositioned { origin[0] = it.positionInWindow() }) {
+    val overlayModifier = Modifier.fillMaxSize()
+        .onGloballyPositioned { origin[0] = it.positionInWindow() }
+        .pointerInput(host, bucketArmed) {
+            if (bucketArmed) awaitEachGesture {
+                val down = awaitFirstDown(requireUnconsumed = false)
+                val downWindow = origin[0] + down.position
+                if (host.canvasInWindow().contains(downWindow)) {
+                    down.consume()
+                    var release = down.position
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                        if (!change.pressed) {
+                            release = change.position
+                            change.consume()
+                            break
+                        }
+                        change.consume()
+                    }
+                    host.bucketFillAt(origin[0] + release)
+                }
+            }
+        }
+    Canvas(overlayModifier) {
         val canvas = host.canvasInWindow().translate(-origin[0])
-        drag.preview?.let { p ->
+        drag?.preview?.let { p ->
             clipRect(canvas.left, canvas.top, canvas.right, canvas.bottom) {
                 drawIntoCanvas { c ->
                     val r = AndroidRenderer(c.nativeCanvas)
@@ -308,8 +337,8 @@ fun ColorDropOverlay(host: ColorDropHost) {
                 }
             }
         }
-        val at = drag.pointer
-        if (at.isSpecified) {
+        val at = drag?.pointer ?: Offset.Unspecified
+        if (at.isSpecified && drag != null) {
             val local = at - origin[0]
             val radius = DISC_RADIUS.dp.toPx()
             drawCircle(drag.color.toComposeColor(), radius, local)
