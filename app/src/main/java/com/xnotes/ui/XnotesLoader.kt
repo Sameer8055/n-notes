@@ -30,10 +30,12 @@ import com.xnotes.R
 /** A short, premium brand lockup entrance: the mark settles left as its name types in. */
 @Composable
 fun XnotesLoader(modifier: Modifier = Modifier) {
-    // A restrained editorial serif gives the wordmark a premium, crafted contrast to the geometric mark.
-    val brandTypeface = remember {
-        Typeface.create("serif", Typeface.BOLD)
+    // Use the same bundled Inter family as the home sidebar for a consistent brand system.
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val interTypeface = remember(context) {
+        Typeface.createFromAsset(context.assets, "fonts/inter/regular.ttf")
     }
+    val brandTypeface = remember(interTypeface) { Typeface.create(interTypeface, Typeface.BOLD) }
     val brandFamily = remember(brandTypeface) { FontFamily(brandTypeface) }
     val logoScale = remember { Animatable(0.58f) }
     val logoShift = remember { Animatable(26f) }
