@@ -256,14 +256,26 @@ fun Backstage(
     // window already runs edge-to-edge with the system bars hidden (MainActivity.applyFullscreen).
     // Keep the luxury identity scoped to the backstage/home experience. The note editor and its
     // drawing tools continue using the user's existing theme unchanged.
-    val homePalette = remember {
+    // Home must follow the user's saved appearance settings just like the editor.
+    // Keep the established dark luxury layout, but derive its actual tones from Preferences.
+    val homePrefs = editor.preferences
+    val homePalette = remember(editor.prefsVersion, homePrefs.uiAppearance, homePrefs.materialMode,
+        homePrefs.materialSingleSeed, homePrefs.materialDualSeed, homePrefs.materialSurfaceSeed,
+        homePrefs.materialStyle, homePrefs.materialContrast) {
+        val homeSeed = when (homePrefs.materialMode) {
+            com.xnotes.settings.MaterialColourMode.SINGLE -> homePrefs.materialSingleSeed
+            com.xnotes.settings.MaterialColourMode.DUAL -> homePrefs.materialDualSeed
+            com.xnotes.settings.MaterialColourMode.SYSTEM -> homePrefs.materialDualSeed
+        }
+        val homeDark = homePrefs.uiAppearance != "light"
         Palette.material(
-            "dark",
+            if (homePrefs.uiAppearance == "oled") "oled" else if (homeDark) "dark" else "light",
             MaterialColors.seeded(
-                seed = Rgba(169, 151, 122, 255),
-                dark = true,
-                style = MaterialStyle.NEUTRAL,
-                surfaceSeed = Rgba(18, 18, 18, 255),
+                seed = homeSeed,
+                dark = homeDark,
+                style = homePrefs.materialStyle,
+                surfaceSeed = homePrefs.materialSurfaceSeed,
+                contrast = homePrefs.materialContrast,
             ),
         )
     }
