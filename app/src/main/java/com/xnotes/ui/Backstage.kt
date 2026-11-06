@@ -1015,12 +1015,19 @@ private fun CreateButton(
     modifier: Modifier = Modifier,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
+    val palette = LocalPalette.current
     val createLabel = stringResource(R.string.create_new)
     val exportLabel = stringResource(R.string.export_pdf_action)
     Box(modifier) {
         // One button throughout, so the pill grows out of the circle instead of replacing it.
         Tooltip(if (exporting) exportLabel else createLabel) {
             ExtendedFloatingActionButton(
+                modifier = Modifier.liquidGlassSurface(
+                    CircleShape,
+                    palette.surface.toComposeColor(),
+                    edge = Color.White.copy(alpha = 0.24f),
+                    elevation = 11.dp,
+                ),
                 text = { Text(exportLabel) },
                 icon = {
                     Crossfade(exporting, label = "createButtonIcon") { e ->
@@ -1030,6 +1037,8 @@ private fun CreateButton(
                 onClick = { if (exporting) onExport() else menuOpen = true },
                 expanded = exporting,
                 shape = CircleShape,
+                containerColor = Color.Transparent,
+                contentColor = palette.text.toComposeColor(),
             )
         }
         DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
