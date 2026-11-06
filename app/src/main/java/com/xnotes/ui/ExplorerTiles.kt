@@ -459,7 +459,7 @@ internal fun FolderChipTile(b: ExplorerBody, e: BrowseEntry, height: Dp = 60.dp)
     }
 }
 
-/** A folder sorted in among file cards: the same outlined square with the folder's icon where a page would be, its name under it. */
+/** A folder card with a layered, notebook-like cover preview instead of the stock folder glyph. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun FolderCardTile(b: ExplorerBody, e: BrowseEntry) {
@@ -467,19 +467,18 @@ internal fun FolderCardTile(b: ExplorerBody, e: BrowseEntry) {
     val selecting = b.host.selecting()
     val active = b.host.isSelected(e) || b.host.isDropTarget(e)
     val code = b.colorOf(e)?.let { codeTint(it, palette) }
-    val accent = palette.accent.toComposeColor()
+    val accent = code ?: palette.accent.toComposeColor()
     val shape = RoundedCornerShape(17.dp)
-    Row(
+    Column(
         Modifier
             .fillMaxWidth()
-            .heightIn(min = 76.dp)
             .alpha(if (b.host.isCut(e)) 0.4f else 1f)
             .registered(b, e)
             .liquidGlassSurface(
                 shape,
                 if (active) palette.selectionBackground.toComposeColor() else palette.surface.toComposeColor(),
-                edge = if (active) accent else (code ?: palette.border.toComposeColor()),
-                elevation = if (active) 10.dp else 5.dp,
+                edge = if (active) palette.accent.toComposeColor() else (code ?: palette.border.toComposeColor()),
+                elevation = if (active) 9.dp else 5.dp,
             )
             .combinedClickable(
                 interactionSource = remember { MutableInteractionSource() },
@@ -487,54 +486,112 @@ internal fun FolderCardTile(b: ExplorerBody, e: BrowseEntry) {
                 onClick = { b.host.onClick(e) },
                 onLongClick = { b.host.onLongClick(e) },
             )
-            .padding(horizontal = 15.dp, vertical = 11.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .padding(7.dp),
     ) {
         Box(
-            Modifier
-                .size(48.dp)
-                .clip(RoundedCornerShape(14.dp))
+            Modifier.fillMaxWidth()
+                .height(94.dp)
+                .clip(RoundedCornerShape(12.dp))
                 .background(
                     Brush.linearGradient(
                         listOf(
-                            (code ?: palette.accent.toComposeColor()).copy(alpha = 0.22f),
-                            (code ?: palette.accent.toComposeColor()).copy(alpha = 0.08f),
+                            accent.copy(alpha = if (active) 0.34f else 0.22f),
+                            palette.surfaceHi.toComposeColor().copy(alpha = 0.96f),
+                            accent.copy(alpha = if (active) 0.16f else 0.08f),
                         ),
                     ),
                 ),
             contentAlignment = Alignment.Center,
         ) {
+            // Layered paper previews give the folder a recognisable cover, not a generic app icon.
+            Box(
+                Modifier.size(61.dp, 68.dp).offset(x = 12.dp, y = 5.dp)
+                    .clip(RoundedCornerShape(7.dp))
+                    .background(Color.White.copy(alpha = 0.20f))
+                    .border(1.dp, Color.White.copy(alpha = 0.20f), RoundedCornerShape(7.dp)),
+            )
+            Box(
+                Modifier.size(61.dp, 68.dp).offset(x = 5.dp, y = 2.dp)
+                    .clip(RoundedCornerShape(7.dp))
+                    .background(palette.paper.toComposeColor().copy(alpha = 0.72f))
+                    .border(1.dp, palette.paperBorder.toComposeColor().copy(alpha = 0.65f), RoundedCornerShape(7.dp)),
+            )
+            Box(
+                Modifier.size(61.dp, 68.dp).offset(x = (-2).dp, y = (-1).dp)
+                    .clip(RoundedCornerShape(7.dp))
+                    .background(palette.paper.toComposeColor().copy(alpha = 0.94f))
+                    .border(1.dp, palette.paperBorder.toComposeColor(), RoundedCornerShape(7.dp)),
+            ) {
+                Column(
+                    Modifier.fillMaxWidth().padding(horizontal = 9.dp, vertical = 13.dp),
+                    verticalArrangement = Arrangement.spacedBy(5.dp),
+                ) {
+                    repeat(4) { index ->
+                        Box(
+                            Modifier.fillMaxWidth(if (index == 3) 0.58f else 0.82f)
+                                .height(2.dp)
+                                .clip(CircleShape)
+                                .background(palette.textDim.toComposeColor().copy(alpha = 0.22f)),
+                        )
+                    }
+                }
+            }
             Icon(
                 XnotesIcons.folder,
                 contentDescription = null,
-                tint = code ?: palette.text.toComposeColor(),
-                modifier = Modifier.size(27.dp),
+                tint = accent,
+                modifier = Modifier.size(43.dp).align(Alignment.BottomEnd).padding(end = 10.dp, bottom = 7.dp),
             )
+            val count = b.counts[e.documentUri]
+            if (count != null) {
+                Box(
+                    Modifier.align(Alignment.TopEnd).padding(7.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(palette.bg.toComposeColor().copy(alpha = 0.72f))
+                        .padding(horizontal = 7.dp, vertical = 3.dp),
+                ) {
+                    Text(
+                        itemsLabel(b.words, count),
+                        color = palette.text.toComposeColor(),
+                        fontSize = 9.5.sp,
+                        maxLines = 1,
+                    )
+                }
+            }
+            if (active) {
+                Box(Modifier.fillMaxSize().background(palette.selectionBackground.toComposeColor().copy(alpha = 0.12f)))
+            }
         }
-        Column(
-            Modifier.weight(1f).padding(start = 14.dp),
-            verticalArrangement = Arrangement.spacedBy(3.dp),
+
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 43.dp).padding(start = 5.dp, top = 7.dp, bottom = 2.dp, end = 1.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                b.label(e),
-                color = palette.text.toComposeColor(),
-                fontSize = 14.5.sp,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                b.metaText(e),
-                color = palette.textDim.toComposeColor(),
-                fontSize = 12.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-        if (selecting) {
-            CheckRing(b.host.isSelected(e), Modifier.padding(start = 8.dp))
-        } else {
-            EntryMenuButton(b, e, palette.textDim.toComposeColor())
+            Column(
+                Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    b.label(e),
+                    color = palette.text.toComposeColor(),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    b.metaText(e),
+                    color = palette.textDim.toComposeColor(),
+                    fontSize = 11.5.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            if (selecting) {
+                CheckRing(b.host.isSelected(e), Modifier.padding(start = 6.dp))
+            } else {
+                EntryMenuButton(b, e, palette.textDim.toComposeColor())
+            }
         }
     }
 }
