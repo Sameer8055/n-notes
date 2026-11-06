@@ -3,10 +3,11 @@ package com.xnotes.core.model
 import com.xnotes.core.shapes.ShapeKind
 
 /**
- * How both erasers, on both canvases, treat fills and tape: one the eraser touches at all goes whole,
- * whatever else it touches with it. Lines are ink, shape outlines, connectors and drawn text, and go
- * whole or are cut as the eraser's mode says; a filled shape touched inside but not on its outline
- * loses just its fill. Pictures, text boxes and locked items are never the eraser's.
+ * How the circular stroke/area eraser treats fills and tape on both canvases: one it touches at
+ * all goes whole, whatever else it touches with it. Lines are ink, shape outlines, connectors and
+ * drawn text, and go whole or are cut as the circular eraser's mode says; a filled shape touched
+ * inside but not on its outline loses just its fill. Pictures, text boxes and locked items are
+ * excluded from circular erasing. Freeform lasso erasing is handled separately.
  */
 object EraseRule {
 
