@@ -153,7 +153,12 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                                 Modifier.size(28.dp).clip(RoundedCornerShape(5.dp))
                                     .background(color.toComposeColor())
                                     .border(1.dp, LocalPalette.current.border.toComposeColor(), RoundedCornerShape(5.dp))
-                                    .clickable { editor.setSwatchColor(editor.hostActiveColorIndex, color) },
+                                    .clickable {
+                                        editor.setSwatchColor(editor.hostActiveColorIndex, color)
+                                        if (!connecting && chip.kind.isClosed && config.fill) {
+                                            emit(config.copy(fillColor = color))
+                                        }
+                                    },
                             )
                         }
                     }
