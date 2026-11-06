@@ -576,10 +576,8 @@ private fun BackstageSidebar(modifier: Modifier, editor: Editor, nav: SidebarNav
             Modifier.fillMaxWidth().padding(start = 16.dp, end = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            val brandTypeface = remember {
-                runCatching { Typeface.createFromAsset(brandContext.assets, "fonts/montserrat/regular.ttf") }
-                    .getOrElse { Typeface.create("sans-serif", Typeface.NORMAL) }
-            }
+            // Match the startup wordmark: a quiet editorial serif beside the geometric app mark.
+            val brandTypeface = remember { Typeface.create("serif", Typeface.BOLD) }
             Image(
                 painter = painterResource(R.drawable.sameer_notes_logo),
                 contentDescription = "Sameer Notes",
@@ -591,8 +589,8 @@ private fun BackstageSidebar(modifier: Modifier, editor: Editor, nav: SidebarNav
                 color = palette.text.toComposeColor(),
                 fontFamily = FontFamily(brandTypeface),
                 fontWeight = FontWeight.Bold,
-                fontSize = 17.sp,
-                letterSpacing = (-0.25).sp,
+                fontSize = 18.sp,
+                letterSpacing = 0.05.sp,
                 maxLines = 1,
             )
             Spacer(Modifier.weight(1f))
