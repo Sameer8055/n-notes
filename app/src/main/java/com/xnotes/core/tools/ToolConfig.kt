@@ -11,7 +11,9 @@ import com.xnotes.core.model.TapePattern
  */
 enum class EraseMode(val id: String) {
     STROKE("stroke"),
-    AREA("area");
+    AREA("area"),
+    /** Remove complete ink strokes selected by a freeform lasso loop. */
+    LASSO("lasso");
 
     companion object {
         fun fromId(id: String?): EraseMode = entries.firstOrNull { it.id == id } ?: STROKE
