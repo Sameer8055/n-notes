@@ -326,8 +326,9 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                     }
                     // Show the active custom ink explicitly; otherwise no built-in swatch
                     // can communicate which custom colour is currently selected.
-                    if (ink !in paletteColors) {
-                        val customColor = ink.toComposeColor()
+                    val activeShapeColor = if (config.fill) config.fillColor ?: ink else ink
+                    if (activeShapeColor !in paletteColors) {
+                        val customColor = activeShapeColor.toComposeColor()
                         val customCheck = if (
                             customColor.red * 0.299f + customColor.green * 0.587f + customColor.blue * 0.114f > 0.55f
                         ) Color.Black else Color.White
