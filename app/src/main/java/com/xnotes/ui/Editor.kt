@@ -7048,6 +7048,10 @@ class Editor(context: Context, val pane: Pane = Pane.PRIMARY) : ToolPopupHost, S
         colorDropper.end(window)
     }
 
+    override fun cancelBucketFill() {
+        bucketFillMode = false
+    }
+
     override val colorDrag: ColorDrag? get() = colorDropper.drag
 
     override fun beginColorDrag(color: Rgba, window: Offset) = colorDropper.begin(color, window)
