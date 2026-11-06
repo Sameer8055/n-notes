@@ -7,6 +7,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -43,6 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -97,9 +99,9 @@ fun AboutPane() {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // The angular "n" mark, drawn from the launcher-icon path so it matches the app icon.
-            NLogo(Modifier.size(72.dp), color = palette.accent.toComposeColor())
+            Image(painterResource(R.drawable.sameer_notes_logo), contentDescription = "Sameer Notes logo", modifier = Modifier.size(72.dp))
             Spacer(Modifier.height(12.dp))
-            Text("n-notes", color = palette.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 24.sp)
+            Text("Sameer Notes", color = palette.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 24.sp)
             Spacer(Modifier.height(5.dp))
             Text(
                 "A customized fork of xnotes, a handwriting notes and sketching app for Android",
@@ -122,7 +124,7 @@ fun AboutPane() {
 
             Spacer(Modifier.height(28.dp))
             // The fork's own feedback channel: issues land on the n-notes repo.
-            Text("Help make n-notes better", color = palette.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text("Help make Sameer Notes better", color = palette.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 16.sp)
             Spacer(Modifier.height(14.dp))
             Row(
                 Modifier.fillMaxWidth().height(IntrinsicSize.Min),
@@ -152,7 +154,7 @@ fun AboutPane() {
                 Modifier.clickable { open(N_REPO_URL) },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Enjoying n-notes? ", color = palette.textDim.toComposeColor(), fontSize = 12.sp)
+                Text("Enjoying Sameer Notes? ", color = palette.textDim.toComposeColor(), fontSize = 12.sp)
                 Text("Star it on GitHub", color = palette.accent.toComposeColor(), fontSize = 12.sp, fontWeight = FontWeight.Medium)
             }
         }
@@ -215,7 +217,7 @@ private fun RowScope.AboutButton(icon: ImageVector, label: String, onClick: () -
 private fun copyVersion(ctx: Context, version: String) {
     runCatching {
         val clip = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        clip.setPrimaryClip(ClipData.newPlainText("n-notes version", "n-notes $version"))
+        clip.setPrimaryClip(ClipData.newPlainText("Sameer Notes version", "Sameer Notes $version"))
         Toast.makeText(ctx, "Version copied", Toast.LENGTH_SHORT).show()
     }
 }
@@ -234,7 +236,7 @@ private fun bugReportUrl(issuesUrl: String, version: String): String {
 
 
         ---
-        n-notes ${version.ifEmpty { "(unknown)" }}
+        Sameer Notes ${version.ifEmpty { "(unknown)" }}
         ${Build.MANUFACTURER} ${Build.MODEL}
         Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})
     """.trimIndent()
