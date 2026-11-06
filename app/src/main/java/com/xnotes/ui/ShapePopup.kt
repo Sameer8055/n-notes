@@ -124,9 +124,8 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                     Column(
                         Modifier.fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
-
-                            .background(Color(0xFFF1F2F4))
-                            .border(1.dp, Color(0xFFD2D4D8), RoundedCornerShape(10.dp))
+                            .background(LocalPalette.current.surface.toComposeColor())
+                            .border(1.dp, LocalPalette.current.border.toComposeColor(), RoundedCornerShape(16.dp))
                             .padding(horizontal = 7.dp, vertical = 7.dp),
                         verticalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
