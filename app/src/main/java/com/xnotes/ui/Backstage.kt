@@ -482,7 +482,6 @@ private fun BackstageContent(
                         val placeable = measurable.measure(constraints.copy(minWidth = w, maxWidth = w))
                         layout(w, placeable.height) { placeable.place(0, 0) }
                     }
-                    .background(palette.panel.toComposeColor())
                     .clipToBounds(),
             ) { measurables, constraints ->
                 val shown = measurables[if (railed) 0 else 1].measure(Constraints(maxHeight = constraints.maxHeight, minHeight = constraints.maxHeight))
@@ -538,7 +537,7 @@ private class SidebarNav(
 @Composable
 private fun BackstageSidebar(modifier: Modifier, editor: Editor, nav: SidebarNav, onCollapse: () -> Unit) {
     val palette = LocalPalette.current
-    Column(modifier.fillMaxHeight().background(palette.panel.toComposeColor()).padding(vertical = 12.dp)) {
+    Column(modifier.fillMaxHeight().liquidGlassSurface(MaterialTheme.shapes.extraLarge, palette.panel.toComposeColor(), elevation = 12.dp).padding(vertical = 12.dp)) {
         Row(
             Modifier.fillMaxWidth().padding(start = 18.dp, end = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -598,7 +597,7 @@ private fun BackstageSidebar(modifier: Modifier, editor: Editor, nav: SidebarNav
 private fun BackstageRail(modifier: Modifier, nav: SidebarNav, onExpand: () -> Unit) {
     val palette = LocalPalette.current
     Column(
-        modifier.fillMaxHeight().background(palette.panel.toComposeColor()).padding(vertical = 12.dp),
+        modifier.fillMaxHeight().liquidGlassSurface(MaterialTheme.shapes.extraLarge, palette.panel.toComposeColor(), elevation = 12.dp).padding(vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Tooltip(stringResource(R.string.expand_sidebar), side = TipSide.RIGHT) {
