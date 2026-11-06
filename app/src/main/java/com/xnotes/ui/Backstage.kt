@@ -87,6 +87,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.graphicsLayer
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -2566,11 +2570,42 @@ private fun PrimaryButton(icon: ImageVector, label: String, modifier: Modifier =
     val accent = palette.accent.toComposeColor()
     val onAccent = palette.selectionForeground.toComposeColor()
     val shape = MaterialTheme.shapes.medium
+    val pressScale by animateFloatAsState(
+        targetValue = if (pressed) 0.975f else 1f,
+        animationSpec = tween(durationMillis = 120),
+        label = "primaryButtonPress",
+    )
+    val glassTop = Color.White.copy(alpha = if (pressed) 0.17f else 0.10f)
+    val glassBottom = palette.surface.toComposeColor().copy(alpha = if (palette.isDark) 0.30f else 0.16f)
     Column(
         modifier
+            .shadow(if (pressed) 2.dp else 5.dp, shape)
+            .graphicsLayer {
+                scaleX = pressScale
+                scaleY = pressScale
+                translationY = if (pressed) 1.dp.toPx() else 0f
+            }
             .clip(shape)
-            .background(if (pressed) palette.selectionBackground.toComposeColor() else Color.Transparent)
-            .border(1.dp, if (pressed) accent else palette.border.toComposeColor(), shape)
+            .background(
+                brush = Brush.verticalGradient(listOf(
+                    if (pressed) palette.selectionBackground.toComposeColor() else glassTop,
+                    if (pressed) palette.selectionBackground.toComposeColor() else glassBottom,
+                )),
+            )
+            .drawBehind {
+                // A restrained top-edge reflection gives the action tile a glass lens finish.
+                drawLine(
+                    color = Color.White.copy(alpha = if (pressed) 0.20f else 0.13f),
+                    start = Offset(size.width * 0.16f, 1.dp.toPx()),
+                    end = Offset(size.width * 0.84f, 1.dp.toPx()),
+                    strokeWidth = 1.dp.toPx(),
+                )
+            }
+            .border(
+                width = 1.dp,
+                color = if (pressed) accent else Color.White.copy(alpha = if (palette.isDark) 0.18f else 0.38f),
+                shape = shape,
+            )
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
             .padding(vertical = 14.dp, horizontal = 22.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
