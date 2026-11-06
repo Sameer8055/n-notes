@@ -480,10 +480,12 @@ class SettingsTest {
         assertEquals(CornerStyle.ROUNDED, Preferences.fromJson(JSONObject().put("corner_style", "blobby")).cornerStyle)
     }
 
-    @Test fun toolbarLookRoundTripsAndDefaults() {
+    @Test fun toolbarLookAlwaysLoadsAsFloatingBottomAndPreservesSize() {
+        // The editor intentionally normalizes old top/side/docked preferences to its fixed
+        // floating bottom toolbar. Size remains a user preference.
         for (size in ToolbarSize.entries) for (position in ToolbarPosition.entries) for (floating in listOf(false, true)) {
             val p = Preferences(toolbarLook = ToolbarLook(position, size, floating))
-            assertEquals(p, Preferences.fromJson(p.toJson()))
+            assertEquals(ToolbarLook(ToolbarPosition.BOTTOM, size, true), Preferences.fromJson(p.toJson()).toolbarLook)
         }
         val junk = JSONObject().put("toolbar_size", "huge").put("toolbar_position", "middle")
         assertEquals(ToolbarLook(), Preferences.fromJson(junk).toolbarLook)
