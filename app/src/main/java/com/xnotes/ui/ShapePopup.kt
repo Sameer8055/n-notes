@@ -104,6 +104,7 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
         expanded = true,
         onDismissRequest = onDismiss,
         modifier = Modifier.clip(RoundedCornerShape(26.dp)),
+        frameless = true,
     ) {
         Column(
             Modifier.widthIn(min = 410.dp, max = 560.dp).fillMaxWidth()
