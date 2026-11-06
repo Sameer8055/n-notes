@@ -11,6 +11,7 @@ import com.xnotes.core.model.ShapeItem
 import com.xnotes.core.model.ShapeLabel
 import com.xnotes.core.model.Stroke
 import com.xnotes.core.model.TextStyle
+import com.xnotes.core.model.TextItem
 import com.xnotes.core.pal.FontFace
 import com.xnotes.core.shapes.ShapeKind
 import com.xnotes.core.stroke.Sample
@@ -131,6 +132,27 @@ class EraseSessionTest {
         assertNull(session.erase(5.0, 5.0, 20.0, area = true))
         assertEquals(listOf<CanvasItem>(img), doc.items)
     }
+
+    @Test fun lassoEraseRemovesTextImagesShapesAndInkAndUndoRestoresTheirOrder() {
+        val text = TextItem(Pt(0.0, 0.0), width = 100.0, text = "Placed text", measurer = FakeTextMeasurer())
+        val img = image(0.0, 0.0)
+        val shape = ShapeItem.fill(listOf(square(0.0, 0.0, 100.0)), sky)
+        val ink = line(100.0, y = 10.0)
+        val locked = image(0.0, 0.0).apply { locked = true }
+        val before = listOf<CanvasItem>(text, img, shape, ink, locked)
+        val doc = docOf(*before.toTypedArray())
+        val session = EraseSession(doc)
+
+        session.eraseItems(before)
+        assertEquals(listOf<CanvasItem>(locked), doc.items)
+
+        val command = session.buildCommand()!!
+        command.undo()
+        assertEquals(before, doc.items)
+        command.redo()
+        assertEquals(listOf<CanvasItem>(locked), doc.items)
+    }
+
 
     @Test fun aDragThatRemovesSeveralStrokesIsOneEdit() {
         val a = line(60.0, y = 0.0)
