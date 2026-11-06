@@ -1,5 +1,7 @@
 package com.xnotes.ui.theme
 
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.material.ripple.ripple
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -20,7 +22,17 @@ val LocalPalette = staticCompositionLocalOf { Palette.DEFAULT }
 @Composable
 fun XnotesTheme(palette: Palette, corners: CornerStyle = CornerStyle.ROUNDED, content: @Composable () -> Unit) {
     val shapes = remember(corners) { uiShapes(corners) }
-    CompositionLocalProvider(LocalPalette provides palette) {
+    // One restrained, liquid-glass touch response for every standard Compose button and
+    // clickable surface in the app. The pale specular ripple reads like light moving through
+    // glass while leaving each control's own shape, size, colours, and click handling intact.
+    val liquidTouch = ripple(
+        bounded = true,
+        color = Color.White.copy(alpha = if (palette.isDark) 0.24f else 0.30f),
+    )
+    CompositionLocalProvider(
+        LocalPalette provides palette,
+        LocalIndication provides liquidTouch,
+    ) {
         MaterialTheme(colorScheme = palette.composeColorScheme(), shapes = shapes, content = content)
     }
 }
