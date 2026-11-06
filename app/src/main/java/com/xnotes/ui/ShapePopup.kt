@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -79,7 +80,7 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
 
     DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
         Column(
-            Modifier.widthIn(min = 410.dp, max = 560.dp).padding(horizontal = 12.dp, vertical = 10.dp),
+            Modifier.widthIn(max = 560.dp).fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(
@@ -101,35 +102,40 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.Top,
             ) {
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(7.dp)) {
-                    SliderRow("Outline size", config.strokeWidth.toFloat(), 1f..20f) {
-                        emit(config.copy(strokeWidth = it.toDouble()))
-                    }
+                BoxWithConstraints(Modifier.weight(1f)) {
+                    // A phone-sized menu leaves roughly 150–180 dp beside the colour panel.
+                    // Four 38 dp chips fit when possible; fall back to three on narrower windows.
+                    val columns = if (maxWidth >= 175.dp) 4 else 3
+                    Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                        SliderRow("Outline size", config.strokeWidth.toFloat(), 1f..20f) {
+                            emit(config.copy(strokeWidth = it.toDouble()))
+                        }
 
-                    Column(
-                        Modifier.fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFF1F2F4))
-                            .border(1.dp, Color(0xFFD2D4D8), RoundedCornerShape(12.dp))
-                            .padding(horizontal = 7.dp, vertical = 7.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        ShapePager(
-                            config, editor.hostHiddenShapes, editor.hostShapeOrder,
-                            onPage = { emit(config.copy(shapePage = it)) },
-                            onPick = { emit(config.choose(it)) },
-                        )
-                        ConnectorPager(
-                            config, editor.hostHiddenShapes, editor.hostShapeOrder,
-                            onPage = { emit(config.copy(connectorPage = it)) },
-                            onPick = { emit(config.choose(it)) },
-                        )
-                    }
+                        Column(
+                            Modifier.fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFFF1F2F4))
+                                .border(1.dp, Color(0xFFD2D4D8), RoundedCornerShape(12.dp))
+                                .padding(horizontal = 7.dp, vertical = 7.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            ShapePager(
+                                config, editor.hostHiddenShapes, editor.hostShapeOrder, columns,
+                                onPage = { emit(config.copy(shapePage = it)) },
+                                onPick = { emit(config.choose(it)) },
+                            )
+                            ConnectorPager(
+                                config, editor.hostHiddenShapes, editor.hostShapeOrder, columns,
+                                onPage = { emit(config.copy(connectorPage = it)) },
+                                onPick = { emit(config.choose(it)) },
+                            )
+                        }
 
-                    if (!connecting && chip.kind.isClosed) {
-                        ToggleRow("Fill shape", config.fill) { emit(config.copy(fill = it)) }
-                        if (config.fill) {
-                            FillColourRow(config.fillColor, ink, editor) { emit(config.copy(fillColor = it)) }
+                        if (!connecting && chip.kind.isClosed) {
+                            ToggleRow("Fill shape", config.fill) { emit(config.copy(fill = it)) }
+                            if (config.fill) {
+                                FillColourRow(config.fillColor, ink, editor) { emit(config.copy(fillColor = it)) }
+                            }
                         }
                     }
                 }
@@ -228,14 +234,14 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
  * pages Preferences hides, in its order. The remembered page is an index into every page, hidden ones too.
  */
 @Composable
-private fun ShapePager(config: ShapeConfig, hidden: Set<String>, order: List<String>, onPage: (Int) -> Unit, onPick: (ShapePreset) -> Unit) {
+private fun ShapePager(config: ShapeConfig, hidden: Set<String>, order: List<String>, columns: Int, onPage: (Int) -> Unit, onPick: (ShapePreset) -> Unit) {
     val pages = ShapePresets.shown(hidden, order)
     if (pages.isEmpty()) return
     val all = ShapePresets.pages.map { it.key }
     val initial = pages.indexOfFirst { it.key == all.getOrNull(config.shapePage) }.coerceAtLeast(0)
-    val rows = pages.maxOf { (it.presets.size + ShapePresets.COLUMNS - 1) / ShapePresets.COLUMNS }
+    val rows = pages.maxOf { (it.presets.size + columns - 1) / columns }
     ChipPager(pages.size, initial, { pageLabel(pages[it]) }, rows, { onPage(all.indexOf(pages[it].key)) }) { page ->
-        for (row in pages[page].presets.chunked(ShapePresets.COLUMNS)) {
+        for (row in pages[page].presets.chunked(columns)) {
             Row(horizontalArrangement = Arrangement.spacedBy(GAP.dp)) {
                 for (p in row) KindChip(ShapeIcons.of(p), chipLabel(p), selected = p.key == config.preset, latex = chipLatex(p)) { onPick(p) }
             }
@@ -245,13 +251,13 @@ private fun ShapePager(config: ShapeConfig, hidden: Set<String>, order: List<Str
 
 /** The connector chips, [ConnectorPresets.COLUMNS] to a row, two rows to a page, without those Preferences hides, in its order. */
 @Composable
-private fun ConnectorPager(config: ShapeConfig, hidden: Set<String>, order: List<String>, onPage: (Int) -> Unit, onPick: (ConnectorPreset) -> Unit) {
+private fun ConnectorPager(config: ShapeConfig, hidden: Set<String>, order: List<String>, columns: Int, onPage: (Int) -> Unit, onPick: (ConnectorPreset) -> Unit) {
     val pages = ConnectorPresets.shown(hidden, order)
     if (pages.isEmpty()) return
     val all = ConnectorPresets.pages.map { it.key }
     val initial = pages.indexOfFirst { it.key == all.getOrNull(config.connectorPage) }.coerceAtLeast(0)
     ChipPager(pages.size, initial, { connectorPageLabel(pages[it]) }, ConnectorPresets.ROWS, { onPage(all.indexOf(pages[it].key)) }) { page ->
-        for (row in pages[page].presets.chunked(ConnectorPresets.COLUMNS)) {
+        for (row in pages[page].presets.chunked(columns)) {
             Row(horizontalArrangement = Arrangement.spacedBy(GAP.dp)) {
                 for (p in row) KindChip(ShapeIcons.connector(p), stringResource(connectorLabel(p.key)), selected = p.key == config.preset) { onPick(p) }
             }
