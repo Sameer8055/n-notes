@@ -200,6 +200,7 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
         expanded = true,
         onDismissRequest = onDismiss,
         modifier = Modifier.clip(RoundedCornerShape(26.dp)),
+        frameless = true,
     ) {
         Column(
             Modifier.widthIn(min = 410.dp, max = 560.dp)
@@ -1168,6 +1169,7 @@ fun EraserConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
         expanded = true,
         onDismissRequest = onDismiss,
         modifier = Modifier.clip(RoundedCornerShape(26.dp)),
+        frameless = true,
     ) {
         Column(
             Modifier.widthIn(min = 410.dp, max = 560.dp)
@@ -1538,18 +1540,24 @@ internal fun DropdownMenu(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     properties: PopupProperties = PopupProperties(focusable = true),
+    frameless: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val palette = LocalPalette.current
     // An armed eyedropper hides the whole stack so the screen is free to touch; it comes back after the pick.
+    // Floating tool panels draw their own rounded glass surface. Keep Material's popup host
+    // completely transparent and elevation-free so its rectangular menu frame cannot show around it.
     androidx.compose.material3.DropdownMenu(
         expanded = expanded && Eyedropper.target == null,
         onDismissRequest = onDismissRequest,
         modifier = modifier,
         offset = LocalMenuOffset.current,
         properties = properties,
-        containerColor = palette.menuBg.toComposeColor(),
-        border = BorderStroke(1.dp, palette.border.toComposeColor()),
+        shape = if (frameless) RoundedCornerShape(26.dp) else MaterialTheme.shapes.extraSmall,
+        containerColor = if (frameless) Color.Transparent else palette.menuBg.toComposeColor(),
+        tonalElevation = if (frameless) 0.dp else 3.dp,
+        shadowElevation = if (frameless) 0.dp else 6.dp,
+        border = if (frameless) null else BorderStroke(1.dp, palette.border.toComposeColor()),
     ) {
         // A menu or tip opened from inside this one hangs off its own row, not beside the rail.
         CompositionLocalProvider(LocalMenuOffset provides DpOffset.Zero, LocalTipSide provides TipSide.BELOW) { content() }
