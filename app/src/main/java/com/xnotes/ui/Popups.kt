@@ -198,7 +198,11 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
 
     DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
         Column(
-            Modifier.widthIn(min = 410.dp, max = 560.dp).padding(horizontal = 12.dp, vertical = 10.dp),
+            Modifier.widthIn(min = 410.dp, max = 560.dp)
+                .clip(RoundedCornerShape(22.dp))
+                .background(LocalPalette.current.panel.toComposeColor())
+                .border(1.dp, LocalPalette.current.border.toComposeColor(), RoundedCornerShape(22.dp))
+                .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(
