@@ -467,47 +467,73 @@ internal fun FolderCardTile(b: ExplorerBody, e: BrowseEntry) {
     val active = b.host.isSelected(e) || b.host.isDropTarget(e)
     val code = b.colorOf(e)?.let { codeTint(it, palette) }
     val accent = palette.accent.toComposeColor()
-    val shape = MaterialTheme.shapes.medium
-    Column(
+    val shape = RoundedCornerShape(17.dp)
+    Row(
         Modifier
+            .fillMaxWidth()
+            .heightIn(min = 76.dp)
             .alpha(if (b.host.isCut(e)) 0.4f else 1f)
             .registered(b, e)
+            .liquidGlassSurface(
+                shape,
+                if (active) palette.selectionBackground.toComposeColor() else palette.surface.toComposeColor(),
+                edge = if (active) accent else (code ?: palette.border.toComposeColor()),
+                elevation = if (active) 10.dp else 5.dp,
+            )
             .combinedClickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = { b.host.onClick(e) },
                 onLongClick = { b.host.onLongClick(e) },
-            ),
+            )
+            .padding(horizontal = 15.dp, vertical = 11.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
-            Modifier.fillMaxWidth().aspectRatio(if (b.view.thumb == ThumbShape.PAGE) 100f / 141f else 1f)
-                .liquidGlassSurface(
-                    shape,
-                    if (active) palette.selectionBackground.toComposeColor() else palette.surface.toComposeColor(),
-                    edge = if (active) accent else (code ?: palette.border.toComposeColor()),
-                    elevation = 8.dp,
+            Modifier
+                .size(48.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(
+                    Brush.linearGradient(
+                        listOf(
+                            (code ?: palette.accent.toComposeColor()).copy(alpha = 0.22f),
+                            (code ?: palette.accent.toComposeColor()).copy(alpha = 0.08f),
+                        ),
+                    ),
                 ),
             contentAlignment = Alignment.Center,
         ) {
-            StackedTileSurface(RoundedCornerShape(12.dp)) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Icon(XnotesIcons.folder, null, tint = code ?: palette.textDim.toComposeColor(), modifier = Modifier.size(44.dp))
-                }
-            }
-            if (selecting) CheckRing(b.host.isSelected(e), Modifier.align(Alignment.TopStart).padding(8.dp))
+            Icon(
+                XnotesIcons.folder,
+                contentDescription = null,
+                tint = code ?: palette.text.toComposeColor(),
+                modifier = Modifier.size(27.dp),
+            )
         }
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .heightIn(min = 50.dp)
-                .padding(start = 10.dp, end = 2.dp, top = 7.dp, bottom = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
+            Modifier.weight(1f).padding(start = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(3.dp),
         ) {
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(b.label(e), color = palette.text.toComposeColor(), fontSize = 13.5.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(b.metaText(e), color = palette.textDim.toComposeColor(), fontSize = 11.5.sp, maxLines = 1)
-            }
-            if (!selecting) EntryMenuButton(b, e, palette.textDim.toComposeColor())
+            Text(
+                b.label(e),
+                color = palette.text.toComposeColor(),
+                fontSize = 14.5.sp,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                b.metaText(e),
+                color = palette.textDim.toComposeColor(),
+                fontSize = 12.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        if (selecting) {
+            CheckRing(b.host.isSelected(e), Modifier.padding(start = 8.dp))
+        } else {
+            EntryMenuButton(b, e, palette.textDim.toComposeColor())
         }
     }
 }
