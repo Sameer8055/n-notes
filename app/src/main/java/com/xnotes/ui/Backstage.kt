@@ -257,10 +257,10 @@ fun Backstage(
         Palette.material(
             "dark",
             MaterialColors.seeded(
-                seed = Rgba(198, 164, 104, 255),
+                seed = Rgba(169, 151, 122, 255),
                 dark = true,
                 style = MaterialStyle.NEUTRAL,
-                surfaceSeed = Rgba(20, 19, 18, 255),
+                surfaceSeed = Rgba(18, 18, 18, 255),
             ),
         )
     }
