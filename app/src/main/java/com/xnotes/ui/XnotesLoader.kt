@@ -43,11 +43,11 @@ fun XnotesLoader(modifier: Modifier = Modifier) {
     val wordProgress = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
-        logoScale.animateTo(1.08f, tween(360, easing = FastOutSlowInEasing))
-        logoScale.animateTo(0.94f, tween(220, easing = FastOutSlowInEasing))
-        logoShift.animateTo(0f, tween(420, easing = FastOutSlowInEasing))
-        wordAlpha.animateTo(1f, tween(120))
-        wordProgress.animateTo(1f, tween(620, easing = FastOutSlowInEasing))
+        logoScale.animateTo(1.08f, tween(300, easing = FastOutSlowInEasing))
+        logoScale.animateTo(0.94f, tween(160, easing = FastOutSlowInEasing))
+        logoShift.animateTo(0f, tween(300, easing = FastOutSlowInEasing))
+        wordAlpha.animateTo(1f, tween(100))
+        wordProgress.animateTo(1f, tween(480, easing = FastOutSlowInEasing))
     }
 
     val title = "Sameer Notes"
