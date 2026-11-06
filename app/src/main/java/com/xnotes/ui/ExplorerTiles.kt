@@ -698,7 +698,7 @@ internal fun HomeShelves(
     onOpenPin: (com.xnotes.settings.PinnedFolder) -> Unit,
 ) {
     val palette = LocalPalette.current
-    Column(Modifier.fillMaxWidth().padding(bottom = 4.dp)) {
+    Column(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 8.dp)) {
         if (recents.isNotEmpty()) {
             ShelfTitle(stringResource(R.string.recent), stringResource(R.string.see_all), onSeeAll)
             LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -718,23 +718,28 @@ internal fun HomeShelves(
         if (pins.isNotEmpty()) {
             androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 pins.forEach { pin ->
-                    val shape = MaterialTheme.shapes.small
+                    val shape = RoundedCornerShape(14.dp)
                     Row(
-                        Modifier.height(44.dp).clip(shape).border(1.dp, palette.border.toComposeColor(), shape)
-                            .clickable { onOpenPin(pin) }.padding(start = 12.dp, end = 16.dp),
+                        Modifier.height(46.dp).clip(shape)
+                            .background(palette.surface.toComposeColor())
+                            .border(1.dp, palette.accent.toComposeColor().copy(alpha = 0.22f), shape)
+                            .clickable { onOpenPin(pin) }.padding(start = 13.dp, end = 17.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
-                        Icon(XnotesIcons.folder, null, tint = palette.textDim.toComposeColor(), modifier = Modifier.size(20.dp))
-                        Text(pin.name, color = palette.text.toComposeColor(), fontSize = 14.sp, maxLines = 1)
+                        Icon(XnotesIcons.folder, null, tint = palette.accent.toComposeColor(), modifier = Modifier.size(19.dp))
+                        Text(pin.name, color = palette.text.toComposeColor(), fontSize = 13.5.sp, fontWeight = FontWeight.Medium, maxLines = 1)
                     }
                 }
             }
             Spacer(Modifier.height(20.dp))
         }
-        Row(Modifier.fillMaxWidth().padding(bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.in_folder, rootName), color = palette.text.toComposeColor(), fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
-            Text(counts, color = palette.textDim.toComposeColor(), fontSize = 12.5.sp)
+        Row(Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.width(3.dp).height(20.dp).clip(CircleShape).background(palette.accent.toComposeColor()))
+            Spacer(Modifier.width(10.dp))
+            Text(stringResource(R.string.in_folder, rootName), color = palette.text.toComposeColor(), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+            Text(counts, color = palette.textDim.toComposeColor(), fontSize = 12.sp, fontWeight = FontWeight.Medium,
+                modifier = Modifier.clip(RoundedCornerShape(20.dp)).background(palette.surface.toComposeColor()).padding(horizontal = 10.dp, vertical = 5.dp))
         }
     }
 }
@@ -744,13 +749,13 @@ internal fun HomeShelves(
 private fun RecentCard(b: ExplorerBody, r: RecentEntry, onOpen: (BrowseEntry) -> Unit) {
     val palette = LocalPalette.current
     val e = r.entry
-    val shape = MaterialTheme.shapes.medium
+    val shape = RoundedCornerShape(18.dp)
     val code = b.colorOf(e)?.let { codeTint(it, palette) }
     Column(
         Modifier.width(168.dp).clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onOpen(e) },
         verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
-        Box(Modifier.size(168.dp).clip(shape).border(1.dp, code ?: palette.border.toComposeColor(), shape)) {
+        Box(Modifier.size(168.dp).clip(shape).border(1.dp, code ?: palette.accent.toComposeColor().copy(alpha = 0.30f), shape)) {
             EntryThumb(b.editor, e, ThumbShape.TOP, Modifier.fillMaxSize())
             ThumbBadges(b, e, 6.dp)
         }
@@ -824,10 +829,10 @@ internal fun PinnedCard(b: ExplorerBody, e: BrowseEntry, whole: Boolean) {
 @Composable
 internal fun ShelfTitle(title: String, action: String? = null, onAction: () -> Unit = {}) {
     val palette = LocalPalette.current
-    Row(Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(title, color = palette.text.toComposeColor(), fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+    Row(Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(title, color = palette.text.toComposeColor(), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.25.sp, modifier = Modifier.weight(1f))
         if (action != null) {
-            Text(action, color = palette.accent.toComposeColor(), fontSize = 13.5.sp, fontWeight = FontWeight.Medium,
+            Text(action, color = palette.accent.toComposeColor(), fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.clip(MaterialTheme.shapes.extraSmall).clickable(onClick = onAction).padding(horizontal = 8.dp, vertical = 4.dp))
         }
     }
