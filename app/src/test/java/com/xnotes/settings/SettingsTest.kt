@@ -491,7 +491,7 @@ class SettingsTest {
         assertEquals(ToolbarLook(), Preferences.fromJson(junk).toolbarLook)
         assertFalse(Preferences().toJson().has("toolbar_size"))
         assertFalse(Preferences().toJson().has("toolbar_position"))
-        assertFalse(Preferences().toJson().has("toolbar_floating"))
+        assertTrue(Preferences().toJson().optBoolean("toolbar_floating"))
     }
 
     @Test fun defaultPresetsRoundTripInEveryMode() {
