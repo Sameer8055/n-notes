@@ -1,5 +1,7 @@
 package com.xnotes.ui
 
+import android.graphics.Typeface
+
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -121,11 +123,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -568,10 +572,28 @@ private fun BackstageSidebar(modifier: Modifier, editor: Editor, nav: SidebarNav
     val palette = LocalPalette.current
     Column(modifier.fillMaxHeight().liquidGlassSurface(MaterialTheme.shapes.extraLarge, palette.panel.toComposeColor(), elevation = 12.dp).padding(vertical = 12.dp)) {
         Row(
-            Modifier.fillMaxWidth().padding(start = 18.dp, end = 6.dp, bottom = 6.dp),
+            Modifier.fillMaxWidth().padding(start = 16.dp, end = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("Sameer Notes", color = palette.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            val brandTypeface = remember {
+                runCatching { Typeface.createFromAsset(editor.context.assets, "fonts/montserrat/regular.ttf") }
+                    .getOrElse { Typeface.create("sans-serif", Typeface.NORMAL) }
+            }
+            Image(
+                painter = painterResource(R.drawable.sameer_notes_logo),
+                contentDescription = "Sameer Notes",
+                modifier = Modifier.size(27.dp),
+            )
+            Spacer(Modifier.width(9.dp))
+            Text(
+                "Sameer Notes",
+                color = palette.text.toComposeColor(),
+                fontFamily = FontFamily(brandTypeface),
+                fontWeight = FontWeight.Bold,
+                fontSize = 17.sp,
+                letterSpacing = (-0.25).sp,
+                maxLines = 1,
+            )
             Spacer(Modifier.weight(1f))
             Tooltip(stringResource(R.string.collapse_sidebar)) {
                 IconButton(onClick = onCollapse) {
