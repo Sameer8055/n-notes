@@ -201,7 +201,7 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                         Box(
                             Modifier.size(34.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(if (editor.bucketFillArmed) LocalPalette.current.selectionBackground.toComposeColor() else Color.Transparent)
+                                .background(if (editor.hostBucketFillArmed) LocalPalette.current.selectionBackground.toComposeColor() else Color.Transparent)
                                 .border(1.dp, LocalPalette.current.border.toComposeColor(), RoundedCornerShape(8.dp))
                                 .clickable {
                                     val arm = !editor.bucketFillArmed
