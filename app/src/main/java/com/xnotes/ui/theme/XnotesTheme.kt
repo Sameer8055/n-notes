@@ -1,7 +1,7 @@
 package com.xnotes.ui.theme
 
 import androidx.compose.foundation.LocalIndication
-import androidx.compose.material.ripple.ripple
+import androidx.compose.material3.ripple
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
