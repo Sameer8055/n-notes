@@ -84,6 +84,7 @@ internal val LocalToolbarCover = compositionLocalOf { PaddingValues(0.dp) }
 internal fun ColumnScope.ToolbarAround(
     bar: @Composable () -> Unit,
     onCover: (Double, Double, Double, Double) -> Unit,
+    allowCanvasUnderFloatingBar: Boolean = false,
     content: @Composable (floatingBar: @Composable BoxScope.() -> Unit) -> Unit,
 ) {
     val look = LocalToolbarLook.current
@@ -109,7 +110,7 @@ internal fun ColumnScope.ToolbarAround(
             if (position == ToolbarPosition.LEFT) px else 0.0,
             if (position == ToolbarPosition.TOP) px else 0.0,
             if (position == ToolbarPosition.RIGHT) px else 0.0,
-            if (position == ToolbarPosition.BOTTOM) px else 0.0,
+            if (position == ToolbarPosition.BOTTOM && !allowCanvasUnderFloatingBar) px else 0.0,
         )
     }
     val (cover, edge) = when (position) {
