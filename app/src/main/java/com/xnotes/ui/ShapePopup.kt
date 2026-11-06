@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,10 +57,12 @@ import com.xnotes.ui.theme.toComposeColor
  * colour, an open one or a connector a head at either end, and a star or polygon a minus/plus for
  * its count.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
     var config by remember { mutableStateOf(editor.hostShapeConfig) }
     var advanced by remember { mutableStateOf(false) }
+    var colorPickerOpen by remember { mutableStateOf(false) }
     fun emit(next: ShapeConfig) {
         config = next
         editor.updateShapeConfig(next)
@@ -100,15 +103,7 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                 verticalAlignment = Alignment.Top,
             ) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(7.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Text("Outline size", color = LocalPalette.current.text.toComposeColor(), fontSize = 12.sp)
-                        Text("%.1f".format(config.strokeWidth), color = LocalPalette.current.text.toComposeColor(), fontSize = 11.sp)
-                    }
-                    SliderRow("", config.strokeWidth.toFloat(), 1f..20f) {
+                    SliderRow("Outline size", config.strokeWidth.toFloat(), 1f..20f) {
                         emit(config.copy(strokeWidth = it.toDouble()))
                     }
 
@@ -163,13 +158,22 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                         }
                     }
                     Text(
-                        "Custom",
+                        "Custom colour",
                         color = LocalPalette.current.textDim.toComposeColor(),
                         fontSize = 10.sp,
-                        modifier = Modifier.clickable {
-                            editor.setSwatchColor(editor.hostActiveColorIndex, ink)
-                        }.padding(vertical = 3.dp),
+                        modifier = Modifier.clickable { colorPickerOpen = true }.padding(vertical = 3.dp),
                     )
+                    if (colorPickerOpen) {
+                        ColorPickerPopup(
+                            initial = ink,
+                            recents = editor.hostRecentColors,
+                            onDismiss = { colorPickerOpen = false },
+                            onPick = { picked ->
+                                editor.setSwatchColor(editor.hostActiveColorIndex, picked)
+                                colorPickerOpen = false
+                            },
+                        )
+                    }
                 }
             }
 
@@ -194,7 +198,7 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                         emit(config.copy(fillAlpha = (it / 100.0).coerceIn(ShapeConfig.FILL_ALPHA_MIN, ShapeConfig.FILL_ALPHA_MAX)))
                     }
                 }
-                if (connecting || chip.kind.isOpen) {
+                if (connecting || !chip.kind.isClosed) {
                     HeadRow(stringResource(R.string.caption_head_start), config.headStart, atStart = true) { emit(config.copy(headStart = it)) }
                     HeadRow(stringResource(R.string.caption_head_end), config.headEnd, atStart = false) { emit(config.copy(headEnd = it)) }
                 }
