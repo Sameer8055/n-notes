@@ -198,7 +198,7 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
 
     DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
         Column(
-            Modifier.widthIn(min = 390.dp, max = 520.dp).padding(horizontal = 12.dp, vertical = 10.dp),
+            Modifier.widthIn(min = 410.dp, max = 560.dp).padding(horizontal = 12.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(
@@ -214,14 +214,22 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
                 }
             }
 
-            // Compact primary area: a continuous size control beside a square colour grid.
+            // Reference layout: size control and illustrated pen tray occupy the broad left
+            // column; the compact square colour palette sits in its own right-hand column.
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.Top,
             ) {
-                Column(Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
                         StyleCaption("Size")
                         Text("%.1f".format(width), color = LocalPalette.current.text.toComposeColor(), fontSize = 11.sp)
                     }
@@ -235,16 +243,39 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
                             inactiveTrackColor = LocalPalette.current.border.toComposeColor(),
                         ),
                     )
+
+                    // Light, inset pen tray echoes the original X Notes illustrated selector.
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFFF1F2F4))
+                            .border(1.dp, Color(0xFFD2D4D8), RoundedCornerShape(10.dp))
+                            .padding(horizontal = 6.dp, vertical = 7.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        penTools.forEach { candidate ->
+                            ToolModeButton(candidate, selected = candidate == tool) { onSelectTool(candidate) }
+                        }
+                    }
                 }
-                Column(Modifier.width(96.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+
+                Column(
+                    modifier = Modifier.width(112.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .border(1.dp, LocalPalette.current.border.toComposeColor(), RoundedCornerShape(10.dp))
+                        .padding(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(5.dp),
+                ) {
                     StyleCaption(stringResource(R.string.caption_colour))
                     FlowRow(
+                        maxItemsInEachRow = 3,
                         horizontalArrangement = Arrangement.spacedBy(5.dp),
                         verticalArrangement = Arrangement.spacedBy(5.dp),
                     ) {
                         paletteColors.forEach { swatch ->
                             Box(
-                                Modifier.size(26.dp).clip(RoundedCornerShape(4.dp))
+                                Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
                                     .background(swatch.toComposeColor())
                                     .border(1.dp, LocalPalette.current.border.toComposeColor(), RoundedCornerShape(5.dp))
                                     .clickable { editor.setSwatchColor(editor.hostActiveColorIndex, swatch) },
@@ -270,23 +301,6 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
             }
 
             HorizontalDivider(color = LocalPalette.current.border.toComposeColor())
-
-            // Icon-led pen selector, matching the compact horizontal tool tray in the reference.
-            // Light, inset tool tray: the pen silhouettes read clearly against the dark popup,
-            // matching the original X Notes toolbox rather than presenting another row of text chips.
-            Row(
-                modifier = Modifier.fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFFF1F2F4))
-                    .border(1.dp, Color(0xFFD2D4D8), RoundedCornerShape(10.dp))
-                    .padding(horizontal = 8.dp, vertical = 7.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                penTools.forEach { candidate ->
-                    ToolModeButton(candidate, selected = candidate == tool) { onSelectTool(candidate) }
-                }
-            }
 
             Row(
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
