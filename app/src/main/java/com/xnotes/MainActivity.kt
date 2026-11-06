@@ -1750,7 +1750,7 @@ private fun EditorPane(
                         onImagePage = { actions.onImagePage(editor) },
                     ) }
                 }
-                ToolbarAround(bar, onCover = editor::setToolbarCover) { floatingBar ->
+                ToolbarAround(bar, onCover = editor::setToolbarCover, allowCanvasUnderFloatingBar = true) { floatingBar ->
                     Row(modifier = Modifier.fillMaxSize()) {
                         if (editor.sidebarVisible) {
                             com.xnotes.ui.SidePanel(
