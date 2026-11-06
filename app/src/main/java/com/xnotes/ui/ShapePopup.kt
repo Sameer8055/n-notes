@@ -66,6 +66,7 @@ import com.xnotes.ui.theme.toComposeColor
 fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
     var config by remember { mutableStateOf(editor.hostShapeConfig) }
     var colorPickerOpen by remember { mutableStateOf(false) }
+    var fillOpacityExpanded by remember { mutableStateOf(false) }
 
     fun emit(next: ShapeConfig) {
         config = next
@@ -176,8 +177,21 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                             )
                         }
                         if (config.fill) {
-                            SliderRow("Fill opacity", (config.fillAlpha * 100.0).toFloat(), 5f..100f) {
-                                emit(config.copy(fillAlpha = (it / 100.0).coerceIn(0.05, 1.0)))
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text("Fill opacity", color = LocalPalette.current.text.toComposeColor(), fontSize = 12.sp)
+                                androidx.compose.material3.Switch(
+                                    checked = fillOpacityExpanded,
+                                    onCheckedChange = { fillOpacityExpanded = it },
+                                )
+                            }
+                            if (fillOpacityExpanded) {
+                                SliderRow("Opacity", (config.fillAlpha * 100.0).toFloat(), 5f..100f) {
+                                    emit(config.copy(fillAlpha = (it / 100.0).coerceIn(0.05, 1.0)))
+                                }
                             }
                         }
                     }
