@@ -202,6 +202,7 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
                 }
             }
             Spacer(Modifier.size(10.dp))
+            SliderRow("Size", width, ToolConversions.widthRange(tool).let { it.start.toFloat()..it.endInclusive.toFloat() }) { width = it; emit() }
             StyleCaption(stringResource(R.string.caption_colour))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -275,8 +276,6 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
             if (tool == Tool.TAPER) {
                 SliderRow(stringResource(R.string.caption_tip_width), taperTip, 0f..100f) { taperTip = it; emit() }
             }
-            val range = ToolConversions.widthRange(tool)
-            SliderRow(stringResource(R.string.caption_width), width, range.start.toFloat()..range.endInclusive.toFloat()) { width = it; emit() }
             // SCALE off: ink keeps a constant on-screen thickness whatever zoom you draw at.
             ToggleRow(stringResource(R.string.caption_scale), scale) { scale = it; emit() }
             // Global dwell shape detection (holding the pen still). Off for the highlighter, which never dwells.
