@@ -32,9 +32,9 @@ import com.xnotes.R
 @Composable
 fun XnotesLoader(modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val brandTypeface = remember(context) {
-        runCatching { Typeface.createFromAsset(context.assets, "fonts/montserrat/regular.ttf") }
-            .getOrElse { Typeface.create("sans-serif", Typeface.NORMAL) }
+    // A restrained editorial serif gives the wordmark a premium, crafted contrast to the geometric mark.
+    val brandTypeface = remember {
+        Typeface.create("serif", Typeface.BOLD)
     }
     val brandFamily = remember(brandTypeface) { FontFamily(brandTypeface) }
     val logoScale = remember { Animatable(0.58f) }
@@ -43,11 +43,11 @@ fun XnotesLoader(modifier: Modifier = Modifier) {
     val wordProgress = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
-        logoScale.animateTo(1.08f, tween(300, easing = FastOutSlowInEasing))
-        logoScale.animateTo(0.94f, tween(160, easing = FastOutSlowInEasing))
-        logoShift.animateTo(0f, tween(300, easing = FastOutSlowInEasing))
-        wordAlpha.animateTo(1f, tween(100))
-        wordProgress.animateTo(1f, tween(480, easing = FastOutSlowInEasing))
+        logoScale.animateTo(1.12f, tween(260, easing = FastOutSlowInEasing))
+        logoScale.animateTo(0.96f, tween(140, easing = FastOutSlowInEasing))
+        logoShift.animateTo(0f, tween(260, easing = FastOutSlowInEasing))
+        wordAlpha.animateTo(1f, tween(90))
+        wordProgress.animateTo(1f, tween(430, easing = FastOutSlowInEasing))
     }
 
     val title = "Sameer Notes"
@@ -74,8 +74,8 @@ fun XnotesLoader(modifier: Modifier = Modifier) {
             color = Color.White,
             fontFamily = brandFamily,
             fontWeight = FontWeight.SemiBold,
-            fontSize = 24.sp,
-            letterSpacing = (-0.45).sp,
+            fontSize = 25.sp,
+            letterSpacing = 0.15.sp,
             textAlign = TextAlign.Start,
             modifier = Modifier.graphicsLayer { alpha = wordAlpha.value },
         )
