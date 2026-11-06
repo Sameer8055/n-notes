@@ -349,7 +349,7 @@ private fun ToolModeButton(tool: Tool, selected: Boolean, onClick: () -> Unit) {
         Tool.SPEED -> ImageVector.vectorResource(R.drawable.ic_stroke_speed)
         Tool.TAPER -> ImageVector.vectorResource(R.drawable.ic_stroke_taper)
         Tool.HIGHLIGHTER -> ImageVector.vectorResource(R.drawable.ic_stroke_highlighter)
-        else -> XnotesIcons.pen
+        else -> XnotesIcons.eraser
     }
     val label = stringResource(tool.labelRes)
     Column(
