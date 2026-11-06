@@ -11,13 +11,10 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -133,27 +130,52 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                         // Row eagerly composed the entire catalogue on popup open, which
                         // could freeze/crash the app while building every custom glyph.
                         val shapePages = remember(shapes) { shapes.chunked(12) }
+                        var visibleShapePage by remember(shapes) { mutableStateOf(0) }
                         if (shapePages.isNotEmpty()) {
-                            val shapePager = rememberPagerState(pageCount = { shapePages.size })
-                            HorizontalPager(
-                                state = shapePager,
-                                modifier = Modifier.fillMaxWidth().height(124.dp),
-                            ) { page ->
-                                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                                    shapePages[page].chunked(4).forEach { rowShapes ->
-                                        Row(
-                                            Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.spacedBy(5.dp),
-                                        ) {
-                                            rowShapes.forEach { preset ->
-                                                KindChip(
-                                                    ShapeIcons.of(preset),
-                                                    chipLabel(preset),
-                                                    selected = preset.key == config.preset,
-                                                    latex = chipLatex(preset),
-                                                ) { emit(config.choose(preset)) }
-                                            }
+                            val page = visibleShapePage.coerceIn(0, shapePages.lastIndex)
+                            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                                shapePages[page].chunked(4).forEach { rowShapes ->
+                                    Row(
+                                        Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                                    ) {
+                                        rowShapes.forEach { preset ->
+                                            KindChip(
+                                                ShapeIcons.of(preset),
+                                                chipLabel(preset),
+                                                selected = preset.key == config.preset,
+                                                latex = chipLatex(preset),
+                                            ) { emit(config.choose(preset)) }
                                         }
+                                    }
+                                }
+                                if (shapePages.size > 1) {
+                                    Row(
+                                        Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center,
+                                    ) {
+                                        Text(
+                                            "‹",
+                                            color = LocalPalette.current.text.toComposeColor(),
+                                            fontSize = 22.sp,
+                                            modifier = Modifier.clickable {
+                                                visibleShapePage = (page - 1).coerceAtLeast(0)
+                                            }.padding(horizontal = 12.dp, vertical = 2.dp),
+                                        )
+                                        Text(
+                                            "${page + 1} / ${shapePages.size}",
+                                            color = LocalPalette.current.textDim.toComposeColor(),
+                                            fontSize = 11.sp,
+                                        )
+                                        Text(
+                                            "›",
+                                            color = LocalPalette.current.text.toComposeColor(),
+                                            fontSize = 22.sp,
+                                            modifier = Modifier.clickable {
+                                                visibleShapePage = (page + 1).coerceAtMost(shapePages.lastIndex)
+                                            }.padding(horizontal = 12.dp, vertical = 2.dp),
+                                        )
                                     }
                                 }
                             }
