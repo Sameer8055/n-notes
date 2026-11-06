@@ -2077,7 +2077,7 @@ class InteractionController(
         if (lassoErasing) {
             if (lassoPoints.size >= 3) {
                 val drawable = state.drawablePageRange()
-                val members = SelectionMath.lassoMembers(state.document.pages, state.pageRects, lassoPoints, false) { i, p ->
+                val members = SelectionMath.lassoMembers(state.document.pages, state.pageRects, lassoPoints, true) { i, p ->
                     state.toPageSpace(i, p)
                 }.filter { it.pageIndex in drawable && it.item is Stroke }
                 val beforeByPage = linkedMapOf<Page, List<CanvasItem>>()
