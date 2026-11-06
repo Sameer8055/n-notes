@@ -22,6 +22,8 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FormatColorFill
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -189,6 +191,32 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                             checked = config.dashed,
                             onCheckedChange = { emit(config.copy(dashed = it)) },
                         )
+                    }
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text("Bucket fill", color = LocalPalette.current.text.toComposeColor(), fontSize = 12.sp)
+                        Box(
+                            Modifier.size(34.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (editor.bucketFillArmed) LocalPalette.current.selectionBackground.toComposeColor() else Color.Transparent)
+                                .border(1.dp, LocalPalette.current.border.toComposeColor(), RoundedCornerShape(8.dp))
+                                .clickable {
+                                    val arm = !editor.bucketFillArmed
+                                    editor.setBucketFillArmed(arm)
+                                    if (arm) onDismiss()
+                                },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                Icons.Default.FormatColorFill,
+                                contentDescription = "Bucket fill",
+                                tint = LocalPalette.current.text.toComposeColor(),
+                                modifier = Modifier.size(19.dp),
+                            )
+                        }
                     }
                 }
 
