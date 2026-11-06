@@ -1,5 +1,6 @@
 package com.xnotes.canvas
 
+import com.xnotes.core.FakeTextMeasurer
 import com.xnotes.core.geometry.Pt
 import com.xnotes.core.geometry.Rect
 import com.xnotes.core.model.CanvasItem
@@ -9,6 +10,7 @@ import com.xnotes.core.model.Page
 import com.xnotes.core.model.Rgba
 import com.xnotes.core.model.ShapeItem
 import com.xnotes.core.model.Stroke
+import com.xnotes.core.model.TextItem
 import com.xnotes.core.shapes.ShapeKind
 import com.xnotes.core.stroke.Sample
 import com.xnotes.core.tools.Tool
@@ -104,6 +106,12 @@ class SelectionMathTest {
         val box = box()
         assertEquals(listOf<CanvasItem>(box, word), SelectionMath.lassoMembers(listOf(box, word), loop(-10.0, -10.0, 210.0, 110.0)))
     }
+
+    @Test fun lassoIncludesPlacedTextBoxesWhenTheirFrameIsEnclosed() {
+        val text = TextItem(Pt(20.0, 20.0), width = 40.0, text = "Placed text", measurer = FakeTextMeasurer())
+        assertEquals(listOf<CanvasItem>(text), SelectionMath.lassoMembers(listOf(text), loop(0.0, 0.0, 100.0, 100.0)))
+    }
+
 
     @Test fun aLassoCrossingAShapesOutlineTakesIt() {
         val box = box()
