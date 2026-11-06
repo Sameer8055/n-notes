@@ -152,7 +152,17 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
 
                     val selected = ShapePresets.byKey(config.preset)
                     if (selected?.kind?.isClosed == true && config.connector == null) {
-                        ToggleRow("Fill shape", config.fill) { emit(config.copy(fill = it)) }
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text("Fill shape", color = LocalPalette.current.text.toComposeColor(), fontSize = 12.sp)
+                            androidx.compose.material3.Switch(
+                                checked = config.fill,
+                                onCheckedChange = { emit(config.copy(fill = it)) },
+                            )
+                        }
                     }
                 }
 
