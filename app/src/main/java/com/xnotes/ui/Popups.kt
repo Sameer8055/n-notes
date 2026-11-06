@@ -1131,23 +1131,50 @@ fun EraserConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
     )
 
     DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
-        Column(Modifier.width(280.dp).padding(horizontal = 14.dp, vertical = 8.dp)) {
-            PopupTitle(stringResource(R.string.title_eraser))
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                ModeChip(stringResource(R.string.eraser_stroke), selected = eraseMode == EraseMode.STROKE) { eraseMode = EraseMode.STROKE; emit() }
-                ModeChip(stringResource(R.string.eraser_area), selected = eraseMode == EraseMode.AREA) { eraseMode = EraseMode.AREA; emit() }
-                ModeChip(stringResource(R.string.tool_lasso), selected = eraseMode == EraseMode.LASSO) { eraseMode = EraseMode.LASSO; emit() }
+        Column(
+            Modifier.widthIn(min = 470.dp, max = 560.dp)
+                .liquidGlassSurface(
+                    RoundedCornerShape(22.dp),
+                    LocalPalette.current.panel.toComposeColor(),
+                    elevation = 12.dp,
+                )
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                PopupTitle(stringResource(R.string.title_eraser))
+                Text("×", color = LocalPalette.current.text.toComposeColor(), fontSize = 20.sp,
+                    modifier = Modifier.clip(CircleShape).clickable { onDismiss() }.padding(horizontal = 5.dp))
             }
-            val r = ToolConversions.widthRange(Tool.ERASER)
-            SliderRow(stringResource(R.string.caption_size), size, r.start.toFloat()..r.endInclusive.toFloat()) { size = it; emit() }
-            // SCALE off: the eraser holds a constant on-screen size whatever zoom you are at.
-            ToggleRow(stringResource(R.string.caption_scale), scale) { scale = it; emit() }
-            // Re-arm the previous pen/highlighter once an erase lifts, so a quick fix doesn't strand
-            // you in the eraser.
-            ToggleRow(stringResource(R.string.caption_switch_back), switchBack) { switchBack = it; emit() }
-            if (editor.hostHasPdf) ToggleRow(stringResource(R.string.caption_erase_markups), markups) { markups = it; emit() }
-            // A pen scribbled over ink erases it without picking up the eraser.
-            ToggleRow(stringResource(R.string.caption_scribble_erase), scribble) { scribble = it; emit() }
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(18.dp),
+                verticalAlignment = Alignment.Top,
+            ) {
+                Column(Modifier.weight(1.15f), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        ModeChip(stringResource(R.string.eraser_stroke), selected = eraseMode == EraseMode.STROKE) { eraseMode = EraseMode.STROKE; emit() }
+                        ModeChip(stringResource(R.string.eraser_area), selected = eraseMode == EraseMode.AREA) { eraseMode = EraseMode.AREA; emit() }
+                        ModeChip(stringResource(R.string.tool_lasso), selected = eraseMode == EraseMode.LASSO) { eraseMode = EraseMode.LASSO; emit() }
+                    }
+                    val r = ToolConversions.widthRange(Tool.ERASER)
+                    SliderRow(stringResource(R.string.caption_size), size, r.start.toFloat()..r.endInclusive.toFloat()) { size = it; emit() }
+                }
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                    // SCALE off: the eraser holds a constant on-screen size whatever zoom you are at.
+                    ToggleRow(stringResource(R.string.caption_scale), scale) { scale = it; emit() }
+                    // Re-arm the previous pen/highlighter once an erase lifts, so a quick fix doesn't strand
+                    // you in the eraser.
+                    ToggleRow(stringResource(R.string.caption_switch_back), switchBack) { switchBack = it; emit() }
+                    if (editor.hostHasPdf) ToggleRow(stringResource(R.string.caption_erase_markups), markups) { markups = it; emit() }
+                    // A pen scribbled over ink erases it without picking up the eraser.
+                    ToggleRow(stringResource(R.string.caption_scribble_erase), scribble) { scribble = it; emit() }
+                }
+            }
         }
     }
 }
