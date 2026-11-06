@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -29,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,6 +59,7 @@ import com.xnotes.ui.theme.toComposeColor
 @Composable
 fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
     var config by remember { mutableStateOf(editor.hostShapeConfig) }
+    var advanced by remember { mutableStateOf(false) }
     fun emit(next: ShapeConfig) {
         config = next
         editor.updateShapeConfig(next)
@@ -63,42 +67,148 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
     val chip = config.chip
     val connecting = config.connector != null
     val ink = editor.hostToolbarColors.getOrNull(editor.hostActiveColorIndex) ?: Rgba(0, 0, 0)
+    val paletteColors = listOf(
+        Rgba(245, 20, 24), Rgba(255, 145, 20), Rgba(255, 215, 20),
+        Rgba(45, 205, 65), Rgba(35, 65, 235), Rgba(20, 145, 235),
+        Rgba(20, 185, 195), Rgba(225, 25, 185), Rgba(35, 115, 45),
+        Rgba(25, 25, 28), Rgba(135, 135, 140), Rgba(255, 255, 255),
+        Rgba(100, 65, 170), Rgba(70, 175, 125), Rgba(230, 230, 235),
+    )
 
     DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
-        Column(Modifier.width(284.dp).padding(horizontal = 14.dp, vertical = 8.dp)) {
-            PopupTitle(stringResource(R.string.title_shape))
-            ShapePager(config, editor.hostHiddenShapes, editor.hostShapeOrder, onPage = { emit(config.copy(shapePage = it)) }, onPick = { emit(config.choose(it)) })
-            ConnectorPager(config, editor.hostHiddenShapes, editor.hostShapeOrder, onPage = { emit(config.copy(connectorPage = it)) }, onPick = { emit(config.choose(it)) })
-            if (!connecting && chip.counted) CountRow(config) { emit(config.copy(n = it)) }
-            if (!connecting && !config.placesCorners) {
-                ToggleRow(stringResource(R.string.caption_perfect), config.perfect) { emit(config.copy(perfect = it)) }
+        Column(
+            Modifier.widthIn(min = 410.dp, max = 560.dp).padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                PopupTitle("Shapes")
+                Text(
+                    "×",
+                    color = LocalPalette.current.text.toComposeColor(),
+                    fontSize = 20.sp,
+                    modifier = Modifier.clip(CircleShape).clickable { onDismiss() }.padding(horizontal = 5.dp),
+                )
             }
-            SliderRow(stringResource(R.string.caption_width), config.strokeWidth.toFloat(), 1f..20f) {
-                emit(config.copy(strokeWidth = it.toDouble()))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.Top,
+            ) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text("Outline size", color = LocalPalette.current.text.toComposeColor(), fontSize = 12.sp)
+                        Text("%.1f".format(config.strokeWidth), color = LocalPalette.current.text.toComposeColor(), fontSize = 11.sp)
+                    }
+                    SliderRow("", config.strokeWidth.toFloat(), 1f..20f) {
+                        emit(config.copy(strokeWidth = it.toDouble()))
+                    }
+
+                    Column(
+                        Modifier.fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFFF1F2F4))
+                            .border(1.dp, Color(0xFFD2D4D8), RoundedCornerShape(12.dp))
+                            .padding(horizontal = 7.dp, vertical = 7.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        ShapePager(
+                            config, editor.hostHiddenShapes, editor.hostShapeOrder,
+                            onPage = { emit(config.copy(shapePage = it)) },
+                            onPick = { emit(config.choose(it)) },
+                        )
+                        ConnectorPager(
+                            config, editor.hostHiddenShapes, editor.hostShapeOrder,
+                            onPage = { emit(config.copy(connectorPage = it)) },
+                            onPick = { emit(config.choose(it)) },
+                        )
+                    }
+
+                    if (!connecting && chip.kind.isClosed) {
+                        ToggleRow("Fill shape", config.fill) { emit(config.copy(fill = it)) }
+                        if (config.fill) {
+                            FillColourRow(config.fillColor, ink, editor) { emit(config.copy(fillColor = it)) }
+                        }
+                    }
+                }
+
+                Column(
+                    Modifier.width(112.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .border(1.dp, LocalPalette.current.border.toComposeColor(), RoundedCornerShape(10.dp))
+                        .padding(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    Text("Colour", color = LocalPalette.current.text.toComposeColor(), fontSize = 12.sp)
+                    FlowRow(
+                        maxItemsInEachRow = 3,
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        verticalArrangement = Arrangement.spacedBy(5.dp),
+                    ) {
+                        paletteColors.forEach { color ->
+                            Box(
+                                Modifier.size(28.dp).clip(RoundedCornerShape(5.dp))
+                                    .background(color.toComposeColor())
+                                    .border(1.dp, LocalPalette.current.border.toComposeColor(), RoundedCornerShape(5.dp))
+                                    .clickable { editor.setSwatchColor(editor.hostActiveColorIndex, color) },
+                            )
+                        }
+                    }
+                    Text(
+                        "Custom",
+                        color = LocalPalette.current.textDim.toComposeColor(),
+                        fontSize = 10.sp,
+                        modifier = Modifier.clickable {
+                            editor.setSwatchColor(editor.hostActiveColorIndex, ink)
+                        }.padding(vertical = 3.dp),
+                    )
+                }
             }
-            if (!connecting && chip.kind.isClosed) {
-                ToggleRow(stringResource(R.string.caption_fill), config.fill) { emit(config.copy(fill = it)) }
-                if (config.fill) {
-                    FillColourRow(config.fillColor, ink, editor) { emit(config.copy(fillColor = it)) }
+
+            Row(
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp))
+                    .clickable { advanced = !advanced }.padding(vertical = 7.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text("Advanced settings", color = LocalPalette.current.text.toComposeColor(), fontSize = 13.sp)
+                Text(if (advanced) "⌃" else "⌄", color = LocalPalette.current.textDim.toComposeColor(), fontSize = 14.sp)
+            }
+
+            if (advanced) {
+                if (!connecting && chip.counted) CountRow(config) { emit(config.copy(n = it)) }
+                if (!connecting && !config.placesCorners) {
+                    ToggleRow(stringResource(R.string.caption_perfect), config.perfect) { emit(config.copy(perfect = it)) }
+                }
+                if (!connecting && chip.kind.isClosed && config.fill) {
                     val minPct = (ShapeConfig.FILL_ALPHA_MIN * 100).toFloat()
                     SliderRow(stringResource(R.string.caption_opacity), (config.fillAlpha * 100).toFloat(), minPct..100f) {
                         emit(config.copy(fillAlpha = (it / 100.0).coerceIn(ShapeConfig.FILL_ALPHA_MIN, ShapeConfig.FILL_ALPHA_MAX)))
                     }
                 }
-            } else {
-                HeadRow(stringResource(R.string.caption_head_start), config.headStart, atStart = true) { emit(config.copy(headStart = it)) }
-                HeadRow(stringResource(R.string.caption_head_end), config.headEnd, atStart = false) { emit(config.copy(headEnd = it)) }
-            }
-            ToggleRow(stringResource(R.string.caption_dashed), config.dashed) { emit(config.copy(dashed = it)) }
-            if (config.dashed) {
-                SliderRow(stringResource(R.string.caption_dash), config.dashLength.toFloat(), 2f..40f) { emit(config.copy(dashLength = it.toDouble())) }
-                SliderRow(stringResource(R.string.caption_gap), config.dashGap.toFloat(), 2f..40f) { emit(config.copy(dashGap = it.toDouble())) }
-            }
-            ToggleRow(stringResource(R.string.caption_neon), config.neon) { emit(config.copy(neon = it)) }
-            if (config.neon) {
-                val intensity = ToolConversions.neonStrengthToIntensity(config.neonStrength).toFloat()
-                SliderRow(stringResource(R.string.caption_glow_intensity), intensity, 0f..100f) {
-                    emit(config.copy(neonStrength = ToolConversions.intensityToNeonStrength(it.toDouble())))
+                if (connecting || chip.kind.isOpen) {
+                    HeadRow(stringResource(R.string.caption_head_start), config.headStart, atStart = true) { emit(config.copy(headStart = it)) }
+                    HeadRow(stringResource(R.string.caption_head_end), config.headEnd, atStart = false) { emit(config.copy(headEnd = it)) }
+                }
+                ToggleRow(stringResource(R.string.caption_dashed), config.dashed) { emit(config.copy(dashed = it)) }
+                if (config.dashed) {
+                    SliderRow(stringResource(R.string.caption_dash), config.dashLength.toFloat(), 2f..40f) { emit(config.copy(dashLength = it.toDouble())) }
+                    SliderRow(stringResource(R.string.caption_gap), config.dashGap.toFloat(), 2f..40f) { emit(config.copy(dashGap = it.toDouble())) }
+                }
+                ToggleRow(stringResource(R.string.caption_neon), config.neon) { emit(config.copy(neon = it)) }
+                if (config.neon) {
+                    val intensity = ToolConversions.neonStrengthToIntensity(config.neonStrength).toFloat()
+                    SliderRow(stringResource(R.string.caption_glow_intensity), intensity, 0f..100f) {
+                        emit(config.copy(neonStrength = ToolConversions.intensityToNeonStrength(it.toDouble())))
+                    }
                 }
             }
         }
