@@ -2891,7 +2891,7 @@ class InteractionController(
             val page = state.document.pages.getOrNull(pi)
             val reach = OUTLINE_GRAB / state.zoom
             val target = page?.items?.lastOrNull {
-                it is ShapeItem && !it.locked && it.shape.isClosed && it.touches(local, reach)
+                it is ShapeItem && !it.locked && it.shape.isClosed && (it.encloses(local) || it.touches(local, reach))
             } as? ShapeItem
             if (page != null && target != null) {
                 val before = target.fillRgba
