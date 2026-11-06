@@ -1147,11 +1147,11 @@ fun EraserConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
 
     DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
         Column(
-            Modifier.widthIn(min = 470.dp, max = 560.dp)
+            Modifier.widthIn(min = 410.dp, max = 560.dp)
                 .liquidGlassSurface(
-                    RoundedCornerShape(22.dp),
+                    RoundedCornerShape(26.dp),
                     LocalPalette.current.panel.toComposeColor(),
-                    elevation = 12.dp,
+                    elevation = 14.dp,
                 )
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
