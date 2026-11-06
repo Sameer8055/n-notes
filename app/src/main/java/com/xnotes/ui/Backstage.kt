@@ -1114,6 +1114,13 @@ private fun ExplorerSection(
     folderSwipe: FolderSwipe,
 ) {
     val palette = LocalPalette.current
+    val brandContext = LocalContext.current
+    val brandTypeface = remember(brandContext) {
+        Typeface.create(
+            Typeface.createFromAsset(brandContext.assets, "fonts/inter/regular.ttf"),
+            Typeface.BOLD,
+        )
+    }
     val root = editor.browseRoot
     val nav = link.nav
     if (root == null) {
@@ -1127,7 +1134,7 @@ private fun ExplorerSection(
                         }
                     }
                     Spacer(Modifier.width(4.dp))
-                    Text("Sameer Notes", color = palette.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text("Sameer Notes", color = palette.text.toComposeColor(), fontFamily = FontFamily(brandTypeface), fontWeight = FontWeight.Bold, fontSize = 20.sp, letterSpacing = (-0.2).sp)
                 }
             }
             Column(Modifier.weight(1f).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
