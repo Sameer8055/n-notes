@@ -1104,7 +1104,7 @@ private fun ZoomLimitRow(label: String, enabled: Boolean, value: Int, onToggle: 
 @Composable
 fun EraserConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
     val base = remember { editor.toolConfig(Tool.ERASER) }
-    var area by remember { mutableStateOf(base.eraseMode == EraseMode.AREA) }
+    var eraseMode by remember { mutableStateOf(base.eraseMode) }
     var size by remember { mutableStateOf(base.baseWidth.toFloat()) }
     var switchBack by remember { mutableStateOf(base.switchBackAfterErase) }
     var scale by remember { mutableStateOf(base.scale) }
@@ -1115,7 +1115,7 @@ fun EraserConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
         Tool.ERASER,
         base.copy(
             baseWidth = size.toDouble(),
-            eraseMode = if (area) EraseMode.AREA else EraseMode.STROKE,
+            eraseMode = eraseMode,
             switchBackAfterErase = switchBack,
             scale = scale,
             eraseMarkups = markups,
@@ -1124,11 +1124,12 @@ fun EraserConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
     )
 
     DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
-        Column(Modifier.width(250.dp).padding(horizontal = 14.dp, vertical = 8.dp)) {
+        Column(Modifier.width(280.dp).padding(horizontal = 14.dp, vertical = 8.dp)) {
             PopupTitle(stringResource(R.string.title_eraser))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                ModeChip(stringResource(R.string.eraser_stroke), selected = !area) { area = false; emit() }
-                ModeChip(stringResource(R.string.eraser_area), selected = area) { area = true; emit() }
+                ModeChip(stringResource(R.string.eraser_stroke), selected = eraseMode == EraseMode.STROKE) { eraseMode = EraseMode.STROKE; emit() }
+                ModeChip(stringResource(R.string.eraser_area), selected = eraseMode == EraseMode.AREA) { eraseMode = EraseMode.AREA; emit() }
+                ModeChip(stringResource(R.string.tool_lasso), selected = eraseMode == EraseMode.LASSO) { eraseMode = EraseMode.LASSO; emit() }
             }
             val r = ToolConversions.widthRange(Tool.ERASER)
             SliderRow(stringResource(R.string.caption_size), size, r.start.toFloat()..r.endInclusive.toFloat()) { size = it; emit() }
