@@ -7034,6 +7034,7 @@ class Editor(context: Context, val pane: Pane = Pane.PRIMARY) : ToolPopupHost, S
     private var bucketFillMode by mutableStateOf(false)
 
     override val bucketFillArmed: Boolean get() = bucketFillMode
+    override val hostBucketFillArmed: Boolean get() = bucketFillMode
 
     override fun setBucketFillArmed(armed: Boolean) {
         bucketFillMode = armed
