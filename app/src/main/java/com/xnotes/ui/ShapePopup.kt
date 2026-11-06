@@ -356,7 +356,7 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                     )
                     if (colorPickerOpen) {
                         ColorPickerPopup(
-                            initial = ink,
+                            initial = if (config.fill) config.fillColor ?: ink else ink,
                             recents = editor.hostRecentColors,
                             onDismiss = { colorPickerOpen = false },
                             onPick = { picked ->
