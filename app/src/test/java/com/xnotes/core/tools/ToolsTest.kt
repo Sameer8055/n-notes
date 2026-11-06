@@ -63,6 +63,13 @@ class ToolsTest {
         assertEquals(1.0..20.0, ToolConversions.widthRange(Tool.PEN))
     }
 
+    @Test fun eraserModesRoundTripIncludingLasso() {
+        assertEquals(EraseMode.STROKE, EraseMode.fromId("stroke"))
+        assertEquals(EraseMode.AREA, EraseMode.fromId("area"))
+        assertEquals(EraseMode.LASSO, EraseMode.fromId("lasso"))
+        assertEquals(EraseMode.STROKE, EraseMode.fromId("unknown"))
+    }
+
     @Test fun strokeToolsAndAlpha() {
         assertTrue(Tool.CALLIGRAPHY.isStroke)
         assertTrue(Tool.DASHED.isStroke)
