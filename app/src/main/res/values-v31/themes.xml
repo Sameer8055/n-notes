@@ -3,7 +3,7 @@
     <!-- On Android 12+, theme the system splash to the loader's dark stage and
          show the Sameer Notes brand mark during system launch. -->
     <style name="Theme.Xnotes.Splash" parent="Theme.Xnotes">
-        <item name="android:windowBackground">@color/loader_bg</item>
+        <item name="android:windowBackground">@drawable/splash_window</item>
         <item name="android:windowSplashScreenBackground">@color/loader_bg</item>
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/sameer_notes_logo</item>
     </style>
