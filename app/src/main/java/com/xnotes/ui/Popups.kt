@@ -300,6 +300,30 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
                             }
                         }
                     }
+                    // Keep a visible selection marker when the active ink is a custom colour
+                    // rather than one of the twelve built-in swatches.
+                    val activePenColor = editor.hostToolbarColors.getOrNull(editor.hostActiveColorIndex)
+                    if (activePenColor != null && activePenColor !in paletteColors) {
+                        val customColor = activePenColor.toComposeColor()
+                        val customCheck = if (
+                            customColor.red * 0.299f + customColor.green * 0.587f + customColor.blue * 0.114f > 0.55f
+                        ) Color.Black else Color.White
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                        ) {
+                            Box(
+                                Modifier.size(28.dp).clip(RoundedCornerShape(5.dp))
+                                    .background(customColor)
+                                    .border(2.dp, if (LocalPalette.current.isDark) Color.White else Color.Black, RoundedCornerShape(5.dp)),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text("✓", color = customCheck, fontSize = 16.sp)
+                            }
+                            Text("  Current", color = LocalPalette.current.textDim.toComposeColor(), fontSize = 10.sp)
+                        }
+                    }
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                         ColorPickerDot(
                             null,
