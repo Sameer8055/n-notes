@@ -216,6 +216,8 @@ class InfiniteInteraction(
     var bandRect: Rect? = null
         private set
     val lassoPoints = ArrayList<Pt>()
+    /** True while the eraser's LASSO mode is drawing a delete loop rather than selecting. */
+    private var lassoErasing = false
     private var bandAnchor = Pt.ZERO
 
     // The live transform drag.
@@ -534,6 +536,7 @@ class InfiniteInteraction(
         if (polygonDraft != null && !placing && effective != Tool.PAN) finishPolygonDraft()
         when {
             effective.isStroke -> beginDraw(vx, vy, effective, e)
+            effective == Tool.ERASER && configFor(Tool.ERASER).eraseMode == EraseMode.LASSO -> beginLassoErase(vx, vy)
             effective == Tool.ERASER -> beginErase(vx, vy)
             effective == Tool.SHAPE && selected -> dismissFirst(at)
             placing -> beginPolygonTap(vx, vy)
@@ -633,6 +636,7 @@ class InfiniteInteraction(
         // pinch, since two fingers can only mean a zoom.
         if (mode == CanvasPointerMode.DRAW && drawingIsStylus) return
         if (mode == CanvasPointerMode.ERASE && drawingIsStylus) return
+        if (mode == CanvasPointerMode.LASSO && lassoErasing && drawingIsStylus) return
         if (mode == CanvasPointerMode.TAPE && drawingIsStylus) return
         if (e.pointerCount >= 2) {
             if (mode == CanvasPointerMode.DRAW) abandonStroke()
@@ -739,6 +743,12 @@ class InfiniteInteraction(
         cancelLongPress()
         if (mode == CanvasPointerMode.DRAW) abandonStroke()
         if (mode == CanvasPointerMode.ERASE) endErase()
+        if (mode == CanvasPointerMode.LASSO && lassoErasing) {
+            lassoErasing = false
+            lassoPoints.clear()
+            eraseSession = null
+            onSelectionChanged()
+        }
         if (mode == CanvasPointerMode.SHAPE) abandonShape()
         if (mode == CanvasPointerMode.TAPE) abandonTape()
         if (mode == CanvasPointerMode.CONNECT) abandonConnector()
@@ -1168,7 +1178,35 @@ class InfiniteInteraction(
         requestRender()
     }
 
+    private fun beginLassoErase(vx: Double, vy: Double) {
+        eraseSession = onEraseBegin() ?: return
+        lassoErasing = true
+        clearSelection()
+        lassoPoints.clear()
+        lassoPoints.add(viewport.viewportToContent(Pt(vx, vy)))
+        mode = CanvasPointerMode.LASSO
+        setInteractive(false, false)
+        onSelectionChanged()
+        requestRender()
+    }
+
     private fun endLasso() {
+        if (lassoErasing) {
+            val session = eraseSession
+            if (session != null && lassoPoints.size >= 3) {
+                val polygon = lassoPoints.toList()
+                val bounds = Rect.bounding(polygon)
+                val candidates = SelectionMath.lassoMembers(itemsIn(bounds), polygon)
+                session.eraseItems(candidates)
+            }
+            lassoPoints.clear()
+            lassoErasing = false
+            endErase()
+            onEraseLifted()
+            onSelectionChanged()
+            requestRender()
+            return
+        }
         val sel = selection()
         if (sel != null && lassoPoints.size >= 3) {
             val bounds = Rect.bounding(lassoPoints)
