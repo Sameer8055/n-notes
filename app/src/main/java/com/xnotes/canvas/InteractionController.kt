@@ -384,6 +384,8 @@ class InteractionController(
     // SELECTION
     private val selection = mutableListOf<Selected>()
     private val lassoPoints = mutableListOf<Pt>()
+    /** True only while the lasso gesture belongs to the eraser rather than the selection tool. */
+    private var lassoErasing = false
     private var bandRect: Rect? = null
     private var moveOrigin = Pt.ZERO
     private var moveOffset = Pt.ZERO
@@ -774,7 +776,7 @@ class InteractionController(
 
     private fun extendHoverAction(vx: Double, vy: Double) {
         when (hoverActionTool) {
-            Tool.ERASER -> eraseAt(vx, vy)
+            Tool.ERASER -> if (lassoErasing) extendLasso(state.viewportToContent(Pt(vx, vy))) else eraseAt(vx, vy)
             Tool.PAN -> extendPan(vx, vy)
             else -> Unit
         }
@@ -783,7 +785,7 @@ class InteractionController(
     /** End a live hover gesture: commit the erase, or stop the pan (with a flick if it was moving). */
     private fun endHoverAction() {
         when (hoverActionTool) {
-            Tool.ERASER -> endErase()
+            Tool.ERASER -> if (lassoErasing) endLasso() else endErase()
             Tool.PAN -> { mode = PointerMode.IDLE; startPanFling() }
             else -> Unit
         }
@@ -1636,6 +1638,16 @@ class InteractionController(
         eraseSnapshots.clear()
         eraseMarkups.clear()
         eraseUnfilled.clear()
+        if (configFor(Tool.ERASER).eraseMode == EraseMode.LASSO) {
+            lassoPoints.clear()
+            lassoPoints.add(state.viewportToContent(Pt(vx, vy)))
+            lassoErasing = true
+            mode = PointerMode.LASSO_DRAW
+            eraserCursor = null
+            requestRender()
+            return
+        }
+        lassoErasing = false
         mode = PointerMode.ERASE
         eraseAt(vx, vy)
     }
@@ -2040,6 +2052,7 @@ class InteractionController(
     // --- LASSO ---
 
     private fun beginLasso(content: Pt) {
+        lassoErasing = false
         // A tap on the settled selection grabs it (a resize/rotate handle, or a move when inside the
         // oriented box) instead of starting a fresh lasso.
         if (beginTableChrome(content)) return
@@ -2061,6 +2074,39 @@ class InteractionController(
     }
 
     private fun endLasso() {
+        if (lassoErasing) {
+            if (lassoPoints.size >= 3) {
+                val drawable = state.drawablePageRange()
+                val members = SelectionMath.lassoMembers(state.document.pages, state.pageRects, lassoPoints, false) { i, p ->
+                    state.toPageSpace(i, p)
+                }.filter { it.pageIndex in drawable && it.item is Stroke }
+                val dirtyByPage = linkedMapOf<Page, Rect>()
+                for (member in members) {
+                    val page = state.document.pages.getOrNull(member.pageIndex) ?: continue
+                    val item = member.item
+                    if (!page.items.remove(item)) continue
+                    eraseRemovals += page to item
+                    val bounds = item.paintBounds()
+                    dirtyByPage[page] = dirtyByPage[page]?.union(bounds) ?: bounds
+                }
+                for ((page, dirty) in dirtyByPage) {
+                    if (!state.repairRegion(page, dirty.outset(REPAIR_PAD))) state.invalidatePage(page)
+                }
+                if (eraseRemovals.isNotEmpty()) {
+                    history.push(EraseItems(eraseRemovals.toList()))
+                    state.document.dirty = true
+                    onContentChanged()
+                }
+            }
+            eraseRemovals.clear()
+            lassoErasing = false
+            eraserCursor = null
+            lassoPoints.clear()
+            mode = PointerMode.IDLE
+            maybeSwitchBackAfterErase()
+            requestRender()
+            return
+        }
         if (lassoPoints.size >= 3) {
             val drawable = state.drawablePageRange()
             val members = SelectionMath.lassoMembers(state.document.pages, state.pageRects, lassoPoints, configFor(Tool.LASSO).selectWholeItems) { i, p ->
