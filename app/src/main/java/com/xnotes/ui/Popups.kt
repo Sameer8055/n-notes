@@ -207,11 +207,8 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 PopupTitle("Tools")
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(stringResource(tool.labelRes), color = LocalPalette.current.textDim.toComposeColor(), fontSize = 11.sp)
-                    Text("×", color = LocalPalette.current.text.toComposeColor(), fontSize = 20.sp,
-                        modifier = Modifier.clip(CircleShape).clickable { onDismiss() }.padding(horizontal = 5.dp))
-                }
+                Text("×", color = LocalPalette.current.text.toComposeColor(), fontSize = 20.sp,
+                    modifier = Modifier.clip(CircleShape).clickable { onDismiss() }.padding(horizontal = 5.dp))
             }
 
             // Reference layout: size control and illustrated pen tray occupy the broad left
