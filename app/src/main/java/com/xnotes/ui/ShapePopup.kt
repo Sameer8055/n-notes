@@ -298,15 +298,30 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                         verticalArrangement = Arrangement.spacedBy(5.dp),
                     ) {
                         paletteColors.forEach { color ->
+                            val swatchColor = color.toComposeColor()
+                            val selected = if (config.fill) color == config.fillColor else color == ink
+                            val checkColor = if (
+                                swatchColor.red * 0.299f + swatchColor.green * 0.587f + swatchColor.blue * 0.114f > 0.55f
+                            ) Color.Black else Color.White
                             Box(
                                 Modifier.size(28.dp).clip(RoundedCornerShape(5.dp))
-                                    .background(color.toComposeColor())
-                                    .border(1.dp, LocalPalette.current.border.toComposeColor(), RoundedCornerShape(5.dp))
+                                    .background(swatchColor)
+                                    .border(
+                                        if (selected) 2.dp else 1.dp,
+                                        if (selected) (if (LocalPalette.current.isDark) Color.White else Color.Black)
+                                        else LocalPalette.current.border.toComposeColor(),
+                                        RoundedCornerShape(5.dp),
+                                    )
                                     .clickable {
                                         editor.setSwatchColor(editor.hostActiveColorIndex, color)
                                         if (config.fill) emit(config.copy(fillColor = color))
                                     },
-                            )
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                if (selected) {
+                                    Text("✓", color = checkColor, fontSize = 16.sp)
+                                }
+                            }
                         }
                     }
                     Text(
