@@ -1,6 +1,7 @@
 name: Build Debug APK
 
 # Build automatically when the completed toolbox redesign is pushed to its feature branch.
+# The Sameer Notes branch is included so every polish commit gets a debug APK artifact.
 on:
   push:
     branches:
