@@ -170,7 +170,7 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                                             chipLabel(preset),
                                             selected = preset.key == config.preset,
                                             latex = chipLatex(preset),
-                                            iconSize = 24.dp,
+                                            iconSize = 27.dp,
                                         ) { emit(config.choose(preset)) }
                                     }
                                 }

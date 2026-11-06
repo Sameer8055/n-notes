@@ -197,8 +197,73 @@ internal fun kindLabel(k: EntryKind): String = when (k) {
 /** A document's first page: the top cropped to fill [shape]'s square, or the whole page fitted in. */
 @Composable
 internal fun EntryThumb(editor: Editor, entry: BrowseEntry, shape: ThumbShape, modifier: Modifier = Modifier) {
-    val whole = shape == ThumbShape.PAGE
-    ThumbImage(rememberThumb(editor, entry, whole), whole, modifier, ReaderKind.ofName(entry.name)?.label)
+    val palette = LocalPalette.current
+    if (entry.isDir) {
+        val accent = entry.color?.let { codeTint(it, palette) } ?: palette.accent.toComposeColor()
+        FolderCoverThumb(modifier, accent)
+    } else {
+        val whole = shape == ThumbShape.PAGE
+        ThumbImage(rememberThumb(editor, entry, whole), whole, modifier, ReaderKind.ofName(entry.name)?.label)
+    }
+}
+
+/** A real folder cover for grid/gallery thumbnails; folders must not fall back to the generic file glyph. */
+@Composable
+private fun FolderCoverThumb(modifier: Modifier, accent: Color) {
+    val palette = LocalPalette.current
+    Box(
+        modifier.background(
+            Brush.linearGradient(
+                listOf(
+                    accent.copy(alpha = 0.25f),
+                    palette.surfaceHi.toComposeColor(),
+                    accent.copy(alpha = 0.10f),
+                ),
+            ),
+        ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            Modifier.fillMaxHeight(0.78f).fillMaxWidth(0.58f)
+                .offset(x = 13.dp, y = 5.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color.White.copy(alpha = 0.20f))
+                .border(1.dp, Color.White.copy(alpha = 0.25f), RoundedCornerShape(8.dp)),
+        )
+        Box(
+            Modifier.fillMaxHeight(0.78f).fillMaxWidth(0.58f)
+                .offset(x = 5.dp, y = 2.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(palette.paper.toComposeColor().copy(alpha = 0.78f))
+                .border(1.dp, palette.paperBorder.toComposeColor(), RoundedCornerShape(8.dp)),
+        )
+        Box(
+            Modifier.fillMaxHeight(0.78f).fillMaxWidth(0.58f)
+                .offset(x = (-3).dp, y = (-1).dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(palette.paper.toComposeColor())
+                .border(1.dp, palette.paperBorder.toComposeColor(), RoundedCornerShape(8.dp)),
+        ) {
+            Column(
+                Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 15.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                repeat(4) { index ->
+                    Box(
+                        Modifier.fillMaxWidth(if (index == 3) 0.58f else 0.84f)
+                            .height(3.dp).clip(CircleShape)
+                            .background(palette.textDim.toComposeColor().copy(alpha = 0.22f)),
+                    )
+                }
+            }
+        }
+        Icon(
+            XnotesIcons.folder,
+            contentDescription = null,
+            tint = accent,
+            modifier = Modifier.align(Alignment.BottomEnd).padding(12.dp).size(42.dp),
+        )
+    }
 }
 
 /** The top of [entry]'s first page as a square, or with [whole] the page entire; seeded from memory, null until loaded. */
