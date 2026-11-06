@@ -62,9 +62,11 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -618,7 +620,9 @@ internal fun ToolbarIcon(
     // No ripple: the circle is the feedback, and a white flash over it reads as a glitch.
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
-    val press by animateFloatAsState(if (pressed) 0.85f else 1f, spring(dampingRatio = 0.5f, stiffness = Spring.StiffnessMedium), label = "toolPress")
+    val press by animateFloatAsState(if (pressed) 0.94f else 1f, spring(dampingRatio = 0.62f, stiffness = Spring.StiffnessMedium), label = "toolPress")
+    val glassTop = androidx.compose.ui.graphics.Color.White.copy(alpha = if (pressed) 0.25f else 0.13f)
+    val glassBase = palette.surface.toComposeColor().copy(alpha = if (palette.isDark) 0.30f else 0.22f)
     Tooltip(contentDescription, hint = hint, shortcut = shortcut) {
         Box(
             Modifier.size(bar.button).clickable(interaction, indication = null, enabled = enabled, role = Role.Button, onClick = onClick),
@@ -633,7 +637,26 @@ internal fun ToolbarIcon(
                             glide.row?.let { glide.centers[glideKey] = it.localPositionOf(c, Offset(c.size.width / 2f, c.size.height / 2f)) }
                         },
                     )
-                    .drawBehind { if (fill > 0f) drawCircle(circle.copy(alpha = circle.alpha * fill)) },
+                    .drawBehind {
+                        // A quiet raised-glass lens: soft vertical body, a fine specular rim,
+                        // and a small top reflection. The selected glide remains the top layer.
+                        drawCircle(brush = Brush.verticalGradient(listOf(glassTop, glassBase)))
+                        drawCircle(
+                            color = androidx.compose.ui.graphics.Color.White.copy(alpha = if (pressed) 0.34f else 0.16f),
+                            style = Stroke(width = size.minDimension * 0.035f),
+                        )
+                        drawCircle(
+                            brush = Brush.verticalGradient(listOf(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.16f), androidx.compose.ui.graphics.Color.Transparent)),
+                            radius = size.minDimension * 0.43f,
+                            center = Offset(size.width * 0.38f, size.height * 0.28f),
+                        )
+                        if (fill > 0f) drawCircle(circle.copy(alpha = circle.alpha * fill))
+                    }
+                    .graphicsLayer {
+                        scaleX = press
+                        scaleY = press
+                        translationY = if (pressed) 1.2f else 0f
+                    },
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(icon, contentDescription = contentDescription, tint = tint, modifier = Modifier.size(bar.icon).graphicsLayer { scaleX = press; scaleY = press })
