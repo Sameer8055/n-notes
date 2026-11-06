@@ -187,17 +187,18 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
         )
     }
 
+    // Twelve high-contrast presets arranged as the compact 3-column palette in the reference.
     val paletteColors = listOf(
-        Rgba(244, 28, 48), Rgba(255, 145, 24), Rgba(255, 205, 24), Rgba(42, 210, 72),
-        Rgba(0, 190, 72), Rgba(0, 190, 220), Rgba(20, 110, 240), Rgba(48, 45, 235),
-        Rgba(154, 35, 235), Rgba(235, 35, 205), Rgba(245, 125, 205), Rgba(255, 255, 255),
-        Rgba(35, 35, 38), Rgba(135, 135, 140), Rgba(245, 220, 165),
+        Rgba(245, 20, 24), Rgba(255, 145, 20), Rgba(255, 215, 20),
+        Rgba(45, 205, 65), Rgba(35, 65, 235), Rgba(20, 145, 235),
+        Rgba(20, 185, 195), Rgba(225, 25, 185), Rgba(35, 115, 45),
+        Rgba(25, 25, 28), Rgba(135, 135, 140), Rgba(255, 255, 255),
     )
     val penTools = listOf(Tool.PEN, Tool.CALLIGRAPHY, Tool.SPEED, Tool.TAPER, Tool.HIGHLIGHTER)
 
     DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
         Column(
-            Modifier.widthIn(min = 350.dp, max = 520.dp).padding(horizontal = 12.dp, vertical = 10.dp),
+            Modifier.widthIn(min = 390.dp, max = 520.dp).padding(horizontal = 12.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(
@@ -235,7 +236,7 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
                         ),
                     )
                 }
-                Column(Modifier.width(142.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                Column(Modifier.width(96.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     StyleCaption(stringResource(R.string.caption_colour))
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(5.dp),
@@ -243,7 +244,7 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
                     ) {
                         paletteColors.forEach { swatch ->
                             Box(
-                                Modifier.size(22.dp).clip(RoundedCornerShape(5.dp))
+                                Modifier.size(26.dp).clip(RoundedCornerShape(4.dp))
                                     .background(swatch.toComposeColor())
                                     .border(1.dp, LocalPalette.current.border.toComposeColor(), RoundedCornerShape(5.dp))
                                     .clickable { editor.setSwatchColor(editor.hostActiveColorIndex, swatch) },
@@ -269,8 +270,14 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
             HorizontalDivider(color = LocalPalette.current.border.toComposeColor())
 
             // Icon-led pen selector, matching the compact horizontal tool tray in the reference.
+            // Light, inset tool tray: the pen silhouettes read clearly against the dark popup,
+            // matching the original X Notes toolbox rather than presenting another row of text chips.
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color(0xFFF1F2F4))
+                    .border(1.dp, Color(0xFFD2D4D8), RoundedCornerShape(10.dp))
+                    .padding(horizontal = 8.dp, vertical = 7.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -361,8 +368,8 @@ private fun ToolModeButton(tool: Tool, selected: Boolean, onClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
-        Icon(icon, contentDescription = label, tint = if (selected) palette.selectionForeground.toComposeColor() else palette.text.toComposeColor(), modifier = Modifier.size(25.dp))
-        Text(label, color = if (selected) palette.selectionForeground.toComposeColor() else palette.textDim.toComposeColor(), fontSize = 10.sp, maxLines = 1)
+        Icon(icon, contentDescription = label, tint = if (selected) Color(0xFF5B35B8) else Color(0xFF303238), modifier = Modifier.size(27.dp))
+        Text(label, color = if (selected) Color(0xFF4D2A9B) else Color(0xFF34363B), fontSize = 10.sp, maxLines = 1)
     }
 }
 
