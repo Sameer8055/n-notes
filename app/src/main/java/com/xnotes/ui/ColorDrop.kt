@@ -90,6 +90,7 @@ interface ColorDropHost {
     /** One-shot tap-to-fill mode, armed from the shape panel. */
     val bucketFillArmed: Boolean get() = false
     fun bucketFillAt(window: Offset) {}
+    fun cancelBucketFill() {}
 
     /** The canvas view's bounds, in window pixels. */
     fun canvasInWindow(): androidx.compose.ui.geometry.Rect
@@ -313,6 +314,9 @@ fun ColorDropOverlay(host: ColorDropHost) {
                         change.consume()
                     }
                     host.bucketFillAt(origin[0] + release)
+                } else {
+                    // A tap outside the page cancels the one-shot mode instead of trapping the UI.
+                    host.cancelBucketFill()
                 }
             }
         }
