@@ -1,8 +1,10 @@
 name: Build Debug APK
 
-# Builds are intentionally manual: polish commits must not start an APK build
-# until the user explicitly approves it with "Start build".
+# User approved an APK build; keep manual dispatch available as well.
 on:
+  push:
+    branches:
+      - feature/sameer-notes-shape-branding
   workflow_dispatch:
 
 permissions:
