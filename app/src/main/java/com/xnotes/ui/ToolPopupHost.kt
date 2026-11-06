@@ -49,6 +49,9 @@ interface ToolPopupHost : SwatchHost {
 
     fun updateShapeConfig(config: ShapeConfig)
 
+    /** Whether the one-shot bucket fill action is armed. */
+    val hostBucketFillArmed: Boolean get() = false
+
     /** Arm or disarm the one-shot bucket fill action from the shape panel. */
     fun setBucketFillArmed(armed: Boolean) {}
 
