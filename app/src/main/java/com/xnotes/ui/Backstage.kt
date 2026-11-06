@@ -576,7 +576,7 @@ private fun BackstageSidebar(modifier: Modifier, editor: Editor, nav: SidebarNav
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val brandTypeface = remember {
-                runCatching { Typeface.createFromAsset(editor.context.assets, "fonts/montserrat/regular.ttf") }
+                runCatching { Typeface.createFromAsset(LocalContext.current.assets, "fonts/montserrat/regular.ttf") }
                     .getOrElse { Typeface.create("sans-serif", Typeface.NORMAL) }
             }
             Image(
