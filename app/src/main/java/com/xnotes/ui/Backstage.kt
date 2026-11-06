@@ -66,6 +66,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
@@ -163,7 +164,11 @@ import androidx.compose.material.icons.filled.Sync
 import com.xnotes.ui.icons.XnotesIcons
 import com.xnotes.ui.theme.ColorMath
 import com.xnotes.ui.theme.LocalPalette
+import com.xnotes.ui.theme.MaterialColors
+import com.xnotes.ui.theme.Palette
+import com.xnotes.ui.theme.composeColorScheme
 import com.xnotes.ui.theme.toComposeColor
+import com.xnotes.settings.MaterialStyle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -246,7 +251,24 @@ fun Backstage(
     )
     // The backstage is the root of the stack — ordinary base content, not a dialog. The activity
     // window already runs edge-to-edge with the system bars hidden (MainActivity.applyFullscreen).
-    BackstageContent(editor, compact, view, onSelectView, calls, onExitApp, onImportCodeTheme, onImportFont, onBackup)
+    // Keep the luxury identity scoped to the backstage/home experience. The note editor and its
+    // drawing tools continue using the user's existing theme unchanged.
+    val homePalette = remember {
+        Palette.material(
+            "dark",
+            MaterialColors.seeded(
+                seed = Rgba(198, 164, 104, 255),
+                dark = true,
+                style = MaterialStyle.NEUTRAL,
+                surfaceSeed = Rgba(20, 19, 18, 255),
+            ),
+        )
+    }
+    CompositionLocalProvider(LocalPalette provides homePalette) {
+        MaterialTheme(colorScheme = homePalette.composeColorScheme()) {
+            BackstageContent(editor, compact, view, onSelectView, calls, onExitApp, onImportCodeTheme, onImportFont, onBackup)
+        }
+    }
 }
 
 /** How far a swipe on Home travels before it counts. */
