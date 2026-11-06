@@ -65,17 +65,30 @@ import com.xnotes.ui.theme.toComposeColor
 fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
     var config by remember { mutableStateOf(editor.hostShapeConfig) }
     var colorPickerOpen by remember { mutableStateOf(false) }
-    var fillOpacityExpanded by remember { mutableStateOf(false) }
+    var advancedExpanded by remember { mutableStateOf(false) }
 
     fun emit(next: ShapeConfig) {
         config = next
         editor.updateShapeConfig(next)
     }
 
-    // Show every enabled built-in N Notes shape, in the catalogue's native order.
-    // Connectors remain intentionally excluded from this panel.
     val shapes = ShapePresets.shown(editor.hostHiddenShapes, editor.hostShapeOrder)
         .flatMap { it.presets }
+    // Fifteen shapes per page gives the selector a balanced five-by-three grid.
+    // Persist the page in ShapeConfig so reopening the popup returns to the same page.
+    val shapePages = remember(shapes) { shapes.chunked(15) }
+    var visibleShapePage by remember(shapes) { mutableStateOf(config.shapePage.coerceAtLeast(0)) }
+    val page = visibleShapePage.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
+    LaunchedEffect(page) {
+        if (config.shapePage != page) emit(config.copy(shapePage = page))
+    }
+
+    fun changeShapePage(next: Int) {
+        val safePage = next.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
+        visibleShapePage = safePage
+        if (config.shapePage != safePage) emit(config.copy(shapePage = safePage))
+    }
+
     val paletteColors = listOf(
         Rgba(245, 20, 24), Rgba(255, 145, 20), Rgba(255, 215, 20),
         Rgba(45, 205, 65), Rgba(35, 65, 235), Rgba(20, 145, 235),
@@ -83,6 +96,9 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
         Rgba(25, 25, 28), Rgba(135, 135, 140), Rgba(255, 255, 255),
     )
     val ink = editor.hostToolbarColors.getOrNull(editor.hostActiveColorIndex) ?: Rgba(0, 0, 0)
+    val activeShapeColor = if (config.fill) config.fillColor ?: ink else ink
+    val selected = ShapePresets.byKey(config.preset)
+    val canFill = selected?.kind?.isClosed == true && config.connector == null
 
     DropdownMenu(
         expanded = true,
@@ -90,17 +106,17 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
         modifier = Modifier.clip(RoundedCornerShape(26.dp)),
     ) {
         Column(
-            Modifier.widthIn(min = 410.dp, max = 640.dp).fillMaxWidth()
+            Modifier.widthIn(min = 410.dp, max = 560.dp).fillMaxWidth()
                 .liquidGlassSurface(
                     RoundedCornerShape(26.dp),
                     LocalPalette.current.panel.toComposeColor(),
                     elevation = 14.dp,
                 )
                 .padding(horizontal = 14.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(9.dp),
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
@@ -114,8 +130,10 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                 )
             }
 
+            // Match the Pen panel's proportions: the shape selector gets the broad
+            // left column; colour and the bucket action sit together in the narrow right rail.
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.Top,
             ) {
@@ -129,171 +147,73 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
 
                     Column(
                         Modifier.fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(15.dp))
                             .background(LocalPalette.current.surface.toComposeColor())
-                            .padding(horizontal = 7.dp, vertical = 7.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                            .padding(horizontal = 9.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(7.dp),
                     ) {
                         Text(
                             "Basic shapes",
                             color = LocalPalette.current.textDim.toComposeColor(),
                             fontSize = 11.sp,
                         )
-                        // Compose only the current 12-chip page. A horizontal scroll
-                        // Row eagerly composed the entire catalogue on popup open, which
-                        // could freeze/crash the app while building every custom glyph.
-                        val shapePages = remember(shapes) { shapes.chunked(12) }
-                        var visibleShapePage by remember(shapes) { mutableStateOf(0) }
                         if (shapePages.isNotEmpty()) {
-                            val page = visibleShapePage.coerceIn(0, shapePages.lastIndex)
-                            Column(
-                                Modifier.pointerInput(shapes.size) {
-                                    var drag = 0f
-                                    detectHorizontalDragGestures(
-                                        onDragStart = { drag = 0f },
-                                        onHorizontalDrag = { change, amount ->
-                                            drag += amount
-                                            if (kotlin.math.abs(drag) > 48.dp.toPx()) {
-                                                visibleShapePage = (visibleShapePage + if (drag < 0f) 1 else -1)
-                                                    .coerceIn(0, shapePages.lastIndex)
-                                                drag = 0f
-                                                change.consume()
-                                            }
-                                        },
-                                    )
-                                },
-                                verticalArrangement = Arrangement.spacedBy(5.dp),
-                            ) {
-                                shapePages[page].chunked(4).forEach { rowShapes ->
-                                    Row(
-                                        Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(5.dp),
-                                    ) {
-                                        rowShapes.forEach { preset ->
-                                            KindChip(
-                                                ShapeIcons.of(preset),
-                                                chipLabel(preset),
-                                                selected = preset.key == config.preset,
-                                                latex = chipLatex(preset),
-                                            ) { emit(config.choose(preset)) }
-                                        }
-                                    }
-                                }
-                                if (shapePages.size > 1) {
-                                    Row(
-                                        Modifier.fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.Center,
-                                    ) {
-                                        Text(
-                                            "‹",
-                                            color = LocalPalette.current.text.toComposeColor(),
-                                            fontSize = 22.sp,
-                                            modifier = Modifier.clickable {
-                                                visibleShapePage = (page - 1).coerceAtLeast(0)
-                                            }.padding(horizontal = 12.dp, vertical = 2.dp),
-                                        )
-                                        Text(
-                                            "${page + 1} / ${shapePages.size}",
-                                            color = LocalPalette.current.textDim.toComposeColor(),
-                                            fontSize = 11.sp,
-                                        )
-                                        Text(
-                                            "›",
-                                            color = LocalPalette.current.text.toComposeColor(),
-                                            fontSize = 22.sp,
-                                            modifier = Modifier.clickable {
-                                                visibleShapePage = (page + 1).coerceAtMost(shapePages.lastIndex)
-                                            }.padding(horizontal = 12.dp, vertical = 2.dp),
-                                        )
+                            shapePages[page].chunked(5).forEach { rowShapes ->
+                                Row(
+                                    Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    rowShapes.forEach { preset ->
+                                        KindChip(
+                                            ShapeIcons.of(preset),
+                                            chipLabel(preset),
+                                            selected = preset.key == config.preset,
+                                            latex = chipLatex(preset),
+                                            iconSize = 24.dp,
+                                        ) { emit(config.choose(preset)) }
                                     }
                                 }
                             }
-                        } else {
-                            Text(
-                                "No shapes available",
-                                color = LocalPalette.current.textDim.toComposeColor(),
-                                fontSize = 11.sp,
-                            )
-                        }
-                    }
-
-                    val selected = ShapePresets.byKey(config.preset)
-                    if (selected?.kind?.isClosed == true && config.connector == null) {
-                        Row(
-                            Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        ) {
-                            Text("Fill shape", color = LocalPalette.current.text.toComposeColor(), fontSize = 12.sp)
-                            androidx.compose.material3.Switch(
-                                checked = config.fill,
-                                onCheckedChange = { emit(config.copy(fill = it)) },
-                            )
-                        }
-                        if (config.fill) {
                             Row(
-                                Modifier.fillMaxWidth(),
+                                Modifier.fillMaxWidth().padding(top = 1.dp),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
+                                horizontalArrangement = Arrangement.Center,
                             ) {
-                                Text("Fill opacity", color = LocalPalette.current.text.toComposeColor(), fontSize = 12.sp)
-                                androidx.compose.material3.Switch(
-                                    checked = fillOpacityExpanded,
-                                    onCheckedChange = { fillOpacityExpanded = it },
+                                Text(
+                                    "‹",
+                                    color = if (page > 0) LocalPalette.current.text.toComposeColor() else LocalPalette.current.textDim.toComposeColor(),
+                                    fontSize = 22.sp,
+                                    modifier = Modifier.clickable(enabled = page > 0) {
+                                        changeShapePage(page - 1)
+                                    }.padding(horizontal = 12.dp, vertical = 1.dp),
+                                )
+                                Text(
+                                    if (shapePages.size > 1) "${page + 1} / ${shapePages.size}" else "All shapes",
+                                    color = LocalPalette.current.textDim.toComposeColor(),
+                                    fontSize = 11.sp,
+                                )
+                                Text(
+                                    "›",
+                                    color = if (page < shapePages.lastIndex) LocalPalette.current.text.toComposeColor() else LocalPalette.current.textDim.toComposeColor(),
+                                    fontSize = 22.sp,
+                                    modifier = Modifier.clickable(enabled = page < shapePages.lastIndex) {
+                                        changeShapePage(page + 1)
+                                    }.padding(horizontal = 12.dp, vertical = 1.dp),
                                 )
                             }
-                            if (fillOpacityExpanded) {
-                                SliderRow("Opacity", (config.fillAlpha * 100.0).toFloat(), 5f..100f) {
-                                    emit(config.copy(fillAlpha = (it / 100.0).coerceIn(0.05, 1.0)))
-                                }
-                            }
-                        }
-                    }
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Text("Dashed line", color = LocalPalette.current.text.toComposeColor(), fontSize = 12.sp)
-                        androidx.compose.material3.Switch(
-                            checked = config.dashed,
-                            onCheckedChange = { emit(config.copy(dashed = it)) },
-                        )
-                    }
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Text("Bucket fill", color = LocalPalette.current.text.toComposeColor(), fontSize = 12.sp)
-                        Box(
-                            Modifier.size(34.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (editor.hostBucketFillArmed) LocalPalette.current.selectionBackground.toComposeColor() else Color.Transparent)
-                                .border(1.dp, LocalPalette.current.border.toComposeColor(), RoundedCornerShape(8.dp))
-                                .clickable {
-                                    val arm = !editor.hostBucketFillArmed
-                                    editor.setBucketFillArmed(arm)
-                                    if (arm) onDismiss()
-                                },
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Icon(
-                                Icons.Default.FormatColorFill,
-                                contentDescription = "Bucket fill",
-                                tint = LocalPalette.current.text.toComposeColor(),
-                                modifier = Modifier.size(19.dp),
-                            )
+                        } else {
+                            Text("No shapes available", color = LocalPalette.current.textDim.toComposeColor(), fontSize = 11.sp)
                         }
                     }
                 }
 
                 Column(
                     Modifier.width(112.dp)
-                        .clip(RoundedCornerShape(10.dp))
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(LocalPalette.current.surface.toComposeColor().copy(alpha = 0.42f))
                         .padding(6.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(7.dp),
                 ) {
                     Text("Colour", color = LocalPalette.current.text.toComposeColor(), fontSize = 12.sp)
                     FlowRow(
@@ -303,64 +223,55 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                     ) {
                         paletteColors.forEach { color ->
                             val swatchColor = color.toComposeColor()
-                            val selected = color == (if (config.fill) config.fillColor ?: ink else ink)
-                            val checkColor = if (
-                                swatchColor.red * 0.299f + swatchColor.green * 0.587f + swatchColor.blue * 0.114f > 0.55f
-                            ) Color.Black else Color.White
+                            val isCurrent = color == activeShapeColor
+                            val luminance = swatchColor.red * 0.299f + swatchColor.green * 0.587f + swatchColor.blue * 0.114f
                             Box(
-                                Modifier.size(28.dp).clip(RoundedCornerShape(5.dp))
+                                Modifier.size(28.dp).clip(RoundedCornerShape(6.dp))
                                     .background(swatchColor)
                                     .border(
-                                        if (selected) 2.dp else 1.dp,
-                                        if (selected) (if (LocalPalette.current.isDark) Color.White else Color.Black)
+                                        if (isCurrent) 2.5.dp else 1.dp,
+                                        if (isCurrent) (if (luminance > 0.55f) Color.Black else Color.White)
                                         else LocalPalette.current.border.toComposeColor(),
-                                        RoundedCornerShape(5.dp),
+                                        RoundedCornerShape(6.dp),
                                     )
                                     .clickable {
                                         editor.setSwatchColor(editor.hostActiveColorIndex, color)
                                         if (config.fill) emit(config.copy(fillColor = color))
                                     },
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                if (selected) {
-                                    Text("✓", color = checkColor, fontSize = 16.sp)
-                                }
-                            }
+                            )
                         }
                     }
-                    // Show the active custom ink explicitly; otherwise no built-in swatch
-                    // can communicate which custom colour is currently selected.
-                    val activeShapeColor = if (config.fill) config.fillColor ?: ink else ink
+
                     if (activeShapeColor !in paletteColors) {
                         val customColor = activeShapeColor.toComposeColor()
-                        val customCheck = if (
-                            customColor.red * 0.299f + customColor.green * 0.587f + customColor.blue * 0.114f > 0.55f
-                        ) Color.Black else Color.White
+                        val luminance = customColor.red * 0.299f + customColor.green * 0.587f + customColor.blue * 0.114f
                         Row(
                             Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center,
                         ) {
                             Box(
-                                Modifier.size(28.dp).clip(RoundedCornerShape(5.dp))
+                                Modifier.size(28.dp).clip(RoundedCornerShape(6.dp))
                                     .background(customColor)
-                                    .border(2.dp, if (LocalPalette.current.isDark) Color.White else Color.Black, RoundedCornerShape(5.dp)),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text("✓", color = customCheck, fontSize = 16.sp)
-                            }
+                                    .border(
+                                        2.5.dp,
+                                        if (luminance > 0.55f) Color.Black else Color.White,
+                                        RoundedCornerShape(6.dp),
+                                    ),
+                            )
                             Text("  Current", color = LocalPalette.current.textDim.toComposeColor(), fontSize = 10.sp)
                         }
                     }
+
                     Text(
                         "Custom colour",
                         color = LocalPalette.current.textDim.toComposeColor(),
                         fontSize = 10.sp,
-                        modifier = Modifier.clickable { colorPickerOpen = true }.padding(vertical = 3.dp),
+                        modifier = Modifier.clickable { colorPickerOpen = true }.padding(vertical = 2.dp),
                     )
                     if (colorPickerOpen) {
                         ColorPickerPopup(
-                            initial = if (config.fill) config.fillColor ?: ink else ink,
+                            initial = activeShapeColor,
                             recents = editor.hostRecentColors,
                             onDismiss = { colorPickerOpen = false },
                             onPick = { picked ->
@@ -370,7 +281,67 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                             },
                         )
                     }
+
+                    Row(
+                        Modifier.fillMaxWidth()
+                            .clip(RoundedCornerShape(9.dp))
+                            .background(if (editor.hostBucketFillArmed) LocalPalette.current.selectionBackground.toComposeColor() else Color.Transparent)
+                            .border(
+                                1.dp,
+                                if (editor.hostBucketFillArmed) LocalPalette.current.accent.toComposeColor() else LocalPalette.current.border.toComposeColor(),
+                                RoundedCornerShape(9.dp),
+                            )
+                            .clickable {
+                                val arm = !editor.hostBucketFillArmed
+                                editor.setBucketFillArmed(arm)
+                                if (arm) onDismiss()
+                            }
+                            .padding(horizontal = 7.dp, vertical = 7.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Icon(
+                            Icons.Default.FormatColorFill,
+                            contentDescription = "Bucket fill",
+                            tint = LocalPalette.current.text.toComposeColor(),
+                            modifier = Modifier.size(17.dp),
+                        )
+                        Text("Bucket", color = LocalPalette.current.text.toComposeColor(), fontSize = 10.sp, maxLines = 1)
+                    }
                 }
+            }
+
+            Row(
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(9.dp))
+                    .clickable { advancedExpanded = !advancedExpanded }
+                    .padding(horizontal = 2.dp, vertical = 5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    "Advanced settings",
+                    color = LocalPalette.current.text.toComposeColor(),
+                    fontSize = 12.sp,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
+                )
+                Text(
+                    if (advancedExpanded) "⌃" else "⌄",
+                    color = LocalPalette.current.textDim.toComposeColor(),
+                    fontSize = 16.sp,
+                )
+            }
+
+            if (advancedExpanded) {
+                Box(Modifier.fillMaxWidth().height(1.dp).background(LocalPalette.current.border.toComposeColor()))
+                if (canFill) {
+                    ToggleRow("Fill shape", config.fill) { emit(config.copy(fill = it)) }
+                    if (config.fill) {
+                        SliderRow("Fill opacity", (config.fillAlpha * 100.0).toFloat(), 5f..100f) {
+                            emit(config.copy(fillAlpha = (it / 100.0).coerceIn(0.05, 1.0)))
+                        }
+                    }
+                }
+                ToggleRow("Dashed line", config.dashed) { emit(config.copy(dashed = it)) }
             }
         }
     }
