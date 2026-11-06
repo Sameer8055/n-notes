@@ -2080,20 +2080,25 @@ class InteractionController(
                 val members = SelectionMath.lassoMembers(state.document.pages, state.pageRects, lassoPoints, false) { i, p ->
                     state.toPageSpace(i, p)
                 }.filter { it.pageIndex in drawable && it.item is Stroke }
+                val beforeByPage = linkedMapOf<Page, List<CanvasItem>>()
                 val dirtyByPage = linkedMapOf<Page, Rect>()
                 for (member in members) {
                     val page = state.document.pages.getOrNull(member.pageIndex) ?: continue
                     val item = member.item
+                    if (!beforeByPage.containsKey(page)) beforeByPage[page] = page.items.toList()
                     if (!page.items.remove(item)) continue
-                    eraseRemovals += page to item
                     val bounds = item.paintBounds()
                     dirtyByPage[page] = dirtyByPage[page]?.union(bounds) ?: bounds
                 }
                 for ((page, dirty) in dirtyByPage) {
                     if (!state.repairRegion(page, dirty.outset(REPAIR_PAD))) state.invalidatePage(page)
                 }
-                if (eraseRemovals.isNotEmpty()) {
-                    history.push(EraseItems(eraseRemovals.toList()))
+                val commands = beforeByPage.mapNotNull { (page, before) ->
+                    val after = page.items.toList()
+                    if (after != before) ReplacePageItems(page, before, after) else null
+                }
+                if (commands.isNotEmpty()) {
+                    history.push(commands.singleOrNull() ?: CompositeCommand(commands))
                     state.document.dirty = true
                     onContentChanged()
                 }
