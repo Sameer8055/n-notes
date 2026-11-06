@@ -283,25 +283,19 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
                         paletteColors.forEach { swatch ->
                             val swatchColor = swatch.toComposeColor()
                             val selected = editor.hostToolbarColors.getOrNull(editor.hostActiveColorIndex) == swatch
-                            val checkColor = if (
-                                swatchColor.red * 0.299f + swatchColor.green * 0.587f + swatchColor.blue * 0.114f > 0.55f
-                            ) Color.Black else Color.White
                             Box(
                                 Modifier.size(28.dp).clip(RoundedCornerShape(5.dp))
                                     .background(swatchColor)
-                                    .border(
-                                        if (selected) 2.dp else 1.dp,
-                                        if (selected) (if (LocalPalette.current.isDark) Color.White else Color.Black)
-                                        else LocalPalette.current.border.toComposeColor(),
+.border(
+                                        if (selected) 2.5.dp else 1.dp,
+                                        if (selected) {
+                                            val luminance = swatchColor.red * 0.299f + swatchColor.green * 0.587f + swatchColor.blue * 0.114f
+                                            if (luminance > 0.55f) Color.Black else Color.White
+                                        } else LocalPalette.current.border.toComposeColor(),
                                         RoundedCornerShape(5.dp),
                                     )
                                     .clickable { editor.setSwatchColor(editor.hostActiveColorIndex, swatch) },
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                if (selected) {
-                                    Text("✓", color = checkColor, fontSize = 16.sp)
-                                }
-                            }
+                            ) {}
                         }
                     }
                     // Keep a visible selection marker when the active ink is a custom colour
@@ -309,9 +303,6 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
                     val activePenColor = editor.hostToolbarColors.getOrNull(editor.hostActiveColorIndex)
                     if (activePenColor != null && activePenColor !in paletteColors) {
                         val customColor = activePenColor.toComposeColor()
-                        val customCheck = if (
-                            customColor.red * 0.299f + customColor.green * 0.587f + customColor.blue * 0.114f > 0.55f
-                        ) Color.Black else Color.White
                         Row(
                             Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
@@ -320,11 +311,12 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
                             Box(
                                 Modifier.size(28.dp).clip(RoundedCornerShape(5.dp))
                                     .background(customColor)
-                                    .border(2.dp, if (LocalPalette.current.isDark) Color.White else Color.Black, RoundedCornerShape(5.dp)),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text("✓", color = customCheck, fontSize = 16.sp)
-                            }
+                                    .border(
+                                        2.5.dp,
+                                        if (customColor.red * 0.299f + customColor.green * 0.587f + customColor.blue * 0.114f > 0.55f) Color.Black else Color.White,
+                                        RoundedCornerShape(5.dp),
+                                    ),
+                            ) {}
                             Text("  Current", color = LocalPalette.current.textDim.toComposeColor(), fontSize = 10.sp)
                         }
                     }
@@ -1501,7 +1493,7 @@ internal fun functionLabel(expr: String): String = when (expr) {
 
 
 @Composable
-internal fun KindChip(icon: ImageVector, label: String, selected: Boolean, latex: String? = null, onClick: () -> Unit) {
+internal fun KindChip(icon: ImageVector, label: String, selected: Boolean, latex: String? = null, iconSize: Dp = 20.dp, onClick: () -> Unit) {
     val palette = LocalPalette.current
     val tint = if (selected) palette.selectionForeground.toComposeColor() else palette.text.toComposeColor()
     Tooltip(label) {
@@ -1515,7 +1507,7 @@ internal fun KindChip(icon: ImageVector, label: String, selected: Boolean, latex
                 .padding(horizontal = if (latex == null) 8.dp else 1.dp, vertical = 8.dp),
         ) {
             if (latex == null) {
-                Icon(icon, contentDescription = label, tint = tint, modifier = Modifier.size(20.dp))
+                Icon(icon, contentDescription = label, tint = tint, modifier = Modifier.size(iconSize))
             } else {
                 Box(Modifier.size(34.dp, 20.dp).semantics { contentDescription = label }, contentAlignment = Alignment.Center) {
                     Latex(latex, Modifier.scaleDownToFit(), LatexConfig(fontSize = 13.sp, theme = LatexTheme.light(tint, Color.Transparent)))
