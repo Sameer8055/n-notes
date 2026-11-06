@@ -264,10 +264,14 @@ fun Backstage(
             ),
         )
     }
-    CompositionLocalProvider(LocalPalette provides homePalette) {
-        MaterialTheme(colorScheme = homePalette.composeColorScheme()) {
-            BackstageContent(editor, compact, view, onSelectView, calls, onExitApp, onImportCodeTheme, onImportFont, onBackup)
+    if (view == BackstageView.HOME) {
+        CompositionLocalProvider(LocalPalette provides homePalette) {
+            MaterialTheme(colorScheme = homePalette.composeColorScheme()) {
+                BackstageContent(editor, compact, view, onSelectView, calls, onExitApp, onImportCodeTheme, onImportFont, onBackup)
+            }
         }
+    } else {
+        BackstageContent(editor, compact, view, onSelectView, calls, onExitApp, onImportCodeTheme, onImportFont, onBackup)
     }
 }
 
