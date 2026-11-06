@@ -297,6 +297,11 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // Used for the provisional launch state before the editor preferences have loaded.
+    private fun applyFullscreen(fullscreen: Boolean) {
+        applyEditorSystemBars(fullscreen = fullscreen, noteOpen = false)
+    }
+
     private fun applyEditorSystemBars(fullscreen: Boolean, noteOpen: Boolean) {
         val controller = WindowInsetsControllerCompat(window, window.decorView)
         val navigationBars = WindowInsetsCompat.Type.navigationBars()
