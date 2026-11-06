@@ -337,7 +337,7 @@ internal fun GridFileTile(b: ExplorerBody, e: BrowseEntry) {
         // Only the thumbnail is outlined, so the colour code and selection show on it alone.
         Box(
             Modifier.fillMaxWidth().aspectRatio(if (b.view.thumb == ThumbShape.PAGE) 100f / 141f else 1f)
-                .clip(shape).border(if (selected) 2.dp else 1.dp, if (selected) accent else (code ?: palette.border.toComposeColor()), shape),
+                .liquidGlassSurface(shape, palette.surface.toComposeColor(), edge = if (selected) accent else (code ?: palette.border.toComposeColor()), elevation = 6.dp),
         ) {
             EntryThumb(b.editor, e, b.view.thumb, Modifier.fillMaxSize())
             if (selected) Box(Modifier.fillMaxSize().background(palette.selectionBackground.withAlpha(77).toComposeColor()))
@@ -392,10 +392,13 @@ internal fun FolderChipTile(b: ExplorerBody, e: BrowseEntry, height: Dp = 60.dp)
             .height(height)
             .scale(pulse.value)
             .registered(b, e)
-            .clip(shape)
-            .background(if (active) palette.selectionBackground.toComposeColor() else Color.Transparent)
+            .liquidGlassSurface(
+                shape,
+                if (active) palette.selectionBackground.toComposeColor() else palette.surface.toComposeColor(),
+                edge = if (active) accent else (code ?: palette.border.toComposeColor()),
+                elevation = 5.dp,
+            )
             .then(if (!active && code != null) Modifier.colorHatch(code) else Modifier)
-            .border(1.dp, if (active) accent else (code ?: palette.border.toComposeColor()), shape)
             .combinedClickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -448,8 +451,12 @@ internal fun FolderCardTile(b: ExplorerBody, e: BrowseEntry) {
     ) {
         Box(
             Modifier.fillMaxWidth().aspectRatio(if (b.view.thumb == ThumbShape.PAGE) 100f / 141f else 1f)
-                .clip(shape).background(palette.surface.toComposeColor())
-                .border(if (active) 2.dp else 1.dp, if (active) accent else (code ?: palette.border.toComposeColor()), shape),
+                .liquidGlassSurface(
+                    shape,
+                    if (active) palette.selectionBackground.toComposeColor() else palette.surface.toComposeColor(),
+                    edge = if (active) accent else (code ?: palette.border.toComposeColor()),
+                    elevation = 8.dp,
+                ),
             contentAlignment = Alignment.Center,
         ) {
             Icon(XnotesIcons.folder, null, tint = code ?: palette.textDim.toComposeColor(), modifier = Modifier.size(44.dp))
