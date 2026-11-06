@@ -84,7 +84,14 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
     )
     val ink = editor.hostToolbarColors.getOrNull(editor.hostActiveColorIndex) ?: Rgba(0, 0, 0)
 
-    DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
+    DropdownMenu(
+        expanded = true,
+        onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(26.dp),
+        containerColor = Color.Transparent,
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp,
+    ) {
         Column(
             Modifier.widthIn(min = 410.dp, max = 640.dp).fillMaxWidth()
                 .liquidGlassSurface(
