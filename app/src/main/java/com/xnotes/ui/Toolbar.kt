@@ -645,10 +645,16 @@ internal fun ToolbarIcon(
                             color = androidx.compose.ui.graphics.Color.White.copy(alpha = if (pressed) 0.34f else 0.16f),
                             style = Stroke(width = size.minDimension * 0.035f),
                         )
-                        drawCircle(
-                            brush = Brush.verticalGradient(listOf(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.16f), androidx.compose.ui.graphics.Color.Transparent)),
-                            radius = size.minDimension * 0.43f,
-                            center = Offset(size.width * 0.38f, size.height * 0.28f),
+                        // A centered upper specular arc keeps the light direction consistent
+                        // across circular buttons instead of making the reflection look tilted.
+                        drawArc(
+                            color = androidx.compose.ui.graphics.Color.White.copy(alpha = if (pressed) 0.24f else 0.11f),
+                            startAngle = 205f,
+                            sweepAngle = 130f,
+                            useCenter = false,
+                            topLeft = Offset(size.width * 0.12f, size.height * 0.12f),
+                            size = androidx.compose.ui.geometry.Size(size.width * 0.76f, size.height * 0.76f),
+                            style = Stroke(width = size.minDimension * 0.045f),
                         )
                         if (fill > 0f) drawCircle(circle.copy(alpha = circle.alpha * fill))
                     }
