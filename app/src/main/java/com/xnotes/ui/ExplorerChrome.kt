@@ -34,6 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
@@ -184,6 +186,43 @@ internal fun Modifier.floatingBacking(lift: () -> Float, shape: Shape, fill: Col
         }
     }
     .then(BlockPointer)
+
+/**
+ * A restrained glass surface for the Home experience. The fill remains translucent so the
+ * obsidian backdrop contributes to the material; a soft top reflection and fine perimeter
+ * highlight create depth without placing a misaligned overlay above the interactive content.
+ */
+internal fun Modifier.liquidGlassSurface(
+    shape: Shape,
+    fill: Color,
+    edge: Color = Color.White.copy(alpha = 0.20f),
+    elevation: Dp = 8.dp,
+): Modifier = this
+    .shadow(elevation, shape, clip = false)
+    .clip(shape)
+    .background(
+        Brush.verticalGradient(
+            listOf(
+                Color.White.copy(alpha = 0.095f),
+                fill.copy(alpha = 0.78f),
+                fill.copy(alpha = 0.56f),
+            ),
+        ),
+    )
+    .drawWithCache {
+        val outline = shape.createOutline(size, layoutDirection, this)
+        val px = 1.dp.toPx()
+        onDrawWithContent {
+            drawContent()
+            drawLine(
+                color = Color.White.copy(alpha = 0.17f),
+                start = Offset(size.width * 0.12f, px),
+                end = Offset(size.width * 0.88f, px),
+                strokeWidth = px,
+            )
+            drawOutline(outline, edge.copy(alpha = edge.alpha * 0.72f), style = Stroke(px))
+        }
+    }
 
 /** Side padding that grows from nothing to [pad] with [lift], giving a floating pill room for its rounded ends. */
 internal fun Modifier.liftPadding(lift: () -> Float, pad: Dp): Modifier = layout { measurable, constraints ->
