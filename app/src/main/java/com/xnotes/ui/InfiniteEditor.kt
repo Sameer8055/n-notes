@@ -1235,6 +1235,10 @@ class InfiniteEditor(context: Context) : ToolPopupHost, SelectionMenuHost, LongP
         colorDropper.end(window)
     }
 
+    override fun cancelBucketFill() {
+        bucketFillMode = false
+    }
+
     override val colorDrag: ColorDrag? get() = colorDropper.drag
 
     override fun beginColorDrag(color: Rgba, window: Offset) = colorDropper.begin(color, window)
