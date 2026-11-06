@@ -250,6 +250,8 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
                                     .clickable { editor.setSwatchColor(editor.hostActiveColorIndex, swatch) },
                             )
                         }
+                    }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                         ColorPickerDot(
                             null,
                             custom = false,
