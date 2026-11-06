@@ -184,67 +184,82 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
     }
 
     DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
-        Column(Modifier.width(620.dp).padding(horizontal = 16.dp, vertical = 10.dp)) {
-            PopupTitle("Tools")
-            // Keep the complete family of ink tools together in the toolbox, rather than
-            // requiring users to hunt for alternate pens in the toolbar customizer.
-            Row(
+        Column(
+            Modifier.widthIn(min = 300.dp, max = 620.dp).padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                PopupTitle("Tools")
+                Text(stringResource(tool.labelRes), color = LocalPalette.current.textDim.toComposeColor(), fontSize = 12.sp)
+            }
+
+            // The pen family is a single selector row at the top of the toolbox.
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+                verticalArrangement = Arrangement.spacedBy(7.dp),
             ) {
                 listOf(Tool.PEN, Tool.CALLIGRAPHY, Tool.SPEED, Tool.TAPER, Tool.HIGHLIGHTER).forEach { candidate ->
-                    ModeChip(
-                        stringResource(candidate.labelRes),
-                        selected = candidate == tool,
-                    ) { onSelectTool(candidate) }
+                    ModeChip(stringResource(candidate.labelRes), selected = candidate == tool) { onSelectTool(candidate) }
                 }
             }
-            Spacer(Modifier.size(10.dp))
-            SliderRow("Size", width, ToolConversions.widthRange(tool).let { it.start.toFloat()..it.endInclusive.toFloat() }) { width = it; emit() }
-            StyleCaption(stringResource(R.string.caption_colour))
+
+            HorizontalDivider(color = LocalPalette.current.border.toComposeColor())
+
+            // Main controls sit side by side: thickness slider on the left, colour palette on the right.
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                editor.shownSwatches.forEachIndexed { index, color ->
-                    Box(
-                        Modifier.size(28.dp).clip(CircleShape)
-                            .background(color.toComposeColor())
-                            .border(
-                                if (index == editor.hostActiveColorIndex) 3.dp else 1.dp,
-                                (if (index == editor.hostActiveColorIndex) LocalPalette.current.accent else LocalPalette.current.border).toComposeColor(),
-                                CircleShape,
+                Column(Modifier.weight(1f)) {
+                    SliderRow(
+                        "Size",
+                        width,
+                        ToolConversions.widthRange(tool).let { it.start.toFloat()..it.endInclusive.toFloat() },
+                    ) { width = it; emit() }
+                }
+                Column(Modifier.widthIn(min = 112.dp, max = 220.dp)) {
+                    StyleCaption(stringResource(R.string.caption_colour))
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(7.dp),
+                        verticalArrangement = Arrangement.spacedBy(7.dp),
+                    ) {
+                        editor.shownSwatches.forEachIndexed { index, color ->
+                            Box(
+                                Modifier.size(27.dp).clip(CircleShape)
+                                    .background(color.toComposeColor())
+                                    .border(
+                                        if (index == editor.hostActiveColorIndex) 3.dp else 1.dp,
+                                        (if (index == editor.hostActiveColorIndex) LocalPalette.current.accent else LocalPalette.current.border).toComposeColor(),
+                                        CircleShape,
+                                    )
+                                    .clickable { editor.setSwatchColor(index, color) },
                             )
-                            .clickable { editor.setSwatchColor(index, color) },
-                    )
+                        }
+                        ColorPickerDot(
+                            null,
+                            custom = false,
+                            onPick = { editor.setSwatchColor(editor.hostActiveColorIndex, it) },
+                            dismissOnPick = false,
+                        ) { dismissPicker, pick ->
+                            ColorPickerPopup(
+                                initial = editor.hostToolbarColors.getOrNull(editor.hostActiveColorIndex),
+                                recents = editor.hostRecentColors,
+                                onDismiss = dismissPicker,
+                                onPick = pick,
+                            )
+                        }
+                    }
                 }
-                ColorPickerDot(
-                    null,
-                    custom = false,
-                    onPick = { editor.setSwatchColor(editor.hostActiveColorIndex, it) },
-                    dismissOnPick = false,
-                ) { dismissPicker, pick ->
-                    ColorPickerPopup(
-                        initial = editor.hostToolbarColors.getOrNull(editor.hostActiveColorIndex),
-                        recents = editor.hostRecentColors,
-                        onDismiss = dismissPicker,
-                        onPick = pick,
-                    )
-                }
-                Spacer(Modifier.weight(1f))
-                Text(
-                    stringResource(tool.labelRes),
-                    color = LocalPalette.current.text.toComposeColor(),
-                    fontSize = 13.sp,
-                )
             }
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = LocalPalette.current.border.toComposeColor())
-            // COLOUR override: "Default" follows the toolbar's active ink colour; pick a hue to pin
-            // this tool to it regardless of the toolbar selection.
-            StyleCaption(stringResource(R.string.caption_colour))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+
+            HorizontalDivider(color = LocalPalette.current.border.toComposeColor())
+            StyleCaption("Advanced settings")
+
+            // Optional per-tool colour override remains available without crowding the main palette.
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                StyleCaption(stringResource(R.string.caption_colour))
                 ModeChip(stringResource(R.string.default_choice), colorOverride == null) { colorOverride = null; emit() }
                 ColorPickerDot(
                     colorOverride,
@@ -260,7 +275,7 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
                     )
                 }
             }
-            Spacer(Modifier.size(12.dp))
+
             val hasPressure = tool == Tool.PEN || tool == Tool.CALLIGRAPHY || tool == Tool.SPEED || tool == Tool.TAPER
             if (hasPressure) {
                 ToggleRow(stringResource(R.string.caption_pressure), pressure) { pressure = it; emit() }
@@ -275,9 +290,7 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
             if (tool == Tool.TAPER) {
                 SliderRow(stringResource(R.string.caption_tip_width), taperTip, 0f..100f) { taperTip = it; emit() }
             }
-            // SCALE off: ink keeps a constant on-screen thickness whatever zoom you draw at.
             ToggleRow(stringResource(R.string.caption_scale), scale) { scale = it; emit() }
-            // Global dwell shape detection (holding the pen still). Off for the highlighter, which never dwells.
             if (tool.isStroke && tool != Tool.HIGHLIGHTER) {
                 ToggleRow(stringResource(R.string.caption_snap_to_shapes), snapShapes) { snapShapes = it; editor.snapHeldToShapes = it }
             }
@@ -285,17 +298,11 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
                 SliderRow(stringResource(R.string.caption_dash), dashLen, 2f..40f) { dashLen = it; emit() }
                 SliderRow(stringResource(R.string.caption_gap), gapLen, 2f..40f) { gapLen = it; emit() }
             }
-            // The highlighter's strength (translucency) and an optional straight-segment lock
-            // (for ruling/underlining).
             if (tool == Tool.HIGHLIGHTER) {
                 SliderRow(stringResource(R.string.caption_intensity), intensity, 10f..100f) { intensity = it; emit() }
                 ToggleRow(stringResource(R.string.caption_straight_line), straight) { straight = it; emit() }
-                // INVERSE swaps the multiply blend for a screen one, so the marker lightens the
-                // page instead of darkening it. A multiply has nothing to darken on a dark page.
                 ToggleRow(stringResource(R.string.caption_inverse), inverse) { inverse = it; emit() }
             }
-            // Glow is offered on every stroke tool except the highlighter (translucent) and the
-            // dashed pen (it draws a line, not a fillable ribbon, so a halo has nothing to hug).
             if (tool.isStroke && tool != Tool.HIGHLIGHTER && tool != Tool.DASHED) {
                 ToggleRow(stringResource(R.string.caption_neon), glow) { glow = it; emit() }
                 if (glow) {
