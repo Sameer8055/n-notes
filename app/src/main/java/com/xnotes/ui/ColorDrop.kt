@@ -318,31 +318,33 @@ fun ColorDropOverlay(host: ColorDropHost) {
         }
     Canvas(overlayModifier) {
         val canvas = host.canvasInWindow().translate(-origin[0])
-        drag?.preview?.let { p ->
-            clipRect(canvas.left, canvas.top, canvas.right, canvas.bottom) {
-                drawIntoCanvas { c ->
-                    val r = AndroidRenderer(c.nativeCanvas)
-                    r.save()
-                    r.translate(canvas.left.toDouble(), canvas.top.toDouble())
-                    host.enterDropFrame(r, p.frame)
-                    when (p) {
-                        is DropPreview.Line -> p.item.paint(r)
-                        is DropPreview.Area -> {
-                            tint.color = drag.color.withAlpha(PREVIEW_ALPHA).toArgb()
-                            val d = p.rect
-                            c.nativeCanvas.drawBitmap(p.mask, null, RectF(d.left.toFloat(), d.top.toFloat(), d.right.toFloat(), d.bottom.toFloat()), tint)
+        drag?.let { activeDrag ->
+            activeDrag.preview?.let { p ->
+                clipRect(canvas.left, canvas.top, canvas.right, canvas.bottom) {
+                    drawIntoCanvas { c ->
+                        val r = AndroidRenderer(c.nativeCanvas)
+                        r.save()
+                        r.translate(canvas.left.toDouble(), canvas.top.toDouble())
+                        host.enterDropFrame(r, p.frame)
+                        when (p) {
+                            is DropPreview.Line -> p.item.paint(r)
+                            is DropPreview.Area -> {
+                                tint.color = activeDrag.color.withAlpha(PREVIEW_ALPHA).toArgb()
+                                val d = p.rect
+                                c.nativeCanvas.drawBitmap(p.mask, null, RectF(d.left.toFloat(), d.top.toFloat(), d.right.toFloat(), d.bottom.toFloat()), tint)
+                            }
                         }
+                        r.restore()
                     }
-                    r.restore()
                 }
             }
-        }
-        val at = drag?.pointer ?: Offset.Unspecified
-        if (at.isSpecified && drag != null) {
-            val local = at - origin[0]
-            val radius = DISC_RADIUS.dp.toPx()
-            drawCircle(drag.color.toComposeColor(), radius, local)
-            drawCircle(ring.toComposeColor(), radius, local, style = RingStroke(1.5.dp.toPx()))
+            val at = activeDrag.pointer
+            if (at.isSpecified) {
+                val local = at - origin[0]
+                val radius = DISC_RADIUS.dp.toPx()
+                drawCircle(activeDrag.color.toComposeColor(), radius, local)
+                drawCircle(ring.toComposeColor(), radius, local, style = RingStroke(1.5.dp.toPx()))
+            }
         }
     }
 }
