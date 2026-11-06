@@ -181,6 +181,12 @@ internal fun Modifier.floatingBacking(lift: () -> Float, shape: Shape, fill: Col
             val l = lift()
             if (l > 0f) {
                 drawOutline(outline, fill.copy(alpha = fill.alpha * l))
+                drawLine(
+                    color = Color.White.copy(alpha = 0.14f * l),
+                    start = Offset(size.width * 0.14f, 1.dp.toPx()),
+                    end = Offset(size.width * 0.86f, 1.dp.toPx()),
+                    strokeWidth = 1.dp.toPx(),
+                )
                 drawOutline(outline, edge.copy(alpha = edge.alpha * l), style = stroke)
             }
         }
