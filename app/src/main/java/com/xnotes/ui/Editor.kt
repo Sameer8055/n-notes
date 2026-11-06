@@ -7031,6 +7031,22 @@ class Editor(context: Context, val pane: Pane = Pane.PRIMARY) : ToolPopupHost, S
         override val measurer: TextMeasurer get() = textMeasurer
     })
 
+    private var bucketFillMode by mutableStateOf(false)
+
+    override val bucketFillArmed: Boolean get() = bucketFillMode
+
+    override fun setBucketFillArmed(armed: Boolean) {
+        bucketFillMode = armed
+    }
+
+    override fun bucketFillAt(window: Offset) {
+        if (!bucketFillMode) return
+        val color = hostToolbarColors.getOrNull(hostActiveColorIndex) ?: Rgba(0, 0, 0)
+        bucketFillMode = false
+        colorDropper.begin(color, window)
+        colorDropper.end(window)
+    }
+
     override val colorDrag: ColorDrag? get() = colorDropper.drag
 
     override fun beginColorDrag(color: Rgba, window: Offset) = colorDropper.begin(color, window)
