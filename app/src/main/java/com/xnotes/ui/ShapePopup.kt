@@ -4,6 +4,8 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -85,7 +87,10 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
     DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
         Column(
             Modifier.widthIn(max = 560.dp).fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp),
+                .clip(RoundedCornerShape(22.dp))
+                .background(LocalPalette.current.panel.toComposeColor())
+                .border(1.dp, LocalPalette.current.border.toComposeColor(), RoundedCornerShape(22.dp))
+                .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(
@@ -118,7 +123,22 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
 
                     Column(
                         Modifier.fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
+                            .clip(RoundedCornerShape(16.dp))
+                            .pointerInput(shapes.size) {
+                                var drag = 0f
+                                detectHorizontalDragGestures(
+                                    onDragStart = { drag = 0f },
+                                    onHorizontalDrag = { change, amount ->
+                                        drag += amount
+                                        if (kotlin.math.abs(drag) > 48.dp.toPx()) {
+                                            visibleShapePage = (visibleShapePage + if (drag < 0f) 1 else -1)
+                                                .coerceIn(0, (shapes.size + 11) / 12 - 1)
+                                            drag = 0f
+                                            change.consume()
+                                        }
+                                    },
+                                )
+                            }
                             .background(Color(0xFFF1F2F4))
                             .border(1.dp, Color(0xFFD2D4D8), RoundedCornerShape(10.dp))
                             .padding(horizontal = 7.dp, vertical = 7.dp),
