@@ -722,12 +722,12 @@ internal fun HomeShelves(
                     Row(
                         Modifier.height(46.dp).clip(shape)
                             .background(palette.surface.toComposeColor())
-                            .border(1.dp, palette.accent.toComposeColor().copy(alpha = 0.22f), shape)
+                            .border(1.dp, palette.border.toComposeColor(), shape)
                             .clickable { onOpenPin(pin) }.padding(start = 13.dp, end = 17.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
-                        Icon(XnotesIcons.folder, null, tint = palette.accent.toComposeColor(), modifier = Modifier.size(19.dp))
+                        Icon(XnotesIcons.folder, null, tint = palette.textDim.toComposeColor(), modifier = Modifier.size(19.dp))
                         Text(pin.name, color = palette.text.toComposeColor(), fontSize = 13.5.sp, fontWeight = FontWeight.Medium, maxLines = 1)
                     }
                 }
@@ -735,9 +735,7 @@ internal fun HomeShelves(
             Spacer(Modifier.height(20.dp))
         }
         Row(Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.width(3.dp).height(20.dp).clip(CircleShape).background(palette.accent.toComposeColor()))
-            Spacer(Modifier.width(10.dp))
-            Text(stringResource(R.string.in_folder, rootName), color = palette.text.toComposeColor(), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+            Text(stringResource(R.string.in_folder, rootName), color = palette.text.toComposeColor(), fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
             Text(counts, color = palette.textDim.toComposeColor(), fontSize = 12.sp, fontWeight = FontWeight.Medium,
                 modifier = Modifier.clip(RoundedCornerShape(20.dp)).background(palette.surface.toComposeColor()).padding(horizontal = 10.dp, vertical = 5.dp))
         }
@@ -755,7 +753,7 @@ private fun RecentCard(b: ExplorerBody, r: RecentEntry, onOpen: (BrowseEntry) ->
         Modifier.width(168.dp).clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onOpen(e) },
         verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
-        Box(Modifier.size(168.dp).clip(shape).border(1.dp, code ?: palette.accent.toComposeColor().copy(alpha = 0.30f), shape)) {
+        Box(Modifier.size(168.dp).clip(shape).border(1.dp, code ?: palette.border.toComposeColor(), shape)) {
             EntryThumb(b.editor, e, ThumbShape.TOP, Modifier.fillMaxSize())
             ThumbBadges(b, e, 6.dp)
         }
