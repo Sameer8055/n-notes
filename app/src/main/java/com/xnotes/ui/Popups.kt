@@ -199,10 +199,7 @@ private fun ToolConfigPopupContent(editor: ToolPopupHost, tool: Tool, onSelectTo
     DropdownMenu(
         expanded = true,
         onDismissRequest = onDismiss,
-        shape = RoundedCornerShape(26.dp),
-        containerColor = Color.Transparent,
-        tonalElevation = 0.dp,
-        shadowElevation = 0.dp,
+        modifier = Modifier.clip(RoundedCornerShape(26.dp)),
     ) {
         Column(
             Modifier.widthIn(min = 410.dp, max = 560.dp)
@@ -1178,10 +1175,7 @@ fun EraserConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
     DropdownMenu(
         expanded = true,
         onDismissRequest = onDismiss,
-        shape = RoundedCornerShape(26.dp),
-        containerColor = Color.Transparent,
-        tonalElevation = 0.dp,
-        shadowElevation = 0.dp,
+        modifier = Modifier.clip(RoundedCornerShape(26.dp)),
     ) {
         Column(
             Modifier.widthIn(min = 410.dp, max = 560.dp)
