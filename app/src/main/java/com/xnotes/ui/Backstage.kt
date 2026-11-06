@@ -570,13 +570,14 @@ private class SidebarNav(
 @Composable
 private fun BackstageSidebar(modifier: Modifier, editor: Editor, nav: SidebarNav, onCollapse: () -> Unit) {
     val palette = LocalPalette.current
+    val brandContext = LocalContext.current
     Column(modifier.fillMaxHeight().liquidGlassSurface(MaterialTheme.shapes.extraLarge, palette.panel.toComposeColor(), elevation = 12.dp).padding(vertical = 12.dp)) {
         Row(
             Modifier.fillMaxWidth().padding(start = 16.dp, end = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val brandTypeface = remember {
-                runCatching { Typeface.createFromAsset(LocalContext.current.assets, "fonts/montserrat/regular.ttf") }
+                runCatching { Typeface.createFromAsset(brandContext.assets, "fonts/montserrat/regular.ttf") }
                     .getOrElse { Typeface.create("sans-serif", Typeface.NORMAL) }
             }
             Image(
