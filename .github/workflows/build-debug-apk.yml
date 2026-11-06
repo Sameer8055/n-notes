@@ -6,6 +6,7 @@ on:
     branches:
       - feature/floating-three-section-toolbar
       - feature/final-shape-lasso-polish
+      - feature/sameer-notes-shape-branding
   workflow_dispatch:
 
 permissions:
@@ -51,7 +52,7 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: n-notes-debug-apk
+          name: sameer-notes-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 14
