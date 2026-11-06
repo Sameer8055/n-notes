@@ -169,7 +169,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             val context = LocalContext.current
             val ed = remember { Editor(context).also { editor = it } }
-            LaunchedEffect(ed.fullscreen) { applyFullscreen(ed.fullscreen) }
+            // Keep Android's navigation controls out of the way while a note is being edited,
+            // even when the user's general fullscreen preference is off. This prevents system-bar
+            // appearance from changing the available height and shifting the floating toolbar.
+            LaunchedEffect(ed.fullscreen, ed.noteOpen) {
+                applyEditorSystemBars(fullscreen = ed.fullscreen, noteOpen = ed.noteOpen)
+            }
             KeepScreenOn(ed)
             // Re-arm the periodic cloud sync to match the saved preferences.
             LaunchedEffect(Unit) { com.xnotes.sync.SyncManager.reschedule(context) }
@@ -263,7 +268,7 @@ class MainActivity : ComponentActivity() {
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (!hasFocus) StylusButtonLatch.releaseKey() // a held pen key's key-up may not come back to this window
-        if (hasFocus && editor?.fullscreen == true) applyFullscreen(true) // re-hide transient bars after they swipe in
+        if (hasFocus) editor?.let { applyEditorSystemBars(fullscreen = it.fullscreen, noteOpen = it.noteOpen) } // re-hide transient bars after they swipe in
     }
 
     override fun onStart() {
@@ -292,15 +297,25 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun applyFullscreen(fullscreen: Boolean) {
+    private fun applyEditorSystemBars(fullscreen: Boolean, noteOpen: Boolean) {
         val controller = WindowInsetsControllerCompat(window, window.decorView)
+        val navigationBars = WindowInsetsCompat.Type.navigationBars()
+        val statusBars = WindowInsetsCompat.Type.statusBars()
         if (fullscreen) {
             controller.hide(WindowInsetsCompat.Type.systemBars())
-            controller.systemBarsBehavior =
-                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        } else if (noteOpen) {
+            // Hide only the bottom navigation bar during note-taking. Keeping the status bar
+            // visible respects the normal non-fullscreen preference while preserving a stable
+            // bottom edge for the floating toolbar.
+            controller.show(statusBars)
+            controller.hide(navigationBars)
         } else {
             controller.show(WindowInsetsCompat.Type.systemBars())
         }
+        // Android may still reveal transient bars after an intentional edge swipe; they are
+        // automatically hidden again without resizing the editor content.
+        controller.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
 }
 
