@@ -537,7 +537,7 @@
     <string name="search_settings">Search settings</string>
     <string name="search_keywords_port">Port old notes shapes axes number line curve function graph upgrade check</string>
     <string name="pref_port">Port old notes</string>
-    <string name="pref_port_help">Earlier Sameer Notes versions drew the X-Y axes, the number line, the smooth curve and function graphs as shapes of their own. Notes open with these turned into today\'s shapes, but the files keep the old ones until they are saved again. Scan finds them and Port rewrites them. Each file is checked after it is written, and its old copy is kept first. A file that does not check out, or that changes meanwhile, is left as it was. Notes open in an editor are skipped.</string>
+    <string name="pref_port_help">Earlier Saya versions drew the X-Y axes, the number line, the smooth curve and function graphs as shapes of their own. Notes open with these turned into today\'s shapes, but the files keep the old ones until they are saved again. Scan finds them and Port rewrites them. Each file is checked after it is written, and its old copy is kept first. A file that does not check out, or that changes meanwhile, is left as it was. Notes open in an editor are skipped.</string>
     <string name="port_scan">Scan</string>
     <string name="port_run">Port</string>
     <string name="port_scanning">Scanning...</string>
@@ -582,7 +582,7 @@
     <string name="save">Save</string>
     <string name="create">Create</string>
     <string name="err_save_that_note">Couldn’t save that note.</string>
-    <string name="err_pdf_password">That PDF is password-protected, which xnotes can’t open.</string>
+    <string name="err_pdf_password">That PDF is password-protected, which Saya can’t open.</string>
     <string name="err_create_folder">Couldn’t create that folder.</string>
     <string name="err_create_canvas">Couldn’t create the canvas.</string>
     <string name="err_create_note">Couldn’t create the note.</string>
@@ -728,7 +728,7 @@
     <string name="settings_exported">Settings exported.</string>
     <string name="settings_imported">Settings imported.</string>
     <string name="err_export_settings">Couldn’t export the settings.</string>
-    <string name="err_import_settings">That file holds no xnotes settings.</string>
+    <string name="err_import_settings">That file holds no Saya settings.</string>
     <string name="replace">Replace</string>
     <string name="crop">Crop</string>
     <string name="group">Group</string>
@@ -762,7 +762,7 @@
     <string name="err_clipboard_no_image">The clipboard has no image to paste.</string>
     <string name="err_read_sticker">Could not read the sticker.</string>
     <string name="err_open_that_note">Could not open that note.</string>
-    <string name="err_not_xnotes">Not an xnotes document.</string>
+    <string name="err_not_xnotes">This is not a supported Saya document.</string>
     <string name="err_open_note">Could not open the note.</string>
     <string name="note_forked">This note changed elsewhere. Your edits are now in “%1$s”.</string>
     <string name="canvas_forked">This canvas changed elsewhere. Your edits are now in “%1$s”.</string>
@@ -853,11 +853,11 @@
     <!-- About -->
     <string name="app_tagline">A handwriting notes and sketching app for Android</string>
     <string name="copy_version">Copy version</string>
-    <string name="help_make_better">Help make xnotes better</string>
+    <string name="help_make_better">Help make Saya better</string>
     <string name="report_bug">Report a bug</string>
     <string name="request_feature">Request a feature</string>
     <string name="sponsor">Sponsor</string>
-    <string name="enjoying_xnotes">"Enjoying xnotes? "</string>
+    <string name="enjoying_xnotes">"Enjoying Saya? "</string>
     <string name="star_on_github">Star it on GitHub</string>
     <string name="mit_license">MIT License</string>
     <string name="version_n">Version %1$s</string>
@@ -1202,7 +1202,7 @@
     <string name="material_style_muted_description">Subtle colour with neutral surfaces.</string>
     <string name="material_style_grayscale_description">No colour tint. Your chosen colour is kept for other styles.</string>
 
-    <!-- n-notes fork additions -->
+    <!-- Saya additions -->
     <string name="tool_table">Table</string>
     <string name="import_file">Import file</string>
     <string name="kind_read_only_file">Read-only file</string>
