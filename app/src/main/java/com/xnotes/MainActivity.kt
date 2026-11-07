@@ -106,10 +106,6 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/** Minimum time the launch loader stays up, so its animation is briefly seen even
- *  when the session restores instantly. */
-private const val MIN_LOADER_MS = 2_000L
-
 /** How long the maths waits for the font bytes it measures with before going without. */
 private const val MATH_FONT_WAIT_MS = 1500L
 
@@ -190,10 +186,7 @@ class MainActivity : ComponentActivity() {
             LaunchedEffect(Unit) { com.xnotes.sync.SyncManager.reschedule(context) }
             var ready by remember { mutableStateOf(false) }
             LaunchedEffect(Unit) {
-                val start = android.os.SystemClock.uptimeMillis()
-                ed.restoreSession() // heavy load off-thread; loader animates meanwhile
-                val elapsed = android.os.SystemClock.uptimeMillis() - start
-                if (elapsed < MIN_LOADER_MS) kotlinx.coroutines.delay(MIN_LOADER_MS - elapsed)
+                ed.restoreSession()
                 ready = true
                 ed.prewarmBackstage() // warm recents/explorer caches so the first backstage open is instant
             }
@@ -207,13 +200,6 @@ class MainActivity : ComponentActivity() {
                             importUri = pendingImport,
                             onImportConsumed = { pendingImport = null },
                         )
-                        androidx.compose.animation.AnimatedVisibility(
-                            visible = !ready,
-                            enter = androidx.compose.animation.EnterTransition.None,
-                            exit = androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(280)),
-                        ) {
-                            com.xnotes.ui.XnotesLoader()
-                        }
                         com.xnotes.ui.EyedropperOverlay()
                     }
                 }
