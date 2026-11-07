@@ -1635,8 +1635,7 @@ internal fun OptionDropdown(options: List<Pair<String, String>>, selectedId: Str
     Box {
         Row(
             Modifier
-                .clip(MaterialTheme.shapes.small)
-                .border(1.dp, palette.border.toComposeColor(), MaterialTheme.shapes.small)
+                .liquidGlassSurface(MaterialTheme.shapes.small, palette.surface.toComposeColor(), edge = Color.White.copy(alpha = 0.20f), elevation = 4.dp)
                 .clickable { expanded = true }
                 .padding(start = 12.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -1645,9 +1644,15 @@ internal fun OptionDropdown(options: List<Pair<String, String>>, selectedId: Str
             Spacer(Modifier.width(6.dp))
             Icon(XnotesIcons.chevronDown, null, tint = palette.textDim.toComposeColor(), modifier = Modifier.size(16.dp))
         }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.liquidGlassSurface(RoundedCornerShape(14.dp), palette.surface.toComposeColor(), edge = Color.White.copy(alpha = 0.22f), elevation = 12.dp),
+        ) {
             options.forEach { (id, lbl) ->
                 DropdownMenuItem(
+                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                        .liquidGlassSurface(RoundedCornerShape(8.dp), palette.surface.toComposeColor(), edge = Color.White.copy(alpha = 0.16f), elevation = 2.dp),
                     text = { Text(lbl) },
                     trailingIcon = if (id in checked) {
                         { Icon(XnotesIcons.check, null, tint = palette.textDim.toComposeColor(), modifier = Modifier.size(14.dp)) }
