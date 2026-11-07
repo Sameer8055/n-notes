@@ -195,6 +195,10 @@ class InteractionController(
     /** Whether the system clipboard currently holds an image (provided by the host). */
     var clipboardHasImage: () -> Boolean = { false }
 
+    /** Touch mappings used when existing shape-label and long-press behavior do not claim the gesture. */
+    var onFingerDoubleTapAction: (() -> Boolean)? = null
+    var onFingerLongPressAction: (() -> Boolean)? = null
+
     /** The inline-flow caret controller; TEXT-tool gestures route here (installed by the Editor). */
     var flowText: FlowTextController? = null
 
@@ -532,6 +536,7 @@ class InteractionController(
     private val handler by lazy { Handler(Looper.getMainLooper()) } // lazy: see [choreographer]
     private var longPressRunnable: Runnable? = null
     private var longPressStart = Pt.ZERO
+    private var longPressIsFinger = false
     private var longPressContent = Pt.ZERO
     private var longPressCandidate: Selected? = null
     private var longPressLocked: CanvasItem? = null
@@ -3048,7 +3053,7 @@ class InteractionController(
 
     /** A press with a connector chip: the connector sets off on the page under it, glued to the point under the pen if any. */
     private fun beginConnector(content: Pt) {
-        val pi = state.pageIndexAtContent(content) ?: return
+        val pi = state.pageIndexAtContent(content) ?: return false
         val page = state.document.pages[pi]
         clearSelection()
         val width = shapeConfig.strokeWidth * SHAPE_PEN_PARITY
@@ -3859,7 +3864,8 @@ class InteractionController(
         val prev = lastTapViewport
         if (prev != null && tapDownTime - lastTapTime <= DOUBLE_TAP_MS && prev.distanceTo(at) <= DOUBLE_TAP_SLOP_DP * state.devicePxPerDp) {
             lastTapViewport = null
-            onDoubleTap(at, e.getToolType(0), lastTapSelected)
+            val handled = onDoubleTap(at, e.getToolType(0), lastTapSelected)
+            if (!handled && e.getToolType(0) == MotionEvent.TOOL_TYPE_FINGER) onFingerDoubleTapAction?.invoke()
             return
         }
         lastTapViewport = at
@@ -3880,19 +3886,20 @@ class InteractionController(
         else -> false
     }
 
-    private fun onDoubleTap(viewport: Pt, toolType: Int, selectedBefore: Set<CanvasItem>) {
+    private fun onDoubleTap(viewport: Pt, toolType: Int, selectedBefore: Set<CanvasItem>): Boolean {
         val fingerPans = toolType == MotionEvent.TOOL_TYPE_FINGER && !fingerDraws && tool.fingerPansWhenOff
-        if (tool != Tool.SHAPE && tool != Tool.SELECT && !fingerPans) return
+        if (tool != Tool.SHAPE && tool != Tool.SELECT && !fingerPans) return false
         // The free polygon's own double tap closes its outline.
-        if (tool == Tool.SHAPE && shapeConfig.placesCorners) return
-        if (editingText != null || editingLabel != null) return
+        if (tool == Tool.SHAPE && shapeConfig.placesCorners) return false
+        if (editingText != null || editingLabel != null) return false
         val content = state.viewportToContent(viewport)
         val pi = state.pageIndexAtContent(content) ?: return
         val local = state.toPageSpace(pi, content)
         val reach = OUTLINE_GRAB / state.zoom
-        val shape = state.document.pages[pi].items.lastOrNull { !it.locked && labelTargetHit(it, local, reach) } as? Labelled ?: return
-        if (shape in selectedBefore) return
+        val shape = state.document.pages[pi].items.lastOrNull { !it.locked && labelTargetHit(it, local, reach) } as? Labelled ?: return false
+        if (shape in selectedBefore) return false
         startLabelEdit(shape, pi)
+        return true
     }
 
     /**
@@ -3937,6 +3944,7 @@ class InteractionController(
         }
         longPressStart = viewport
         longPressContent = content
+        longPressIsFinger = isFinger
         // A locked item cannot be picked up, so a held finger offers to release it instead. That is
         // the only way back: it is out of reach of the band, the lasso and every tap.
         longPressLocked = hit?.takeIf { it.locked && !readOnly }
@@ -3967,6 +3975,7 @@ class InteractionController(
         longPressCandidate = null
         longPressLocked = null
         longPressTextPage = -1
+        longPressIsFinger = false
     }
 
     private fun triggerLongPress() {
@@ -3987,6 +3996,13 @@ class InteractionController(
         dropConnectorDraft()
         bandRect = null
         lassoPoints.clear()
+        val fingerHold = longPressIsFinger
+        longPressIsFinger = false
+        if (fingerHold && onFingerLongPressAction?.invoke() == true) {
+            mode = PointerMode.IDLE
+            requestRender()
+            return
+        }
         if (candidate != null) {
             // Grab the item: switch to select, select it, and start a move.
             longPressPrevTool = tool
