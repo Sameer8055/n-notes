@@ -2057,7 +2057,7 @@ private fun ExplorerSection(
             if (selection.isNotEmpty()) Box(Modifier.fillMaxWidth().height(48.dp), contentAlignment = Alignment.CenterStart) {
                 // Registered when the bar appears, after the search field's, so Back clears the picks first.
                 BackHandler { selection.clear() }
-                SelectionBar(selection.size, onClear = { selection.clear() }, onSelectAll = if (showRecent) null else { { selection.clear(); selection.addAll(arranged.orEmpty()) } }) {
+                SelectionBar(selection.size, onClear = { selection.clear() }, onSelectAll = if (showRecent) null else ({ selection.clear(); selection.addAll(arranged.orEmpty()) })) {
                     val files = selection.filterNot { it.isDir }
                     val fg = palette.selectionForeground.toComposeColor()
                     if (selection.size == 1) ExplorerIcon(XnotesIcons.edit, stringResource(R.string.rename), fg) { renaming = selection.first(); selection.clear() }
