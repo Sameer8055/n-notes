@@ -394,7 +394,6 @@
     <string name="home">首页</string>
     <string name="new_note">新笔记</string>
     <string name="new_canvas">新画布</string>
-    <string name="about">关于</string>
     <string name="new_note_menu">新建笔记</string>
     <string name="new_canvas_menu">新建画布</string>
     <string name="import_pdf">导入 PDF</string>
