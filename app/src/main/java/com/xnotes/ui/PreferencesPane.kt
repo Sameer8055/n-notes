@@ -447,7 +447,7 @@ fun PreferencesPane(
                 CheckRow(stringResource(R.string.pref_start_fullscreen), editor.fullscreen) { editor.setFullscreenPref(it) }
                 CheckRow("Keep screen on while the app is open", prefs.keepScreenOn) { updateHome(prefs.copy(keepScreenOn = it)) }
                 CheckRow("Split settings into categories", prefs.prefsCategories) { updateHome(prefs.copy(prefsCategories = it)) }
-                GlassGlassTextButton(onClick = { update(Preferences()) }) { Text(stringResource(R.string.reset_to_defaults), fontSize = 13.sp) }
+                GlassTextButton(onClick = { update(Preferences()) }) { Text(stringResource(R.string.reset_to_defaults), fontSize = 13.sp) }
             }
             if (shown(PrefCategory.INPUT)) {
                 if (all) HorizontalDivider(color = palette.border.toComposeColor())
@@ -1367,7 +1367,7 @@ private fun Chip(label: String, selected: Boolean, onClick: () -> Unit) {
 
 
 @Composable
-private fun GlassGlassTextButton(
+private fun GlassTextButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
