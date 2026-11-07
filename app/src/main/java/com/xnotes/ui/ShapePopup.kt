@@ -89,8 +89,9 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
     // menus query child intrinsics while measuring, and a LazyRow cannot answer those queries.
     // That unsupported intrinsic measurement was crashing the app as soon as this popup opened.
     val pageStridePx = with(LocalDensity.current) { 49.dp.roundToPx() * 15 }
+    val initialShapePage = config.shapePage.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
     val shapeScrollState = rememberScrollState(
-        initial = config.shapePage.coerceAtLeast(0) * pageStridePx,
+        initial = initialShapePage * pageStridePx,
     )
     val shapeScrollScope = rememberCoroutineScope()
 
