@@ -298,16 +298,16 @@ fun PreferencesPane(
             if (open == null) {
                 Box(
                     Modifier.size(38.dp).clip(RoundedCornerShape(12.dp))
-                        .background(Brush.verticalGradient(listOf(Color(0xFF3A3F47), Color(0xFF171A1F))))
-                        .border(1.dp, Color.White.copy(alpha = 0.20f), RoundedCornerShape(12.dp)),
+                        .background(Color(0xFF050505))
+                        .border(1.dp, Color.White.copy(alpha = 0.16f), RoundedCornerShape(12.dp)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(XnotesIcons.settings, "Saya settings", tint = Color.White, modifier = Modifier.size(20.dp))
+                    Icon(XnotesIcons.settings, "Settings", tint = palette.text.toComposeColor(), modifier = Modifier.size(19.dp))
                 }
             }
             Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
-                Text("S A Y A   /   WORKSPACE", color = palette.accent.toComposeColor(), fontSize = 9.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 1.1.sp)
-                Text(open?.title ?: stringResource(R.string.preferences), color = palette.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 21.sp, letterSpacing = (-0.3).sp)
+                Text("WORKSPACE  /  CONTROL", color = palette.textDim.toComposeColor(), fontSize = 9.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 1.35.sp)
+                Text(open?.title ?: stringResource(R.string.preferences), color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 22.sp, letterSpacing = (-0.45).sp)
             }
             Spacer(Modifier.weight(1f))
             IconButton(onClick = { search.open = !search.open; if (!search.open) search.query = "" }) {
@@ -378,17 +378,26 @@ fun PreferencesPane(
                     val cardShape = RoundedCornerShape(15.dp)
                     Row(
                         Modifier.fillMaxWidth().clip(cardShape)
-                            .background(Brush.verticalGradient(listOf(Color(0xFF292D33), Color(0xFF171A1F))))
-                            .border(1.dp, Color.White.copy(alpha = 0.12f), cardShape)
+                            .background(Color(0xFF050505))
+                            .border(1.dp, Color.White.copy(alpha = 0.13f), cardShape)
                             .clickable { category = c }
-                            .padding(horizontal = 16.dp, vertical = 17.dp),
+                            .padding(horizontal = 15.dp, vertical = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
+                        Box(
+                            Modifier.size(32.dp).clip(RoundedCornerShape(10.dp))
+                                .background(Color.White.copy(alpha = 0.045f))
+                                .border(1.dp, Color.White.copy(alpha = 0.11f), RoundedCornerShape(10.dp)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text("%02d".format(PrefCategory.entries.indexOf(c) + 1), color = palette.textDim.toComposeColor(), fontSize = 10.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.4.sp)
+                        }
+                        Spacer(Modifier.width(13.dp))
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                            Text(c.title, color = palette.text.toComposeColor(), fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                            Text(c.title, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Medium)
                             Text("Configure this part of Saya", color = palette.textDim.toComposeColor(), fontSize = 11.sp)
                         }
-                        Text("›", color = palette.accent.toComposeColor(), fontSize = 24.sp, fontWeight = FontWeight.Light)
+                        Text("↗", color = palette.textDim.toComposeColor(), fontSize = 17.sp, fontWeight = FontWeight.Light)
                     }
                 }
             }
