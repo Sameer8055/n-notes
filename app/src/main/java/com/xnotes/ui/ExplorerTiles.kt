@@ -897,8 +897,8 @@ internal fun formatClock(w: ExplorerWords, time: Long, clock24: Boolean, zone: Z
 }
 
 /**
- * What Home can open with above the top folder's items: a shelf of what was opened lately, the pinned notes
- * ([wholePins] shows their whole first pages) and folders, then a heading for the folder itself.
+ * Saya's landscape library: real note thumbnails first, then a quiet row of root folders.
+ * The editor tools intentionally do not appear in this home-only surface.
  */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
@@ -917,109 +917,115 @@ internal fun HomeShelves(
     onNewCanvas: () -> Unit,
     onImportPdf: () -> Unit,
 ) {
-    val palette = LocalPalette.current
-    Column(Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 8.dp)) {
-        // A distinct Saya welcome panel: the home screen leads with creation, not a file-browser title.
-        Column(
-            Modifier.fillMaxWidth()
-                .clip(RoundedCornerShape(26.dp))
-                .background(Brush.linearGradient(listOf(
-                    palette.accent.toComposeColor().copy(alpha = 0.22f),
-                    palette.surface.toComposeColor(),
-                    palette.surfaceHi.toComposeColor(),
-                )))
-                .border(1.dp, palette.border.toComposeColor().copy(alpha = 0.72f), RoundedCornerShape(26.dp))
-                .padding(horizontal = 18.dp, vertical = 18.dp),
-        ) {
-            Text(
-                "S A Y A",
-                color = palette.accent.toComposeColor(),
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.2.sp,
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(
-                "A home for every idea.",
-                color = palette.text.toComposeColor(),
-                fontSize = 23.sp,
-                lineHeight = 28.sp,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                "Write it down. Sketch it out. Keep what matters.",
-                color = palette.textDim.toComposeColor(),
-                fontSize = 12.5.sp,
-                lineHeight = 18.sp,
-            )
-            Spacer(Modifier.height(18.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                SayaHomeAction(XnotesIcons.edit, "New note", Modifier.weight(1f), onNewNote)
-                SayaHomeAction(XnotesIcons.canvas, "Canvas", Modifier.weight(1f), onNewCanvas)
-                SayaHomeAction(XnotesIcons.importDoc, "Import PDF", Modifier.weight(1f), onImportPdf)
-            }
+    val ink = Color(0xFF000000)
+    val surface = Color(0xFF090909)
+    val glass = Color(0xFF111111)
+    val white = Color(0xFFF5F5F5)
+    val muted = Color(0xFF969696)
+    val edge = Color.White.copy(alpha = 0.14f)
+    val notes = remember(recents, pinnedNotes, b.groups, b.pinned) {
+        (recents.map { it.entry } + pinnedNotes + b.pinned + b.groups.flatMap { it.items })
+            .filterNot { it.isDir }
+            .distinctBy { it.documentUri }
+            .take(8)
+    }
+    val folders = b.folders
+    Column(
+        Modifier.fillMaxWidth().background(ink).padding(horizontal = 10.dp, vertical = 18.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+    ) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text("My Notes", color = white, fontSize = 28.sp, fontWeight = FontWeight.SemiBold, letterSpacing = (-0.6).sp, modifier = Modifier.weight(1f))
+            Text(stringResource(R.string.see_all), color = muted, fontSize = 13.sp,
+                modifier = Modifier.clip(RoundedCornerShape(18.dp)).clickable { onSeeAll() }.padding(horizontal = 10.dp, vertical = 7.dp))
         }
-        Spacer(Modifier.height(22.dp))
-        if (recents.isNotEmpty()) {
-            ShelfTitle(stringResource(R.string.recent), stringResource(R.string.see_all), onSeeAll)
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                items(recents.take(8).size) { i -> RecentCard(b, recents[i], onOpenRecent) }
-            }
-            Spacer(Modifier.height(20.dp))
-        }
-        if (pins.isNotEmpty() || pinnedNotes.isNotEmpty()) {
-            ShelfTitle(stringResource(R.string.pinned))
-        }
-        if (pinnedNotes.isNotEmpty()) {
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                items(pinnedNotes, key = { it.documentUri }) { PinnedCard(b, it, wholePins) }
-            }
-            Spacer(Modifier.height(if (pins.isNotEmpty()) 16.dp else 20.dp))
-        }
-        if (pins.isNotEmpty()) {
-            androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                pins.forEach { pin ->
-                    val shape = RoundedCornerShape(14.dp)
-                    Row(
-                        Modifier.height(46.dp).clip(shape)
-                            .background(palette.surface.toComposeColor())
-                            .border(1.dp, palette.border.toComposeColor(), shape)
-                            .clickable { onOpenPin(pin) }.padding(start = 13.dp, end = 17.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        if (notes.isNotEmpty()) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(end = 8.dp)) {
+                items(notes, key = { it.documentUri }) { entry ->
+                    val shape = RoundedCornerShape(18.dp)
+                    Column(
+                        Modifier.width(232.dp).clip(shape).background(surface)
+                            .border(1.dp, edge, shape)
+                            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onOpenRecent(entry) }
+                            .padding(7.dp),
                     ) {
-                        Icon(XnotesIcons.folder, null, tint = palette.textDim.toComposeColor(), modifier = Modifier.size(19.dp))
-                        Text(pin.name, color = palette.text.toComposeColor(), fontSize = 13.5.sp, fontWeight = FontWeight.Medium, maxLines = 1)
+                        Box(
+                            Modifier.fillMaxWidth().aspectRatio(1.12f).clip(RoundedCornerShape(13.dp))
+                                .background(glass),
+                        ) {
+                            EntryThumb(b.editor, entry, ThumbShape.TOP, Modifier.fillMaxSize())
+                        }
+                        Row(
+                            Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                                Text(b.label(entry), color = white, fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                                    maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text(b.metaText(entry), color = muted, fontSize = 11.5.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            }
+                            IconButton(onClick = { b.host.menu.preview(entry) }, modifier = Modifier.size(30.dp)) {
+                                Icon(XnotesIcons.more, null, tint = muted, modifier = Modifier.size(17.dp))
+                            }
+                        }
                     }
                 }
             }
-            Spacer(Modifier.height(20.dp))
+        } else {
+            Row(
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(surface)
+                    .border(1.dp, edge, RoundedCornerShape(16.dp)).padding(18.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("Your notes will appear here.", color = muted, fontSize = 13.sp, modifier = Modifier.weight(1f))
+                TextButton(onClick = onNewNote) { Text("New note", color = white) }
+            }
         }
-        Row(Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.in_folder, rootName), color = palette.text.toComposeColor(), fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
-            Text(counts, color = palette.textDim.toComposeColor(), fontSize = 12.sp, fontWeight = FontWeight.Medium,
-                modifier = Modifier.clip(RoundedCornerShape(20.dp)).background(palette.surface.toComposeColor()).padding(horizontal = 10.dp, vertical = 5.dp))
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text("Recent Folders", color = white, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+            Text(stringResource(R.string.see_all), color = muted, fontSize = 13.sp)
         }
-    }
-}
-
-/** Compact creation shortcut used by Saya's welcome panel. */
-@Composable
-private fun SayaHomeAction(icon: ImageVector, label: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    val palette = LocalPalette.current
-    val shape = RoundedCornerShape(14.dp)
-    Column(
-        modifier.clip(shape)
-            .background(palette.surface.toComposeColor().copy(alpha = 0.78f))
-            .border(1.dp, palette.border.toComposeColor(), shape)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 5.dp, vertical = 11.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        Icon(icon, null, tint = palette.accent.toComposeColor(), modifier = Modifier.size(20.dp))
-        Text(label, color = palette.text.toComposeColor(), fontSize = 10.5.sp, fontWeight = FontWeight.Medium, maxLines = 1)
+        if (folders.isNotEmpty()) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(14.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(end = 8.dp)) {
+                items(folders, key = { it.documentUri }) { folder ->
+                    val shape = RoundedCornerShape(17.dp)
+                    Row(
+                        Modifier.width(210.dp).height(76.dp).clip(shape).background(surface)
+                            .border(1.dp, edge, shape).clickable { b.host.onClick(folder) }
+                            .padding(horizontal = 17.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(13.dp),
+                    ) {
+                        Icon(XnotesIcons.folder, null, tint = white, modifier = Modifier.size(30.dp))
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                            Text(b.label(folder), color = white, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 1)
+                            Text(b.counts[folder.documentUri]?.let { itemsLabel(b.words, it) } ?: "Folder",
+                                color = muted, fontSize = 11.5.sp, maxLines = 1)
+                        }
+                    }
+                }
+            }
+        } else if (pins.isNotEmpty()) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                items(pins, key = { it.uri }) { pin ->
+                    val shape = RoundedCornerShape(17.dp)
+                    Row(
+                        Modifier.width(210.dp).height(76.dp).clip(shape).background(surface)
+                            .border(1.dp, edge, shape).clickable { onOpenPin(pin) }.padding(horizontal = 17.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(13.dp),
+                    ) {
+                        Icon(XnotesIcons.folder, null, tint = white, modifier = Modifier.size(30.dp))
+                        Text(pin.name, color = white, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 1)
+                    }
+                }
+            }
+        }
+        // The root folder's regular file listing continues below this curated library surface.
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(rootName, color = muted, fontSize = 12.sp, modifier = Modifier.weight(1f))
+            Text(counts, color = muted, fontSize = 11.sp)
+        }
     }
 }
 
