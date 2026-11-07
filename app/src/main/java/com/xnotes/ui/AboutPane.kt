@@ -60,8 +60,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 // n-notes: this fork. xnotes: the original project it's built on.
-private const val N_REPO_URL = "https://github.com/NeDDy3z/n-notes"
-private const val N_ISSUES_URL = "https://github.com/NeDDy3z/n-notes/issues/new"
+private const val N_REPO_URL = "https://github.com/Sameer8055/n-notes"
+private const val N_ISSUES_URL = "https://github.com/Sameer8055/n-notes/issues/new"
 private const val SPONSOR_URL = "https://github.com/sponsors/shardulvs"
 private const val ISSUES_URL = "https://github.com/shardulvs/xnotes-android/issues/new"
 private const val MIN_FILL_MS = 120L
@@ -111,7 +111,7 @@ fun AboutPane() {
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                "A customized fork of xnotes, a handwriting notes and sketching app for Android",
+                "A note-taking and sketching workspace for Android, thoughtfully customized from the open-source X Notes project.",
                 color = palette.textDim.toComposeColor(), fontSize = 13.sp, textAlign = TextAlign.Center,
             )
             if (version.isNotEmpty()) {
@@ -130,7 +130,7 @@ fun AboutPane() {
             }
 
             Spacer(Modifier.height(28.dp))
-            // The fork's own feedback channel: issues land on the n-notes repo.
+            // Saya's own feedback channel: issues land on the Saya repository.
             Text("Help make Saya better", color = palette.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 16.sp)
             Spacer(Modifier.height(14.dp))
             Row(
@@ -142,8 +142,8 @@ fun AboutPane() {
             }
 
             Spacer(Modifier.height(24.dp))
-            // The upstream project: bugs/features/sponsorship for xnotes proper.
-            Text("Help make xnotes better", color = palette.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            // Give clear credit and keep upstream feedback separate from Saya.
+            Text("Original X Notes project", color = palette.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 16.sp)
             Spacer(Modifier.height(14.dp))
             // Three buttons, side by side; each fills with the selection container while pressed.
             Row(
