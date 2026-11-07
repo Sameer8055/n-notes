@@ -554,7 +554,11 @@ private class SidebarNav(
 @Composable
 private fun BackstageSidebar(modifier: Modifier, editor: Editor, nav: SidebarNav, onCollapse: () -> Unit) {
     val palette = LocalPalette.current
-    Column(modifier.fillMaxHeight().liquidGlassSurface(MaterialTheme.shapes.extraLarge, palette.panel.toComposeColor(), elevation = 12.dp).padding(vertical = 12.dp)) {
+    Column(
+        modifier.fillMaxHeight()
+            .liquidGlassSurface(MaterialTheme.shapes.extraLarge, palette.panel.toComposeColor(), elevation = 12.dp)
+            .padding(horizontal = 10.dp, vertical = 14.dp),
+    ) {
         Row(
             Modifier.fillMaxWidth().padding(start = 16.dp, end = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -585,6 +589,7 @@ private fun BackstageSidebar(modifier: Modifier, editor: Editor, nav: SidebarNav
         }
         Spacer(Modifier.height(6.dp))
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
+            SidebarLabel("LIBRARY")
             nav.recent?.let { on -> Command(XnotesIcons.clock, stringResource(R.string.recent), selected = on) { nav.onRecent() } }
             Command(XnotesIcons.home, stringResource(R.string.home), selected = nav.homeSelected) { nav.onHome() }
             if (nav.trashCount >= 0) {
@@ -737,10 +742,11 @@ private fun Command(
     Row(
         Modifier
             .fillMaxWidth()
-            .height(48.dp)
+            .height(46.dp)
+            .clip(MaterialTheme.shapes.medium)
             .then(if (selected) Modifier.background(palette.selectionBackground.toComposeColor()) else Modifier)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
-            .padding(horizontal = 18.dp),
+            .padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(icon, contentDescription = label, tint = (if (selected) palette.selectionForeground else palette.accent).toComposeColor(), modifier = Modifier.size(20.dp))
