@@ -47,7 +47,12 @@ internal fun FindBar(
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
     Row(
-        Modifier.fillMaxWidth().height(44.dp).background(palette.panel.toComposeColor()).padding(horizontal = 12.dp),
+        Modifier.fillMaxWidth().height(44.dp).liquidGlassSurface(
+            shape = MaterialTheme.shapes.medium,
+            fill = palette.panel.toComposeColor(),
+            edge = palette.border.toComposeColor().copy(alpha = 0.78f),
+            elevation = 8.dp,
+        ).padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(XnotesIcons.search, null, tint = palette.textDim.toComposeColor(), modifier = Modifier.size(18.dp))
