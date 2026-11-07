@@ -280,14 +280,12 @@ fun Backstage(
             ),
         )
     }
-    if (view == BackstageView.HOME) {
-        CompositionLocalProvider(LocalPalette provides homePalette) {
-            MaterialTheme(colorScheme = homePalette.composeColorScheme()) {
-                BackstageContent(editor, compact, view, onSelectView, calls, onExitApp, onImportCodeTheme, onImportFont, onBackup)
-            }
+    // The OLED library palette belongs to the whole backstage shell, not only the Home route.
+    // Switching to Settings must not recolour the sidebar or the surrounding library surface.
+    CompositionLocalProvider(LocalPalette provides homePalette) {
+        MaterialTheme(colorScheme = homePalette.composeColorScheme()) {
+            BackstageContent(editor, compact, view, onSelectView, calls, onExitApp, onImportCodeTheme, onImportFont, onBackup)
         }
-    } else {
-        BackstageContent(editor, compact, view, onSelectView, calls, onExitApp, onImportCodeTheme, onImportFont, onBackup)
     }
 }
 
@@ -349,9 +347,8 @@ private fun BackstageContent(
     onBackup: (Boolean) -> Unit,
 ) {
     val palette = LocalPalette.current
-    val homeBackdrop = remember(palette, view) {
-        SolidColor(Color.Black)
-    }
+    // Keep the library shell consistently OLED-black while moving between Home and Settings.
+    val homeBackdrop = SolidColor(Color.Black)
     var createMode by remember { mutableStateOf(CreateMode.NONE) }
     var drawerOpen by remember { mutableStateOf(false) }
     val railed = editor.backstageRail
