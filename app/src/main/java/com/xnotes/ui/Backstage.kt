@@ -1764,6 +1764,38 @@ private fun ExplorerSection(
     val filesNow = rememberUpdatedState(arranged.orEmpty())
     val pinnedNow = rememberUpdatedState(pinned)
     Box(Modifier.fillMaxSize()) {
+        if (shelves) {
+            Column(Modifier.fillMaxSize().background(Color(0xFF000000))) {
+                Row(
+                    Modifier.fillMaxWidth().height(72.dp).padding(horizontal = 28.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    ExplorerSearchField(query, { query = it }, expandedWidth = 300.dp, lift = { 0f })
+                    Spacer(Modifier.width(14.dp))
+                    CreateButton(
+                        exporting = false,
+                        onCreateMode = onCreateMode,
+                        onImportPdf = calls.importPdf,
+                        onExport = {},
+                        modifier = Modifier,
+                    )
+                }
+                HomeShelves(
+                    body, recents.orEmpty(), pinned,
+                    layout == ExplorerLayout.GALLERY || (layout == ExplorerLayout.GRID && view.thumb == ThumbShape.PAGE),
+                    editor.sidebarPins, rootName ?: stringResource(R.string.folder),
+                    counts = countsLabel(words, arranged.orEmpty().count { it.isDir }, arranged.orEmpty().count { !it.isDir }),
+                    onSeeAll = { showRecent = true; selection.clear() },
+                    onOpenRecent = { host.onClick(it) },
+                    onOpenPin = { openChain(it.uri) },
+                    onNewNote = { onCreateMode(CreateMode.FILE) },
+                    onNewCanvas = { onCreateMode(CreateMode.CANVAS) },
+                    onImportPdf = calls.importPdf,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        } else {
         Box(
             // The keyboard slides over the files; ending the body at its edge lets the last ones scroll clear of it.
             Modifier.fillMaxSize().imePadding()
@@ -1881,19 +1913,7 @@ private fun ExplorerSection(
                     if (selection.isNotEmpty()) Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { selection.clear() } else Modifier,
                 ),
         ) {
-            val shelfBlock: (@Composable () -> Unit)? = if (!shelves) null else ({
-                HomeShelves(
-                    body, recents.orEmpty(), pinned, layout == ExplorerLayout.GALLERY || (layout == ExplorerLayout.GRID && view.thumb == ThumbShape.PAGE),
-                    editor.sidebarPins, rootName ?: stringResource(R.string.folder),
-                    counts = countsLabel(words, arranged.orEmpty().count { it.isDir }, arranged.orEmpty().count { !it.isDir }),
-                    onSeeAll = { showRecent = true; selection.clear() },
-                    onOpenRecent = { host.onClick(it) },
-                    onOpenPin = { openChain(it.uri) },
-                    onNewNote = { onCreateMode(CreateMode.FILE) },
-                    onNewCanvas = { onCreateMode(CreateMode.CANVAS) },
-                    onImportPdf = calls.importPdf,
-                )
-            })
+            // Saya's library is rendered as its own home surface below, never as a tile above the old Explorer.
             val gridTop: (LazyGridScope.() -> Unit)? = shelfBlock?.let { c -> { item(key = "shelves", span = { GridItemSpan(maxLineSpan) }, contentType = "shelves") { c() } } }
             when {
                 empty != null && !shelves -> Column(Modifier.fillMaxSize()) {
@@ -2143,6 +2163,7 @@ private fun ExplorerSection(
             },
             modifier = Modifier.align(Alignment.BottomEnd).padding(20.dp),
         )
+        }
     }
 
     // A multi-file pick gets no name prompt: it imports straight into the folder on screen, one file
