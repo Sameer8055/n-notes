@@ -978,7 +978,7 @@ internal fun HomeShelves(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text("Your notes will appear here.", color = muted, fontSize = 13.sp, modifier = Modifier.weight(1f))
-                TextButton(onClick = onNewNote) { Text("New note", color = white) }
+                Text("New note", color = white, fontSize = 13.sp, modifier = Modifier.clip(RoundedCornerShape(16.dp)).clickable(onClick = onNewNote).padding(horizontal = 10.dp, vertical = 7.dp))
             }
         }
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
