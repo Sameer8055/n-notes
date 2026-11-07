@@ -269,9 +269,12 @@ class InteractionController(
     /** Reader mode: every pointer pans and follows links, and a long press only selects PDF text. */
     var readOnly: Boolean = false
 
-    /** The side button, latched as on the infinite canvas; read only at touch-down, so a press
-     *  after the pen is already down does not activate the mapped tool. */
+    /** The side button latch is also sampled during contact so a hold can take over an active stroke. */
     private val stylusButtons = StylusButtonLatch()
+    /** A side-button erase temporarily interrupts a pen stroke and resumes that pen on release. */
+    private var sideButtonEraseActive = false
+    private var sideButtonResumeTool: Tool? = null
+    private var sideButtonHeldOnLastMove = false
 
     /** When true, the side-button tool also runs off the hover stream (no contact needed); eraser/pan only. */
     var penButtonHover: Boolean = false
@@ -703,6 +706,7 @@ class InteractionController(
             }
             MotionEvent.ACTION_MOVE -> {
                 if (tapCandidate && Pt(e.x.toDouble(), e.y.toDouble()).distanceTo(tapDownViewport) > TAP_SLOP) tapCandidate = false
+                updateSideButtonErase(e)
                 handleMove(e)
             }
             MotionEvent.ACTION_POINTER_UP ->
@@ -714,6 +718,9 @@ class InteractionController(
                 }
             MotionEvent.ACTION_UP -> {
                 handleUp(e)
+                sideButtonEraseActive = false
+                sideButtonResumeTool = null
+                sideButtonHeldOnLastMove = false
                 tapUp(e)
             }
             MotionEvent.ACTION_CANCEL -> takeBackTouch()
@@ -839,6 +846,9 @@ class InteractionController(
         //  - a finger pans unless finger-draw is enabled;
         //  - otherwise the armed tool.
         val buttonHeld = stylusButtons.heldFor(e)
+        sideButtonEraseActive = buttonHeld && penButtonTool == Tool.ERASER && tool.isStroke && drawingIsStylus
+        sideButtonResumeTool = if (sideButtonEraseActive) tool else null
+        sideButtonHeldOnLastMove = buttonHeld
         val effectiveTool: Tool = when {
             readOnly -> Tool.PAN
             toolType == MotionEvent.TOOL_TYPE_ERASER -> Tool.ERASER
@@ -1073,6 +1083,45 @@ class InteractionController(
             return
         }
         if (e.pointerCount >= 2) beginPinch(e)
+    }
+
+    /**
+     * While a stylus stroke is live, the side button is a momentary eraser modifier: commit the
+     * ink up to the current sample, erase while held, then start a fresh segment with the same
+     * armed pen when released. Each ink segment and the erase remain independently undoable.
+     */
+    private fun updateSideButtonErase(e: MotionEvent) {
+        if (!drawingIsStylus || penButtonTool != Tool.ERASER || readOnly) return
+        val idx = e.findPointerIndex(drawingPointerId)
+        if (idx < 0 || e.getToolType(idx) != MotionEvent.TOOL_TYPE_STYLUS) return
+        stylusButtons.onStylusMotion(e.buttonState)
+        val heldNow = stylusButtons.heldFor(e)
+        val vx = e.getX(idx).toDouble()
+        val vy = e.getY(idx).toDouble()
+        if (heldNow && !sideButtonEraseActive && mode == PointerMode.DRAW && tool.isStroke) {
+            sideButtonEraseActive = true
+            sideButtonResumeTool = tool
+            tapCandidate = false
+            endDraw(e)
+            clearSelection()
+            erasingWithFinger = false
+            beginErase(vx, vy)
+        } else if (!heldNow && sideButtonEraseActive) {
+            when (mode) {
+                PointerMode.ERASE -> endErase()
+                PointerMode.LASSO_DRAW -> if (lassoErasing) endLasso()
+                else -> Unit
+            }
+            val resume = sideButtonResumeTool
+            sideButtonEraseActive = false
+            sideButtonResumeTool = null
+            if (resume != null && resume.isStroke && e.actionMasked == MotionEvent.ACTION_MOVE) {
+                val pressure = e.getPressure(idx).toDouble()
+                val content = state.viewportToContent(Pt(vx, vy))
+                beginDraw(content, pressure, resume, e.eventTime, Pt(vx, vy))
+            }
+        }
+        sideButtonHeldOnLastMove = heldNow
     }
 
     private fun handleMove(e: MotionEvent) {
@@ -5155,6 +5204,9 @@ class InteractionController(
         snappedSelectionPendingMenu = false
         strokeDismissedSelection = false
         panMayCommitText = false
+        sideButtonEraseActive = false
+        sideButtonResumeTool = null
+        sideButtonHeldOnLastMove = false
         stopFling()
         clearFlipPull()
         clearOverscroll()
