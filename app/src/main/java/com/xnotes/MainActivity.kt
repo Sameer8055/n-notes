@@ -153,7 +153,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         com.xnotes.platform.FontCatalog.init(this)
-        com.xnotes.platform.TemplateLibrary.init(this)
         com.xnotes.ui.AudioPlayback.init(this)
         com.xnotes.ui.AudioRecording.init(this)
         // Keep the splash window background until Compose draws its first frame. Swapping
@@ -184,6 +183,13 @@ class MainActivity : ComponentActivity() {
             KeepScreenOn(ed)
             // Re-arm the periodic cloud sync to match the saved preferences.
             LaunchedEffect(Unit) { com.xnotes.sync.SyncManager.reschedule(context) }
+            // Template discovery and imported-template scanning touch disk and bundled assets;
+            // do that off the UI thread so the first screen can appear without waiting for it.
+            LaunchedEffect(Unit) {
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    com.xnotes.platform.TemplateLibrary.init(context.applicationContext)
+                }
+            }
             var ready by remember { mutableStateOf(false) }
             LaunchedEffect(Unit) {
                 ed.restoreSession()
