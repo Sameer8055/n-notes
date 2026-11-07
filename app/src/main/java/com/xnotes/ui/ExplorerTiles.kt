@@ -584,7 +584,7 @@ internal fun FolderCardTile(b: ExplorerBody, e: BrowseEntry) {
     ) {
         Box(
             Modifier.fillMaxWidth()
-                .height(100.dp)
+                .aspectRatio(1.08f)
                 .clip(RoundedCornerShape(12.dp))
                 .background(
                     Brush.linearGradient(
@@ -599,7 +599,7 @@ internal fun FolderCardTile(b: ExplorerBody, e: BrowseEntry) {
         ) {
             // Layered paper previews give the folder a recognisable cover, not a generic app icon.
             Box(
-                Modifier.size(64.dp, 70.dp).offset(x = 12.dp, y = 5.dp)
+                Modifier.size(76.dp, 84.dp).offset(x = 12.dp, y = 5.dp)
                     .clip(RoundedCornerShape(7.dp))
                     .background(Color.White.copy(alpha = 0.20f))
                     .border(1.dp, Color.White.copy(alpha = 0.20f), RoundedCornerShape(7.dp)),
@@ -634,7 +634,7 @@ internal fun FolderCardTile(b: ExplorerBody, e: BrowseEntry) {
                 XnotesIcons.folder,
                 contentDescription = null,
                 tint = accent,
-                modifier = Modifier.size(44.dp).align(Alignment.BottomEnd).padding(end = 10.dp, bottom = 7.dp),
+                modifier = Modifier.size(48.dp).align(Alignment.BottomEnd).padding(end = 10.dp, bottom = 7.dp),
             )
             val count = b.counts[e.documentUri]
             if (count != null) {
