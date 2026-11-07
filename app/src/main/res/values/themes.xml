@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Xnotes" parent="android:Theme.Material.NoActionBar">
+    <style name="Theme.Saya" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/window_bg</item>
         <item name="android:statusBarColor">@color/window_bg</item>
         <item name="android:navigationBarColor">@color/window_bg</item>
@@ -9,7 +9,7 @@
 
     <!-- Launch theme: dark stage matching the loader so there's no logo/white flash
          before the animation appears. Swapped for Theme.Xnotes in MainActivity.onCreate. -->
-    <style name="Theme.Xnotes.Splash" parent="Theme.Xnotes">
+    <style name="Theme.Saya.Splash" parent="Theme.Xnotes">
         <item name="android:windowBackground">@drawable/splash_window</item>
     </style>
 </resources>
