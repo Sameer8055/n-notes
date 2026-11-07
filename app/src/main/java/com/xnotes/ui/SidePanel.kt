@@ -132,11 +132,17 @@ fun SidePanel(
             },
         )
     }
+    val panelShape = RoundedCornerShape(topEnd = 20.dp, bottomEnd = 20.dp)
     Column(
         Modifier
             .width(224.dp)
             .fillMaxHeight()
-            .background(palette.panel.toComposeColor()),
+            .liquidGlassSurface(
+                shape = panelShape,
+                fill = palette.panel.toComposeColor(),
+                edge = palette.border.toComposeColor().copy(alpha = 0.72f),
+                elevation = 12.dp,
+            ),
     ) {
         Row(Modifier.fillMaxWidth().padding(4.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
             SegIcon(XnotesIcons.thumbnails, stringResource(R.string.pages), tab == SidePanelTab.PAGES) { editor.sidePanelTab = SidePanelTab.PAGES }
