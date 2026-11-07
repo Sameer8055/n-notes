@@ -120,7 +120,18 @@ internal fun ColumnScope.ToolbarAround(
         ToolbarPosition.RIGHT -> PaddingValues.Absolute(right = depth) to AbsoluteAlignment.CenterRight
     }
     CompositionLocalProvider(LocalToolbarCover provides cover) {
-        Box(rest) { content { Box(Modifier.align(edge).padding(FLOAT_MARGIN)) { bar() } } }
+        Box(rest) {
+            content {
+                // At the bottom, let the floating toolbar meet the screen edge. Keep the
+                // horizontal and top breathing room so the three islands remain distinct.
+                val edgePadding = if (position == ToolbarPosition.BOTTOM) {
+                    Modifier.padding(start = FLOAT_MARGIN, top = FLOAT_MARGIN, end = FLOAT_MARGIN, bottom = 0.dp)
+                } else {
+                    Modifier.padding(FLOAT_MARGIN)
+                }
+                Box(Modifier.align(edge).then(edgePadding)) { bar() }
+            }
+        }
     }
 }
 
