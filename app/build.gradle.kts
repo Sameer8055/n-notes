@@ -22,12 +22,11 @@ android {
     ndkVersion = "27.0.12077973"
 
     defaultConfig {
-        applicationId = "com.neddy.nnotes"
+        applicationId = "com.sameer.saya"
         minSdk = 26
         targetSdk = 36
-        versionCode = 105
-        // <upstream xnotes version>-<n-notes fork version>
-        versionName = "0.9.7-0.52"
+        versionCode = 106
+        versionName = "1.0.0"
         ndk {
             abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
         }
