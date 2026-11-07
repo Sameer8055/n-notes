@@ -885,6 +885,7 @@ class Editor(context: Context, val pane: Pane = Pane.PRIMARY) : ToolPopupHost, S
             it.interaction.onFingerLongPressAction = {
                 preferences.stylusButtonTap.takeIf { action -> action != "none" }?.let { action -> dispatchTapGesture(action); true } ?: false
             }
+            it.interaction.hasFingerLongPressAction = { preferences.stylusButtonTap != "none" }
             it.view.onTwoFingerTap = { dispatchTapGesture(preferences.twoFingerTap) }
             it.view.onThreeFingerTap = { dispatchTapGesture(preferences.threeFingerTap) }
         }
@@ -1778,6 +1779,7 @@ class Editor(context: Context, val pane: Pane = Pane.PRIMARY) : ToolPopupHost, S
         controller.onFingerLongPressAction = {
             preferences.stylusButtonTap.takeIf { action -> action != "none" }?.let { action -> dispatchTapGesture(action); true } ?: false
         }
+        controller.hasFingerLongPressAction = { preferences.stylusButtonTap != "none" }
         view.onTwoFingerTap = { dispatchTapGesture(preferences.twoFingerTap) }
         view.onThreeFingerTap = { dispatchTapGesture(preferences.threeFingerTap) }
         view.hover = { controller.onHover(it) }
