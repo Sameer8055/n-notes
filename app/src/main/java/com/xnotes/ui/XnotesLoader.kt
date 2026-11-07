@@ -84,13 +84,15 @@ fun XnotesLoader(modifier: Modifier = Modifier) {
                     override fun onSurfaceTextureUpdated(surfaceTexture: android.graphics.SurfaceTexture) = Unit
 
                     override fun onSurfaceTextureDestroyed(surfaceTexture: android.graphics.SurfaceTexture): Boolean {
-                        player?.runCatching {
-                            setOnPreparedListener(null)
-                            setOnCompletionListener(null)
-                            setOnVideoSizeChangedListener(null)
-                            setOnErrorListener(null)
-                            stop()
-                            release()
+                        runCatching {
+                            player?.apply {
+                                setOnPreparedListener(null)
+                                setOnCompletionListener(null)
+                                setOnVideoSizeChangedListener(null)
+                                setOnErrorListener(null)
+                                stop()
+                                release()
+                            }
                         }
                         player = null
                         output?.release()
