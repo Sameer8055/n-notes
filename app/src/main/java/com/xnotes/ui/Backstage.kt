@@ -578,13 +578,13 @@ private fun BackstageSidebar(modifier: Modifier, editor: Editor, nav: SidebarNav
             // Use the supplied transparent brand asset and the app's standard typography.
             Image(
                 painter = painterResource(R.drawable.sameer_notes_logo),
-                contentDescription = "Sameer Notes logo",
+                contentDescription = "Saya logo",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.size(30.dp),
             )
             Spacer(Modifier.width(9.dp))
             Text(
-                "Sameer Notes",
+                "Saya",
                 color = palette.text.toComposeColor(),
                 fontFamily = MaterialTheme.typography.titleMedium.fontFamily,
                 fontWeight = MaterialTheme.typography.titleMedium.fontWeight,
@@ -1131,7 +1131,7 @@ private fun ExplorerSection(
                         }
                     }
                     Spacer(Modifier.width(4.dp))
-                    Text("Sameer Notes", color = palette.text.toComposeColor(), fontFamily = FontFamily(brandTypeface), fontWeight = FontWeight.Bold, fontSize = 20.sp, letterSpacing = (-0.2).sp)
+                    Text("Saya", color = palette.text.toComposeColor(), fontFamily = FontFamily(brandTypeface), fontWeight = FontWeight.Bold, fontSize = 20.sp, letterSpacing = (-0.2).sp)
                 }
             }
             Column(Modifier.weight(1f).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
