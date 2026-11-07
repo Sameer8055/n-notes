@@ -597,6 +597,7 @@ private fun BackstageRail(modifier: Modifier, nav: SidebarNav) {
             nav.recent?.let { on -> RailItem(XnotesIcons.clock, stringResource(R.string.recent), selected = on, labelled = true) { nav.onRecent() } }
             RailItem(XnotesIcons.home, stringResource(R.string.home), selected = nav.homeSelected, labelled = true) { nav.onHome() }
             if (nav.trashCount >= 0) RailItem(XnotesIcons.trash, stringResource(R.string.trash), selected = nav.view == BackstageView.TRASH, labelled = true) { nav.onSelectView(BackstageView.TRASH) }
+            FolderRailItems(editor, nav)
             if (nav.pins.isNotEmpty()) Spacer(Modifier.height(8.dp))
             nav.pins.forEachIndexed { i, pin ->
                 key(pin.uri) {
@@ -614,6 +615,28 @@ private fun BackstageRail(modifier: Modifier, nav: SidebarNav) {
         RailItem(XnotesIcons.settings, stringResource(R.string.preferences), selected = nav.view == BackstageView.PREFERENCES, labelled = true) { nav.onSelectView(BackstageView.PREFERENCES) }
         if (nav.showAbout) RailItem(XnotesIcons.info, stringResource(R.string.about), selected = nav.view == BackstageView.ABOUT, labelled = true) { nav.onSelectView(BackstageView.ABOUT) }
     }
+}
+
+/**
+ * Root folders are surfaced as their own glass destinations. The explorer's treeVersion refreshes
+ * this list after create, rename or delete, so newly-created folders appear without pinning.
+ */
+@Composable
+private fun FolderRailItems(editor: Editor, nav: SidebarNav) {
+    val root = editor.browseRoot ?: return
+    val rootId = remember(root) { editor.browseRootDocId(root) }
+    val pinnedUris = remember(nav.pins) { nav.pins.map { it.uri }.toSet() }
+    val children by produceState(editor.cachedChildren(root, rootId), root, rootId, editor.treeVersion, editor.noteOpen) {
+        value = withContext(Dispatchers.IO) { editor.browseChildren(root, rootId) }
+    }
+    children.orEmpty().asSequence()
+        .filter { it.isDir && it.documentUri !in pinnedUris }
+        .sortedBy { it.name.lowercase() }
+        .forEach { folder ->
+            key(folder.documentUri) {
+                RailItem(XnotesIcons.folder, folder.name, labelled = true) { nav.onOpenFolder(folder) }
+            }
+        }
 }
 
 /** The main pane (the explorer, or Preferences); shows a hamburger when the sidebar is hidden. */
