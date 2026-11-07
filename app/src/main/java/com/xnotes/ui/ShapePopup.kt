@@ -12,10 +12,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -35,9 +33,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -85,15 +85,19 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
     val shapePages = remember(shapes) { shapes.chunked(15) }
     var visibleShapePage by remember(shapes) { mutableStateOf(config.shapePage.coerceAtLeast(0)) }
     val page = visibleShapePage.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
-    val shapeListState = rememberLazyListState(
-        initialFirstVisibleItemIndex = (config.shapePage.coerceAtLeast(0) * 15)
-            .coerceIn(0, (shapes.lastIndex).coerceAtLeast(0)),
+    // A regular horizontally scrolling Row is used here instead of LazyRow: Material dropdown
+    // menus query child intrinsics while measuring, and a LazyRow cannot answer those queries.
+    // That unsupported intrinsic measurement was crashing the app as soon as this popup opened.
+    val pageStridePx = with(LocalDensity.current) { 49.dp.roundToPx() * 15 }
+    val shapeScrollState = rememberScrollState(
+        initial = config.shapePage.coerceAtLeast(0) * pageStridePx,
     )
     val shapeScrollScope = rememberCoroutineScope()
 
-    LaunchedEffect(shapeListState, shapes.size) {
-        snapshotFlow { shapeListState.firstVisibleItemIndex / 15 }.collect { visible ->
-            val safePage = visible.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
+    LaunchedEffect(shapeScrollState, shapes.size) {
+        snapshotFlow { shapeScrollState.value }.collect { offset ->
+            val safePage = (offset / pageStridePx.coerceAtLeast(1))
+                .coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
             if (visibleShapePage != safePage) {
                 visibleShapePage = safePage
                 if (config.shapePage != safePage) emit(config.copy(shapePage = safePage))
@@ -108,10 +112,10 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
         val safePage = next.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
         visibleShapePage = safePage
         if (config.shapePage != safePage) emit(config.copy(shapePage = safePage))
-        if (shapes.isNotEmpty()) {
-            shapeScrollScope.launch {
-                shapeListState.animateScrollToItem((safePage * 15).coerceAtMost(shapes.lastIndex))
-            }
+        shapeScrollScope.launch {
+            shapeScrollState.animateScrollTo(
+                (safePage * pageStridePx).coerceAtMost(shapeScrollState.maxValue),
+            )
         }
     }
 
@@ -187,13 +191,13 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                         if (shapePages.isNotEmpty()) {
                             // A single continuous strip lets the user flick through every shape;
                             // the arrows below still jump cleanly between the original 15-shape groups.
-                            LazyRow(
-                                state = shapeListState,
-                                modifier = Modifier.fillMaxWidth().height(52.dp),
+                            Row(
+                                modifier = Modifier.fillMaxWidth().height(52.dp)
+                                    .horizontalScroll(shapeScrollState),
                                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                itemsIndexed(shapes, key = { _, preset -> preset.key }) { _, preset ->
+                                shapes.forEach { preset ->
                                     KindChip(
                                         ShapeIcons.of(preset),
                                         chipLabel(preset),
