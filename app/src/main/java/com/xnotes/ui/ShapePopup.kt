@@ -130,7 +130,7 @@ private fun ShapePager(config: ShapeConfig, hidden: Set<String>, order: List<Str
         presets.getOrNull(page * SHAPE_GRID_PAGE_SIZE)?.let { onPage(ShapePresets.pageOf(it)) }
     }) { page ->
         for (row in presets.drop(page * SHAPE_GRID_PAGE_SIZE).take(SHAPE_GRID_PAGE_SIZE).chunked(SHAPE_GRID_COLUMNS)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(GAP.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(GAP.dp, Alignment.CenterHorizontally)) {
                 for (p in row) KindChip(ShapeIcons.of(p), chipLabel(p), selected = p.key == config.preset, latex = chipLatex(p)) { onPick(p) }
             }
         }
