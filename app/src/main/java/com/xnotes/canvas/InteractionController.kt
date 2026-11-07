@@ -198,6 +198,7 @@ class InteractionController(
     /** Touch mappings used when existing shape-label and long-press behavior do not claim the gesture. */
     var onFingerDoubleTapAction: (() -> Boolean)? = null
     var onFingerLongPressAction: (() -> Boolean)? = null
+    var hasFingerLongPressAction: () -> Boolean = { false }
 
     /** The inline-flow caret controller; TEXT-tool gestures route here (installed by the Editor). */
     var flowText: FlowTextController? = null
@@ -3265,7 +3266,7 @@ class InteractionController(
      * decides which).
      */
     private fun beginTextBoxGesture(content: Pt) {
-        val pi = state.pageIndexAtContent(content) ?: return
+        val pi = state.pageIndexAtContent(content) ?: return false
         val local = state.toPageSpace(pi, content)
         val page = state.document.pages[pi]
         val existing = page.items.lastOrNull { it is TextItem && it.contains(local) } as? TextItem
@@ -3959,7 +3960,7 @@ class InteractionController(
         // Arm to grab an item, to unlock one, to select text, or (on empty space) to open the paste
         // menu when there is content to paste.
         val showEmptyMenu = !readOnly && hit == null && (hasClipboardItems() || clipboardHasImage())
-        if (longPressCandidate == null && longPressLocked == null && longPressTextPage < 0 && !showEmptyMenu) return
+        if (longPressCandidate == null && longPressLocked == null && longPressTextPage < 0 && !showEmptyMenu && !(isFinger && hasFingerLongPressAction())) return
         val r = Runnable { triggerLongPress() }
         longPressRunnable = r
         handler.postDelayed(r, LONG_PRESS_MS)
