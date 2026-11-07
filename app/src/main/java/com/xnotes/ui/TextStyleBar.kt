@@ -101,9 +101,12 @@ fun TextStyleBar(editor: TextEditHost) {
                 .offset(xDp, yDp)
                 .height(44.dp)
                 .onSizeChanged { measuredWidthPx = it.width.toFloat() }
-                .clip(MaterialTheme.shapes.medium)
-                .background(palette.menuBg.toComposeColor())
-                .border(1.dp, palette.border.toComposeColor(), MaterialTheme.shapes.medium),
+                .liquidGlassSurface(
+                    shape = MaterialTheme.shapes.medium,
+                    fill = palette.menuBg.toComposeColor(),
+                    edge = palette.border.toComposeColor().copy(alpha = 0.82f),
+                    elevation = 12.dp,
+                ),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             FacePicker(current = bar.face) { editor.setTextFace(it) }
