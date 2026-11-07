@@ -1228,9 +1228,32 @@ fun SelectConfigPopup(editor: ToolPopupHost, tool: Tool = Tool.SELECT, onDismiss
 
     fun emit() = editor.updateToolConfig(tool, base.copy(switchBackAfterSelect = switchBack, selectWholeItems = whole))
 
-    DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
-        Column(Modifier.width(250.dp).padding(horizontal = 14.dp, vertical = 8.dp)) {
-            PopupTitle(stringResource(if (tool == Tool.LASSO) R.string.tool_lasso else R.string.title_select))
+    DropdownMenu(
+        expanded = true,
+        onDismissRequest = onDismiss,
+        modifier = Modifier.clip(RoundedCornerShape(26.dp)),
+        frameless = true,
+    ) {
+        Column(
+            Modifier.widthIn(min = 320.dp, max = 410.dp)
+                .liquidGlassSurface(
+                    RoundedCornerShape(26.dp),
+                    LocalPalette.current.panel.toComposeColor().copy(alpha = if (LocalPalette.current.isDark) 0.66f else 0.72f),
+                    edge = LocalPalette.current.border.toComposeColor().copy(alpha = 0.86f),
+                    elevation = 14.dp,
+                )
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                PopupTitle(stringResource(if (tool == Tool.LASSO) R.string.tool_lasso else R.string.title_select))
+                Text("×", color = LocalPalette.current.text.toComposeColor(), fontSize = 20.sp,
+                    modifier = Modifier.clip(CircleShape).clickable { onDismiss() }.padding(horizontal = 5.dp))
+            }
             ToggleRow(stringResource(R.string.caption_select_whole_items), whole) { whole = it; emit() }
             // Re-arm the previous pen/highlighter once a selection action (move, resize, delete,
             // cut, copy, duplicate) finishes, so a quick edit doesn't strand you in select.
@@ -1302,9 +1325,32 @@ fun TapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
         base.copy(tapeMode = mode, tapePattern = pattern, baseWidth = width.toDouble(), scale = scale, colorOverride = colorOverride),
     )
 
-    DropdownMenu(expanded = true, onDismissRequest = onDismiss) {
-        Column(Modifier.width(250.dp).padding(horizontal = 14.dp, vertical = 8.dp)) {
-            PopupTitle(stringResource(R.string.tool_tape))
+    DropdownMenu(
+        expanded = true,
+        onDismissRequest = onDismiss,
+        modifier = Modifier.clip(RoundedCornerShape(26.dp)),
+        frameless = true,
+    ) {
+        Column(
+            Modifier.widthIn(min = 340.dp, max = 440.dp)
+                .liquidGlassSurface(
+                    RoundedCornerShape(26.dp),
+                    LocalPalette.current.panel.toComposeColor().copy(alpha = if (LocalPalette.current.isDark) 0.66f else 0.72f),
+                    edge = LocalPalette.current.border.toComposeColor().copy(alpha = 0.86f),
+                    elevation = 14.dp,
+                )
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                PopupTitle(stringResource(R.string.tool_tape))
+                Text("×", color = LocalPalette.current.text.toComposeColor(), fontSize = 20.sp,
+                    modifier = Modifier.clip(CircleShape).clickable { onDismiss() }.padding(horizontal = 5.dp))
+            }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 for (m in TapeMode.entries) ModeChip(stringResource(m.labelRes), selected = mode == m) { mode = m; emit() }
             }
