@@ -8,7 +8,7 @@
     </style>
 
     <!-- Launch theme: dark stage matching the loader so there's no logo/white flash
-         before the animation appears. Swapped for Theme.Xnotes in MainActivity.onCreate. -->
+         before the animation appears. Swapped for Theme.Saya in MainActivity.onCreate. -->
     <style name="Theme.Saya.Splash" parent="Theme.Xnotes">
         <item name="android:windowBackground">@drawable/splash_window</item>
     </style>
