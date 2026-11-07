@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
@@ -86,11 +87,12 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
     val initialShapePage = config.shapePage.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
     val shapePagerState = rememberPagerState(initialPage = initialShapePage, pageCount = { shapePages.size })
     val shapePagerScope = rememberCoroutineScope()
+    val latestConfig by rememberUpdatedState(config)
     val page = shapePagerState.currentPage.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
 
     LaunchedEffect(shapePagerState, shapePages.size) {
         snapshotFlow { shapePagerState.currentPage }.collect { safePage ->
-            if (config.shapePage != safePage) emit(config.copy(shapePage = safePage))
+            if (latestConfig.shapePage != safePage) emit(latestConfig.copy(shapePage = safePage))
         }
     }
     LaunchedEffect(config.shapePage, shapePages.size) {
