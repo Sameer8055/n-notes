@@ -99,10 +99,16 @@ fun AboutPane() {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // The angular "n" mark, drawn from the launcher-icon path so it matches the app icon.
-            Image(painterResource(R.drawable.sameer_notes_logo), contentDescription = "Sameer Notes logo", modifier = Modifier.size(72.dp))
+            Image(painterResource(R.drawable.sameer_notes_logo), contentDescription = "Saya logo", modifier = Modifier.size(72.dp))
             Spacer(Modifier.height(12.dp))
-            Text("Sameer Notes", color = palette.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 24.sp)
+            Text("Saya", color = palette.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 24.sp)
             Spacer(Modifier.height(5.dp))
+            Text(
+                "Saya — Some things are beautiful simply because they stay. ❤️",
+                color = palette.accent.toComposeColor(), fontSize = 13.sp,
+                fontStyle = FontStyle.Italic, textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(8.dp))
             Text(
                 "A customized fork of xnotes, a handwriting notes and sketching app for Android",
                 color = palette.textDim.toComposeColor(), fontSize = 13.sp, textAlign = TextAlign.Center,
@@ -124,7 +130,7 @@ fun AboutPane() {
 
             Spacer(Modifier.height(28.dp))
             // The fork's own feedback channel: issues land on the n-notes repo.
-            Text("Help make Sameer Notes better", color = palette.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text("Help make Saya better", color = palette.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 16.sp)
             Spacer(Modifier.height(14.dp))
             Row(
                 Modifier.fillMaxWidth().height(IntrinsicSize.Min),
@@ -154,7 +160,7 @@ fun AboutPane() {
                 Modifier.clickable { open(N_REPO_URL) },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Enjoying Sameer Notes? ", color = palette.textDim.toComposeColor(), fontSize = 12.sp)
+                Text("Enjoying Saya? ", color = palette.textDim.toComposeColor(), fontSize = 12.sp)
                 Text("Star it on GitHub", color = palette.accent.toComposeColor(), fontSize = 12.sp, fontWeight = FontWeight.Medium)
             }
         }
@@ -217,7 +223,7 @@ private fun RowScope.AboutButton(icon: ImageVector, label: String, onClick: () -
 private fun copyVersion(ctx: Context, version: String) {
     runCatching {
         val clip = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        clip.setPrimaryClip(ClipData.newPlainText("Sameer Notes version", "Sameer Notes $version"))
+        clip.setPrimaryClip(ClipData.newPlainText("Saya version", "Saya $version"))
         Toast.makeText(ctx, "Version copied", Toast.LENGTH_SHORT).show()
     }
 }
@@ -236,7 +242,7 @@ private fun bugReportUrl(issuesUrl: String, version: String): String {
 
 
         ---
-        Sameer Notes ${version.ifEmpty { "(unknown)" }}
+        Saya ${version.ifEmpty { "(unknown)" }}
         ${Build.MANUFACTURER} ${Build.MODEL}
         Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})
     """.trimIndent()
