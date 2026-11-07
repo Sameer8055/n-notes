@@ -573,8 +573,8 @@ private fun BackstageSidebar(modifier: Modifier, editor: Editor, nav: SidebarNav
         RailDivider()
         if (nav.showSync) SyncNowCommand(nav.onSyncSettings)
         // Settings occupies the former About destination at the bottom of the sidebar.
-        Command(XnotesIcons.settings, stringResource(R.string.preferences), selected = nav.view == BackstageView.PREFERENCES) { nav.onSelectView(BackstageView.PREFERENCES) }
         SyncSidebarStatus()
+        Command(XnotesIcons.settings, stringResource(R.string.preferences), selected = nav.view == BackstageView.PREFERENCES) { nav.onSelectView(BackstageView.PREFERENCES) }
     }
 }
 
