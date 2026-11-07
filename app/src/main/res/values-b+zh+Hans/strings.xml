@@ -711,19 +711,6 @@
     <string name="paste_markdown">粘贴为 Markdown</string>
     <string name="paste_code">粘贴为代码</string>
 
-    <!-- About -->
-    <string name="app_tagline">Android 手写笔记与素描应用</string>
-    <string name="copy_version">复制版本号</string>
-    <string name="help_make_better">帮助改进 Saya</string>
-    <string name="report_bug">报告问题</string>
-    <string name="request_feature">功能建议</string>
-    <string name="sponsor">赞助</string>
-    <string name="enjoying_saya">喜欢 Saya？</string>
-    <string name="star_on_github">在 GitHub 上加星</string>
-    <string name="mit_license">MIT 许可证</string>
-    <string name="version_n">版本 %1$s</string>
-    <string name="version_copied">版本号已复制</string>
-
     <!-- Text formatting -->
     <string name="checkbox_item">复选框项目</string>
     <string name="bold">粗体</string>
