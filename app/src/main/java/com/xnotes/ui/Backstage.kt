@@ -575,12 +575,7 @@ private fun BackstageSidebar(modifier: Modifier, editor: Editor, nav: SidebarNav
             Modifier.fillMaxWidth().padding(start = 16.dp, end = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Draw the mark as a vector so the sidebar stays transparent on every theme.
-            val context = LocalContext.current
-            val inter = remember(context) {
-                Typeface.createFromAsset(context.assets, "fonts/inter/regular.ttf")
-            }
-            val brandTypeface = remember(inter) { Typeface.create(inter, Typeface.BOLD) }
+            // Use the supplied transparent brand asset and the app's standard typography.
             Image(
                 painter = painterResource(R.drawable.sameer_notes_logo),
                 contentDescription = "Sameer Notes logo",
@@ -591,8 +586,8 @@ private fun BackstageSidebar(modifier: Modifier, editor: Editor, nav: SidebarNav
             Text(
                 "Sameer Notes",
                 color = palette.text.toComposeColor(),
-                fontFamily = FontFamily(brandTypeface),
-                fontWeight = FontWeight.Bold,
+                fontFamily = MaterialTheme.typography.titleMedium.fontFamily,
+                fontWeight = MaterialTheme.typography.titleMedium.fontWeight,
                 fontSize = 18.sp,
                 letterSpacing = (-0.2).sp,
                 maxLines = 1,
