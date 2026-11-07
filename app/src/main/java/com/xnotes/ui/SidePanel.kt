@@ -112,7 +112,6 @@ fun SidePanel(
     onImportTemplate: () -> Unit = {},
     onTemplateFromImage: (com.xnotes.core.template.TemplateKind) -> Unit = {},
 ) {
-    val palette = LocalPalette.current
     val tab = editor.sidePanelTab
     var pickingCover by remember { mutableStateOf(false) }
     if (pickingCover) {
