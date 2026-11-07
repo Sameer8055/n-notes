@@ -601,7 +601,6 @@ fun PreferencesPane(
                     if (prefs.trashDays != 0) section(stringResource(R.string.trash), prefs.sidebarTrash) { prefs.copy(sidebarTrash = !prefs.sidebarTrash) }
                     section(stringResource(R.string.sidebar_files), prefs.sidebarFiles) { prefs.copy(sidebarFiles = !prefs.sidebarFiles) }
                     section("Sync now", prefs.sidebarSync) { prefs.copy(sidebarSync = !prefs.sidebarSync) }
-                    section(stringResource(R.string.about), prefs.sidebarAbout) { prefs.copy(sidebarAbout = !prefs.sidebarAbout) }
                 }
                 FieldLabel(stringResource(R.string.pref_home_opens_to))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
