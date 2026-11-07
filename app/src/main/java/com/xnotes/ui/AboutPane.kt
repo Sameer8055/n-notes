@@ -98,7 +98,7 @@ fun AboutPane() {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // Saya’s original mark.
-            Image(painterResource(R.drawable.saya_mark), contentDescription = "Saya logo", modifier = Modifier.size(72.dp))
+            Image(painterResource(R.drawable.saya_logo_transparent), contentDescription = "Saya logo", modifier = Modifier.size(72.dp))
             Spacer(Modifier.height(12.dp))
             Text("Saya", color = palette.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 24.sp)
             Spacer(Modifier.height(5.dp))
@@ -148,7 +148,7 @@ fun AboutPane() {
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                "Original core code copyright © 2026 Shardul Vikram Singh · MIT License",
+                "Original core code copyright © 2026 Saya · MIT License",
                 color = palette.textDim.toComposeColor(), fontSize = 11.5.sp, textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(22.dp))
