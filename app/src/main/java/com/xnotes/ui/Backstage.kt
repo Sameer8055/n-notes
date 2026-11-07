@@ -900,11 +900,13 @@ private fun NewItemMenuItems(
     onCreateMode: (CreateMode) -> Unit,
     onImportPdf: () -> Unit,
 ) {
-    val tint = LocalPalette.current.text.toComposeColor()
+    val palette = LocalPalette.current
+    val tint = palette.text.toComposeColor()
     // Taller than a default menu row (the explorer's primary create affordance), but only as wide
     // as the longest label plus a margin. The end padding is the larger of the two on purpose: the
     // icons carry ~1dp of their own inset, so an equal split reads as tight on the text side.
-    val row = Modifier.height(52.dp)
+    val row = Modifier.height(52.dp).padding(horizontal = 5.dp, vertical = 2.dp)
+        .liquidGlassSurface(RoundedCornerShape(10.dp), palette.surface.toComposeColor(), edge = Color.White.copy(alpha = 0.18f), elevation = 3.dp)
     val pad = PaddingValues(start = 14.dp, end = 18.dp)
     @Composable
     fun item(icon: ImageVector, label: String, onPick: () -> Unit) = DropdownMenuItem(
@@ -1037,7 +1039,11 @@ private fun CreateButton(
                 contentColor = palette.text.toComposeColor(),
             )
         }
-        DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+        DropdownMenu(
+            expanded = menuOpen,
+            onDismissRequest = { menuOpen = false },
+            modifier = Modifier.liquidGlassSurface(RoundedCornerShape(18.dp), palette.surface.toComposeColor(), edge = Color.White.copy(alpha = 0.24f), elevation = 14.dp),
+        ) {
             NewItemMenuItems({ menuOpen = false }, onCreateMode, onImportPdf)
         }
     }
@@ -1087,7 +1093,7 @@ private fun ExplorerSection(
             ) {
                 Spacer(Modifier.weight(1f))
                 Box(
-                    Modifier.size(92.dp).clip(MaterialTheme.shapes.extraLarge)
+                    Modifier.size(104.dp).clip(MaterialTheme.shapes.extraLarge)
                         .background(palette.accent.toComposeColor().copy(alpha = 0.12f))
                         .border(1.dp, palette.accent.toComposeColor().copy(alpha = 0.24f), MaterialTheme.shapes.extraLarge),
                     contentAlignment = Alignment.Center,
@@ -1096,7 +1102,7 @@ private fun ExplorerSection(
                         painterResource(R.drawable.saya_logo_transparent),
                         contentDescription = "Saya",
                         contentScale = ContentScale.Fit,
-                        modifier = Modifier.size(58.dp),
+                        modifier = Modifier.size(76.dp),
                     )
                 }
                 Spacer(Modifier.height(22.dp))
@@ -2118,7 +2124,9 @@ private fun ExplorerSection(
                 val name = picked.singleOrNull()?.takeIf { it.isDir }?.name ?: stack.lastOrNull()?.second ?: rootName ?: context.getString(R.string.folder)
                 calls.exportPdfs(picked, name) { selection.clear() }
             },
-            modifier = Modifier.align(Alignment.BottomEnd).padding(20.dp),
+            modifier = Modifier
+                .align(if (showRecent) Alignment.TopEnd else Alignment.BottomEnd)
+                .padding(if (showRecent) PaddingValues(top = 72.dp, end = 20.dp) else PaddingValues(20.dp)),
         )
         }
     }
