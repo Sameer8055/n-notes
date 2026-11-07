@@ -282,25 +282,25 @@ fun PreferencesPane(
         Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
             val open = if (categorized) category else null
             if (open != null) {
-                IconButton(onClick = { category = null }) {
+                IconButton(modifier = Modifier.liquidGlassSurface(CircleShape, palette.surface.toComposeColor(), edge = Color.White.copy(alpha = 0.20f), elevation = 3.dp), onClick = { category = null }) {
                     Icon(XnotesIcons.prev, stringResource(R.string.preferences), tint = palette.text.toComposeColor(), modifier = Modifier.size(24.dp))
                 }
             } else if (compact) {
                 Tooltip(stringResource(R.string.back_to_home)) {
-                    IconButton(onClick = onBackToHome) {
+                    IconButton(modifier = Modifier.liquidGlassSurface(CircleShape, palette.surface.toComposeColor(), edge = Color.White.copy(alpha = 0.20f), elevation = 3.dp), onClick = onBackToHome) {
                         Icon(XnotesIcons.prev, stringResource(R.string.back_to_home), tint = palette.text.toComposeColor(), modifier = Modifier.size(24.dp))
                     }
                 }
             }
             if (!compact && !sidebarOpen) {
                 Tooltip(stringResource(R.string.show_sidebar)) {
-                    IconButton(onClick = onShowSidebar) {
+                    IconButton(modifier = Modifier.liquidGlassSurface(CircleShape, palette.surface.toComposeColor(), edge = Color.White.copy(alpha = 0.20f), elevation = 3.dp), onClick = onShowSidebar) {
                         Icon(XnotesIcons.menu, stringResource(R.string.show_sidebar), tint = palette.text.toComposeColor(), modifier = Modifier.size(24.dp))
                     }
                 }
             }
             if (!categorized) {
-                IconButton(onClick = { sectionsOpen = !sectionsOpen }) {
+                IconButton(modifier = Modifier.liquidGlassSurface(CircleShape, palette.surface.toComposeColor(), edge = Color.White.copy(alpha = 0.20f), elevation = 3.dp), onClick = { sectionsOpen = !sectionsOpen }) {
                     Icon(XnotesIcons.sidebar, stringResource(R.string.side_panel), tint = (if (sectionsOpen) palette.accent else palette.text).toComposeColor(), modifier = Modifier.size(22.dp))
                 }
             }
@@ -320,7 +320,7 @@ fun PreferencesPane(
                 Text(open?.title ?: stringResource(R.string.preferences), color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 22.sp, letterSpacing = (-0.45).sp)
             }
             Spacer(Modifier.weight(1f))
-            IconButton(onClick = { search.open = !search.open; if (!search.open) search.query = "" }) {
+            IconButton(modifier = Modifier.liquidGlassSurface(CircleShape, palette.surface.toComposeColor(), edge = Color.White.copy(alpha = 0.20f), elevation = 3.dp), onClick = { search.open = !search.open; if (!search.open) search.query = "" }) {
                 Icon(XnotesIcons.search, stringResource(R.string.search_settings), tint = palette.text.toComposeColor(), modifier = Modifier.size(22.dp))
             }
         }
