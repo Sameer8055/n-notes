@@ -606,13 +606,13 @@ internal fun FolderCardTile(b: ExplorerBody, e: BrowseEntry) {
                     .border(1.dp, Color.White.copy(alpha = 0.20f), RoundedCornerShape(7.dp)),
             )
             Box(
-                Modifier.size(64.dp, 70.dp).offset(x = 5.dp, y = 2.dp)
+                Modifier.size(76.dp, 84.dp).offset(x = 5.dp, y = 2.dp)
                     .clip(RoundedCornerShape(7.dp))
                     .background(palette.paper.toComposeColor().copy(alpha = 0.72f))
                     .border(1.dp, palette.paperBorder.toComposeColor().copy(alpha = 0.65f), RoundedCornerShape(7.dp)),
             )
             Box(
-                Modifier.size(64.dp, 70.dp).offset(x = (-2).dp, y = (-1).dp)
+                Modifier.size(76.dp, 84.dp).offset(x = (-2).dp, y = (-1).dp)
                     .clip(RoundedCornerShape(7.dp))
                     .background(palette.paper.toComposeColor().copy(alpha = 0.94f))
                     .border(1.dp, palette.paperBorder.toComposeColor(), RoundedCornerShape(7.dp)),
