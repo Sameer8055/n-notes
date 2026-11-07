@@ -620,7 +620,9 @@ internal fun ToolbarIcon(
     // No ripple: the circle is the feedback, and a white flash over it reads as a glitch.
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
-    val press by animateFloatAsState(if (pressed) 0.94f else 1f, spring(dampingRatio = 0.62f, stiffness = Spring.StiffnessMedium), label = "toolPress")
+    // Keep press feedback short and restrained: a slow spring on every toolbar tap
+    // makes controls feel as though they hesitate before responding.
+    val press by animateFloatAsState(if (pressed) 0.97f else 1f, tween(85), label = "toolPress")
     val glassTop = androidx.compose.ui.graphics.Color.White.copy(alpha = if (pressed) 0.25f else 0.13f)
     val glassBase = palette.surface.toComposeColor().copy(alpha = if (palette.isDark) 0.30f else 0.22f)
     Tooltip(contentDescription, hint = hint, shortcut = shortcut) {
@@ -665,7 +667,7 @@ internal fun ToolbarIcon(
                     },
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(icon, contentDescription = contentDescription, tint = tint, modifier = Modifier.size(bar.icon).graphicsLayer { scaleX = press; scaleY = press })
+                Icon(icon, contentDescription = contentDescription, tint = tint, modifier = Modifier.size(bar.icon))
             }
         }
     }
