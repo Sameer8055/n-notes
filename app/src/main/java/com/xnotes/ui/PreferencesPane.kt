@@ -146,6 +146,16 @@ private enum class PrefCategory(val title: String) {
     MAINTENANCE("Maintenance"),
 }
 
+/** Categories deliberately kept in the order used by the Saya settings landing page. */
+private val visiblePrefCategories = listOf(
+    PrefCategory.APPEARANCE,
+    PrefCategory.INPUT,
+    PrefCategory.OCR,
+    PrefCategory.PERFORMANCE,
+    PrefCategory.TOOLBAR,
+    PrefCategory.CLOUD_SYNC,
+)
+
 /**
  * Preferences as a backstage pane (spec 10 §8). Edits apply live — each change is
  * pushed straight to the [Editor] (and persisted), so theme/page tweaks are seen
@@ -198,7 +208,7 @@ fun PreferencesPane(
     var category by rememberSaveable { mutableStateOf<PrefCategory?>(null) }
     val searching = search.query.isNotBlank()
     val all = searching || !categorized
-    fun shown(c: PrefCategory) = all || category == c
+    fun shown(c: PrefCategory) = c in visiblePrefCategories && (all || category == c)
     // Categorized, only phones fold the categories away; tablets always show them beside an open category.
     var sectionsOpen by rememberSaveable { mutableStateOf(!compact && !categorized) }
     var syncTop by remember { mutableStateOf<Int?>(null) }
@@ -289,7 +299,7 @@ fun PreferencesPane(
                     }
                 }
             }
-            if (!categorized || (compact && open != null)) {
+            if (!categorized) {
                 IconButton(onClick = { sectionsOpen = !sectionsOpen }) {
                     Icon(XnotesIcons.sidebar, stringResource(R.string.side_panel), tint = (if (sectionsOpen) palette.accent else palette.text).toComposeColor(), modifier = Modifier.size(22.dp))
                 }
@@ -336,8 +346,8 @@ fun PreferencesPane(
         }
         val sectionsPanel = @Composable {
             if (categorized) {
-                PrefSectionsPanel(PrefCategory.entries.map { it.title }, category?.title) { title ->
-                    category = PrefCategory.entries.first { it.title == title }
+                PrefSectionsPanel(visiblePrefCategories.map { it.title }, category?.title) { title ->
+                    category = visiblePrefCategories.first { it.title == title }
                     if (compact) sectionsOpen = false
                 }
             } else {
@@ -350,8 +360,8 @@ fun PreferencesPane(
                 }
             }
         }
-        val panelBeside = if (categorized) category != null && !compact else sectionsOpen && !compact
-        val panelOver = sectionsOpen && compact && (!categorized || category != null)
+        val panelBeside = !categorized && sectionsOpen && !compact
+        val panelOver = sectionsOpen && compact && !categorized
         Row(Modifier.fillMaxSize()) {
         if (panelBeside) {
             sectionsPanel()
@@ -374,12 +384,11 @@ fun PreferencesPane(
                     letterSpacing = 1.5.sp,
                     modifier = Modifier.padding(start = 4.dp, top = 4.dp, bottom = 2.dp),
                 )
-                for (c in PrefCategory.entries) {
+                for (c in visiblePrefCategories) {
                     val cardShape = RoundedCornerShape(15.dp)
                     Row(
-                        Modifier.fillMaxWidth().clip(cardShape)
-                            .background(Color(0xFF050505))
-                            .border(1.dp, Color.White.copy(alpha = 0.13f), cardShape)
+                        Modifier.fillMaxWidth()
+                            .liquidGlassSurface(cardShape, palette.surface.toComposeColor(), edge = Color.White.copy(alpha = 0.20f), elevation = 6.dp)
                             .clickable { category = c }
                             .padding(horizontal = 15.dp, vertical = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -390,7 +399,7 @@ fun PreferencesPane(
                                 .border(1.dp, Color.White.copy(alpha = 0.11f), RoundedCornerShape(10.dp)),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Text("%02d".format(PrefCategory.entries.indexOf(c) + 1), color = palette.textDim.toComposeColor(), fontSize = 10.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.4.sp)
+                            Text("%02d".format(visiblePrefCategories.indexOf(c) + 1), color = palette.textDim.toComposeColor(), fontSize = 10.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.4.sp)
                         }
                         Spacer(Modifier.width(13.dp))
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -438,7 +447,7 @@ fun PreferencesPane(
                 CheckRow(stringResource(R.string.pref_start_fullscreen), editor.fullscreen) { editor.setFullscreenPref(it) }
                 CheckRow("Keep screen on while the app is open", prefs.keepScreenOn) { updateHome(prefs.copy(keepScreenOn = it)) }
                 CheckRow("Split settings into categories", prefs.prefsCategories) { updateHome(prefs.copy(prefsCategories = it)) }
-                TextButton(onClick = { update(Preferences()) }) { Text(stringResource(R.string.reset_to_defaults), fontSize = 13.sp) }
+                GlassTextButton(onClick = { update(Preferences()) }) { Text(stringResource(R.string.reset_to_defaults), fontSize = 13.sp) }
             }
             if (shown(PrefCategory.INPUT)) {
                 if (all) HorizontalDivider(color = palette.border.toComposeColor())
@@ -1318,9 +1327,7 @@ internal fun CheckChip(label: String, on: Boolean, onClick: () -> Unit) {
     val fg = (if (on) palette.selectionForeground else palette.text).toComposeColor()
     Row(
         Modifier
-            .clip(MaterialTheme.shapes.small)
-            .background(if (on) palette.selectionBackground.toComposeColor() else palette.surface.toComposeColor())
-            .border(1.dp, if (on) palette.accent.toComposeColor() else palette.border.toComposeColor(), MaterialTheme.shapes.small)
+            .liquidGlassSurface(MaterialTheme.shapes.small, if (on) palette.selectionBackground.toComposeColor() else palette.surface.toComposeColor(), edge = if (on) palette.accent.toComposeColor() else Color.White.copy(alpha = 0.18f), elevation = 4.dp)
             .semantics { this.selected = on }
             .clickable(onClick = onClick)
             .padding(start = 8.dp, end = 12.dp, top = 6.dp, bottom = 6.dp),
@@ -1342,14 +1349,7 @@ private fun Chip(label: String, selected: Boolean, onClick: () -> Unit) {
     val shape = RoundedCornerShape(11.dp)
     Box(
         Modifier
-            .clip(shape)
-            .background(
-                Brush.verticalGradient(
-                    if (selected) listOf(Color(0xFF4A515C), Color(0xFF252A31))
-                    else listOf(Color(0xFF292D33), Color(0xFF191C21)),
-                ),
-            )
-            .border(1.dp, if (selected) palette.accent.toComposeColor().copy(alpha = 0.88f) else Color.White.copy(alpha = 0.13f), shape)
+            .liquidGlassSurface(shape, if (selected) palette.selectionBackground.toComposeColor() else palette.surface.toComposeColor(), edge = if (selected) palette.accent.toComposeColor() else Color.White.copy(alpha = 0.18f), elevation = 4.dp)
             .semantics { this.selected = selected }
             .clickable(onClick = onClick)
             .padding(horizontal = 13.dp, vertical = 8.dp),
@@ -1363,6 +1363,30 @@ private fun Chip(label: String, selected: Boolean, onClick: () -> Unit) {
             softWrap = false,
         )
     }
+}
+
+
+@Composable
+private fun GlassTextButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    content: @Composable () -> Unit,
+) {
+    val palette = LocalPalette.current
+    val shape = RoundedCornerShape(10.dp)
+    androidx.compose.material3.TextButton(
+        onClick = onClick,
+        modifier = modifier.liquidGlassSurface(
+            shape,
+            palette.surface.toComposeColor(),
+            edge = Color.White.copy(alpha = 0.20f),
+            elevation = 4.dp,
+        ),
+        enabled = enabled,
+        shape = shape,
+        content = { content() },
+    )
 }
 
 @Composable
