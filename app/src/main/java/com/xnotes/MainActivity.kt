@@ -304,23 +304,42 @@ class MainActivity : ComponentActivity() {
         applyEditorSystemBars(fullscreen = fullscreen, noteOpen = false)
     }
 
+    @Suppress("DEPRECATION")
     private fun applyEditorSystemBars(fullscreen: Boolean, noteOpen: Boolean) {
-        val controller = WindowInsetsControllerCompat(window, window.decorView)
+        val decor = window.decorView
+        val controller = WindowInsetsControllerCompat(window, decor)
         val navigationBars = WindowInsetsCompat.Type.navigationBars()
         val statusBars = WindowInsetsCompat.Type.statusBars()
+
+        // Compose DropdownMenus are hosted in their own popup windows. Keep the legacy immersive
+        // flags on the activity decor as well as using WindowInsetsController: Android's popup
+        // window inherits these flags, whereas hiding bars only through the controller can leave
+        // the navigation bar visible as soon as a focusable tool panel opens.
+        val layoutFlags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+        decor.systemUiVisibility = when {
+            fullscreen -> layoutFlags or
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                View.SYSTEM_UI_FLAG_FULLSCREEN or
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            noteOpen -> layoutFlags or
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            else -> 0
+        }
+
         if (fullscreen) {
             controller.hide(WindowInsetsCompat.Type.systemBars())
         } else if (noteOpen) {
-            // Hide only the bottom navigation bar during note-taking. Keeping the status bar
-            // visible respects the normal non-fullscreen preference while preserving a stable
-            // bottom edge for the floating toolbar.
+            // Keep the status bar visible in the user's normal non-fullscreen mode, while the
+            // bottom navigation area stays hidden and does not move the floating toolbar.
             controller.show(statusBars)
             controller.hide(navigationBars)
         } else {
             controller.show(WindowInsetsCompat.Type.systemBars())
         }
-        // Android may still reveal transient bars after an intentional edge swipe; they are
-        // automatically hidden again without resizing the editor content.
+        // Android reserves system navigation gestures. In immersive mode bars can still be
+        // temporarily revealed by an edge swipe; sticky mode lets them disappear automatically.
         controller.systemBarsBehavior =
             WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
