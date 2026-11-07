@@ -59,11 +59,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-// n-notes: this fork. xnotes: the original project it's built on.
-private const val N_REPO_URL = "https://github.com/Sameer8055/n-notes"
-private const val N_ISSUES_URL = "https://github.com/Sameer8055/n-notes/issues/new"
-private const val SPONSOR_URL = "https://github.com/sponsors/shardulvs"
-private const val ISSUES_URL = "https://github.com/shardulvs/xnotes-android/issues/new"
+// Saya project links.
+private const val SAYA_REPO_URL = "https://github.com/Sameer8055/n-notes"
+private const val SAYA_ISSUES_URL = "https://github.com/Sameer8055/n-notes/issues/new"
 private const val MIN_FILL_MS = 120L
 
 /**
@@ -99,8 +97,8 @@ fun AboutPane() {
             Modifier.widthIn(max = 420.dp).fillMaxWidth().padding(top = 16.dp, bottom = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // The angular "n" mark, drawn from the launcher-icon path so it matches the app icon.
-            Image(painterResource(R.drawable.sameer_notes_logo), contentDescription = "Saya logo", modifier = Modifier.size(72.dp))
+            // Saya’s original mark.
+            Image(painterResource(R.drawable.saya_mark), contentDescription = "Saya logo", modifier = Modifier.size(72.dp))
             Spacer(Modifier.height(12.dp))
             Text("Saya", color = palette.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 24.sp)
             Spacer(Modifier.height(5.dp))
@@ -111,7 +109,7 @@ fun AboutPane() {
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                "A note-taking and sketching workspace for Android, thoughtfully customized from the open-source X Notes project.",
+                "A thoughtful space for notes, sketches and PDFs.",
                 color = palette.textDim.toComposeColor(), fontSize = 13.sp, textAlign = TextAlign.Center,
             )
             if (version.isNotEmpty()) {
@@ -137,32 +135,29 @@ fun AboutPane() {
                 Modifier.fillMaxWidth().height(IntrinsicSize.Min),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                AboutButton(XnotesIcons.bug, "Report a bug") { open(bugReportUrl(N_ISSUES_URL, version)) }
+                AboutButton(XnotesIcons.bug, "Report a bug") { open(bugReportUrl(SAYA_ISSUES_URL, version)) }
                 AboutButton(XnotesIcons.idea, "Request a feature") { open(featureRequestUrl(N_ISSUES_URL)) }
             }
 
-            Spacer(Modifier.height(24.dp))
-            // Give clear credit and keep upstream feedback separate from Saya.
-            Text("Original X Notes project", color = palette.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            Spacer(Modifier.height(14.dp))
-            // Three buttons, side by side; each fills with the selection container while pressed.
+            Spacer(Modifier.height(28.dp))
+            Text("Open-source acknowledgements", color = palette.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "Saya is built with open-source software. Required copyright notices and licence terms are preserved in the source distribution.",
+                color = palette.textDim.toComposeColor(), fontSize = 12.5.sp, textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "Original core code copyright © 2026 Shardul Vikram Singh · MIT License",
+                color = palette.textDim.toComposeColor(), fontSize = 11.5.sp, textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(22.dp))
             Row(
-                Modifier.fillMaxWidth().height(IntrinsicSize.Min),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                AboutButton(XnotesIcons.bug, "Report a bug") { open(bugReportUrl(ISSUES_URL, version)) }
-                AboutButton(XnotesIcons.idea, "Request a feature") { open(featureRequestUrl(ISSUES_URL)) }
-                AboutButton(XnotesIcons.heart, "Sponsor") { open(SPONSOR_URL) }
-            }
-
-            Spacer(Modifier.height(26.dp))
-            // Quiet, single-line growth nudge (a link, never a popup).
-            Row(
-                Modifier.clickable { open(N_REPO_URL) },
+                Modifier.clickable { open(SAYA_REPO_URL) },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Enjoying Saya? ", color = palette.textDim.toComposeColor(), fontSize = 12.sp)
-                Text("Star it on GitHub", color = palette.accent.toComposeColor(), fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                Text("Made with care. ", color = palette.textDim.toComposeColor(), fontSize = 12.sp)
+                Text("Saya on GitHub", color = palette.accent.toComposeColor(), fontSize = 12.sp, fontWeight = FontWeight.Medium)
             }
         }
     }
