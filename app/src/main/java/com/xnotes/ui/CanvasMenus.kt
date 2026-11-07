@@ -275,9 +275,12 @@ fun SelectionMenu(
         Row(
             modifier = Modifier
                 .offset(xDp, yDp)
-                .clip(MaterialTheme.shapes.medium)
-                .background(palette.menuBg.toComposeColor())
-                .border(1.dp, palette.border.toComposeColor(), MaterialTheme.shapes.medium),
+                .liquidGlassSurface(
+                    shape = MaterialTheme.shapes.medium,
+                    fill = palette.menuBg.toComposeColor(),
+                    edge = palette.border.toComposeColor().copy(alpha = 0.82f),
+                    elevation = 12.dp,
+                ),
         ) {
             if (audio != null) {
                 val playing = AudioPlayback.session?.let { it.item === audio && it.playing } == true
