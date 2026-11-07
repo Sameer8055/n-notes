@@ -136,7 +136,7 @@ fun AboutPane() {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 AboutButton(XnotesIcons.bug, "Report a bug") { open(bugReportUrl(SAYA_ISSUES_URL, version)) }
-                AboutButton(XnotesIcons.idea, "Request a feature") { open(featureRequestUrl(N_ISSUES_URL)) }
+                AboutButton(XnotesIcons.idea, "Request a feature") { open(featureRequestUrl(SAYA_ISSUES_URL)) }
             }
 
             Spacer(Modifier.height(28.dp))
