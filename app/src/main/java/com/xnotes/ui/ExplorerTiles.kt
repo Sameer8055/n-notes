@@ -25,6 +25,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -916,6 +918,7 @@ internal fun HomeShelves(
     onNewNote: () -> Unit,
     onNewCanvas: () -> Unit,
     onImportPdf: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     // Monochrome library styling is intentionally scoped to this home shelf.
     // The editor and its toolbars keep their existing appearance and behaviour.
@@ -933,8 +936,9 @@ internal fun HomeShelves(
     }
     val folders = b.folders
     Column(
-        Modifier.fillMaxWidth().background(ink).padding(horizontal = 22.dp, vertical = 22.dp),
-        verticalArrangement = Arrangement.spacedBy(28.dp),
+        modifier.fillMaxSize().background(ink).verticalScroll(rememberScrollState())
+            .padding(horizontal = 28.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(30.dp),
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
