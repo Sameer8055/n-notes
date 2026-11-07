@@ -1401,6 +1401,7 @@ internal fun ColorDot(color: Color, selected: Boolean, enabled: Boolean = true, 
                 this.selected = selected
                 contentDescription = label
             }
+            .liquidGlassSurface(CircleShape, palette.surface.toComposeColor(), edge = Color.White.copy(alpha = 0.22f), elevation = 3.dp)
             .then(if (selected) Modifier.border(2.dp, palette.accent.toComposeColor(), CircleShape) else Modifier)
             .padding(4.dp)
             .clip(CircleShape)
@@ -1441,6 +1442,7 @@ internal fun ColorPickerDot(
                 .size(30.dp)
                 .alpha(if (enabled) 1f else 0.4f)
                 .semantics { contentDescription = label }
+                .liquidGlassSurface(CircleShape, palette.surface.toComposeColor(), edge = Color.White.copy(alpha = 0.22f), elevation = 3.dp)
                 .then(if (custom) Modifier.border(2.dp, palette.accent.toComposeColor(), CircleShape) else Modifier)
                 .padding(4.dp)
                 .clip(CircleShape)
