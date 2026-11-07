@@ -2006,7 +2006,6 @@ private fun ExplorerSection(
                                     layouts = ExplorerLayout.entries.filter { !(compactScreen && it == ExplorerLayout.COLUMNS) },
                                     everyFolder = !prefs.perFolderViews,
                                     hideDotItems = prefs.hideDotItems,
-                                    // Results shown in the grid for now leave the folder's own layout alone unless another is picked.
                                     onChange = { v -> setView(if (v.layout == layout) v.copy(layout = view.layout) else v); if (v.layout != layout) columnsPick = null },
                                     onReset = { editor.setView(folderKey, null) },
                                     onEveryFolder = { every -> editor.applyHomePreferences(editor.preferences.copy(perFolderViews = !every)) },
@@ -2030,8 +2029,7 @@ private fun ExplorerSection(
                         }
                     }
                 }
-    
-                    }
+            }
             // While items are picked, the selection bar stays pinned where the chip row starts.
             if (selection.isNotEmpty()) Box(Modifier.fillMaxWidth().height(48.dp), contentAlignment = Alignment.CenterStart) {
                 // Registered when the bar appears, after the search field's, so Back clears the picks first.
