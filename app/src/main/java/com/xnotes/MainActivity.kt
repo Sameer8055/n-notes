@@ -108,7 +108,7 @@ import kotlinx.coroutines.launch
 
 /** Minimum time the launch loader stays up, so its animation is briefly seen even
  *  when the session restores instantly. */
-private const val MIN_LOADER_MS = 600L
+private const val MIN_LOADER_MS = 2_000L
 
 /** How long the maths waits for the font bytes it measures with before going without. */
 private const val MATH_FONT_WAIT_MS = 1500L
