@@ -212,9 +212,12 @@ internal fun FilePreviewDialog(b: ExplorerBody, e: BrowseEntry, where: String?, 
                 .padding(24.dp)
                 .widthIn(max = 720.dp)
                 .heightIn(max = 760.dp)
-                .clip(shape)
-                .background(palette.menuBg.toComposeColor())
-                .border(1.dp, palette.border.toComposeColor(), shape),
+                .liquidGlassSurface(
+                    shape = shape,
+                    fill = palette.menuBg.toComposeColor(),
+                    edge = palette.border.toComposeColor().copy(alpha = 0.82f),
+                    elevation = 14.dp,
+                ),
         ) {
             FilePreview(b, e, where, actions)
             Box(Modifier.align(Alignment.TopEnd).padding(8.dp)) {
