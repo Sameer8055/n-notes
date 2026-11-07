@@ -132,6 +132,7 @@ class InfiniteInteraction(
     /** Touch mappings supplied by the editor; default long-press behavior remains when unset. */
     var onFingerDoubleTapAction: (() -> Boolean)? = null
     var onFingerLongPressAction: (() -> Boolean)? = null
+    var hasFingerLongPressAction: () -> Boolean = { false }
 
     private val choreographer = Choreographer.getInstance()
 
@@ -565,7 +566,7 @@ class InfiniteInteraction(
      */
     private fun armLongPress(at: Pt, onSelection: Boolean, isFinger: Boolean) {
         cancelLongPress()
-        if (!isFinger || onSelection) return
+        if (!isFinger || (onSelection && !hasFingerLongPressAction())) return
         val hit = itemAt(viewport.viewportToContent(at))
         // The eraser is the one tool a grab would fight with, so it is the one that leaves an item
         // alone. Everything else hands it over, which is what makes a held finger pick something up
@@ -576,9 +577,9 @@ class InfiniteInteraction(
         // the only way back: it is out of reach of the band, the lasso and every tap. The offer
         // stands whatever tool is armed, since no tool can do anything else with one.
         longPressLocked = hit?.takeIf { it.locked }
-        if (hit != null && longPressLocked == null && !grabbable) return
+        if (hit != null && longPressLocked == null && !grabbable && !hasFingerLongPressAction()) return
         // Like the paged canvas, empty space only pops the menu when there is something to paste.
-        if (hit == null && !hasPasteContent()) return
+        if (hit == null && !hasPasteContent() && !hasFingerLongPressAction()) return
         longPressCandidate = hit?.takeUnless { it.locked }
         longPressAt = at
         val r = Runnable { triggerLongPress() }
