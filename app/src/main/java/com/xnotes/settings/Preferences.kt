@@ -127,7 +127,7 @@ data class Preferences(
     val sidebarFiles: Boolean = true,
     val sidebarSync: Boolean = true,
     val sidebarAbout: Boolean = true,
-    /** Where Home opens: "top" (the notes folder), "last" (the folder last shown) or "shelves" (the notes folder under Recent and Pinned). */
+    /** Where Home opens: "last" (the folder last shown) or "shelves" (Saya’s dashboard with Recent, Pinned and the notes folder). */
     val homeOpensTo: String = "shelves",
     /** What a swipe right / left on Home does: one of [HOME_SWIPES]. */
     val homeSwipeRight: String = "sidebar_open",
