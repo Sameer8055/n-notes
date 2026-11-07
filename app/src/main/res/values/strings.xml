@@ -505,7 +505,6 @@
     <string name="page_size_mm">%1$s × %2$s mm</string>
     <string name="custom_size_range">Each side between %1$s and %2$s mm</string>
     <string name="new_canvas">New canvas</string>
-    <string name="about">About</string>
     <string name="new_note_menu">New Note</string>
     <string name="new_canvas_menu">New Canvas</string>
     <string name="import_pdf">Import PDF</string>
@@ -849,19 +848,6 @@
     <string name="paste_here">Paste here</string>
     <string name="paste_markdown">Paste as Markdown</string>
     <string name="paste_code">Paste as Code</string>
-
-    <!-- About -->
-    <string name="app_tagline">A handwriting notes and sketching app for Android</string>
-    <string name="copy_version">Copy version</string>
-    <string name="help_make_better">Help make Saya better</string>
-    <string name="report_bug">Report a bug</string>
-    <string name="request_feature">Request a feature</string>
-    <string name="sponsor">Sponsor</string>
-    <string name="enjoying_saya">"Enjoying Saya? "</string>
-    <string name="star_on_github">Star it on GitHub</string>
-    <string name="mit_license">MIT License</string>
-    <string name="version_n">Version %1$s</string>
-    <string name="version_copied">Version copied</string>
 
     <!-- Text formatting -->
     <string name="checkbox_item">Checkbox item</string>
