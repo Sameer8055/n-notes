@@ -1,7 +1,10 @@
 name: Build Debug APK
 
-# User approved an APK build; keep manual dispatch available as well.
+# One-time user-authorized build trigger; restore manual-only after dispatch.
 on:
+  push:
+    branches:
+      - feature/sameer-notes-shape-branding
   workflow_dispatch:
 
 permissions:
