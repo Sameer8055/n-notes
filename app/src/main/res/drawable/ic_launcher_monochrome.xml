@@ -1,16 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Themed-icon layer: shape lives in alpha, the launcher supplies the tint. Angular "n" (matches
-     the foreground): chamfered top-right corner, hard miter joins, butt caps. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="432"
-    android:viewportHeight="432">
-    <path
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="46"
-        android:strokeLineCap="butt"
-        android:strokeLineJoin="miter"
-        android:strokeMiterLimit="10"
-        android:pathData="M162 292 L162 150 L246 150 L278 182 L278 292" />
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="100" android:viewportHeight="100">
+    <path android:fillColor="@android:color/transparent" android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="8" android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M70,27 C61,17 42,18 33,27 C24,36 29,44 42,49 L58,55 C72,60 76,69 67,78 C58,87 39,85 29,74" />
 </vector>
