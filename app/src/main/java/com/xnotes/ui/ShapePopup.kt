@@ -133,7 +133,7 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
         frameless = true,
     ) {
         Column(
-            Modifier.widthIn(min = 410.dp, max = 560.dp).fillMaxWidth()
+            Modifier.fillMaxWidth().widthIn(max = 560.dp)
                 .liquidGlassSurface(
                     RoundedCornerShape(26.dp),
                     LocalPalette.current.panel.toComposeColor(),
