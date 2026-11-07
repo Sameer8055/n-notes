@@ -106,7 +106,12 @@ fun TextFormatBar(editor: Editor) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
-                .background(palette.panel.toComposeColor())
+                .liquidGlassSurface(
+                    shape = MaterialTheme.shapes.large,
+                    fill = palette.panel.toComposeColor(),
+                    edge = palette.border.toComposeColor().copy(alpha = 0.78f),
+                    elevation = 10.dp,
+                )
                 .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
