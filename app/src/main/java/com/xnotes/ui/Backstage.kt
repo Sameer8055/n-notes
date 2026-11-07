@@ -264,27 +264,18 @@ fun Backstage(
     // Home must follow the user's saved appearance settings just like the editor.
     // Keep the established dark luxury layout, but derive its actual tones from Preferences.
     val homePrefs = editor.preferences
-    val systemDark = isSystemInDarkTheme()
-    val homePalette = remember(editor.prefsVersion, systemDark, homePrefs.uiAppearance,
-        homePrefs.materialSingleSeed, homePrefs.materialDualSeed, homePrefs.materialSurfaceSeed,
-        homePrefs.materialStyle, homePrefs.materialContrast) {
-        val homeSeed = when (homePrefs.materialMode) {
-            com.xnotes.settings.MaterialColourMode.SINGLE -> homePrefs.materialSingleSeed
-            com.xnotes.settings.MaterialColourMode.DUAL -> homePrefs.materialDualSeed
-            com.xnotes.settings.MaterialColourMode.SYSTEM -> homePrefs.materialDualSeed
-        }
-        val homeDark = when (homePrefs.uiAppearance) {
-            "light" -> false
-            "dark", "oled" -> true
-            else -> systemDark
-        }
+    val homePalette = remember(editor.prefsVersion) {
+        // Saya's library is deliberately monochrome and OLED-black regardless of the
+        // editor's chosen theme. The note editor remains fully preference-driven.
+        val neutralSeed = com.xnotes.core.model.Rgba(232, 232, 232, 255)
+        val neutralSurface = com.xnotes.core.model.Rgba(112, 112, 112, 255)
         Palette.material(
-            if (homePrefs.uiAppearance == "oled") "oled" else if (homeDark) "dark" else "light",
+            "oled",
             MaterialColors.seeded(
-                seed = homeSeed,
-                dark = homeDark,
-                style = homePrefs.materialStyle,
-                surfaceSeed = homePrefs.materialSurfaceSeed,
+                seed = neutralSeed,
+                dark = true,
+                style = MaterialStyle.MONOCHROME,
+                surfaceSeed = neutralSurface,
                 contrast = homePrefs.materialContrast,
             ),
         )
