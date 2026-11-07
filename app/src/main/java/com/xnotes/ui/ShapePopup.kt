@@ -160,7 +160,7 @@ private fun ConnectorPager(config: ShapeConfig, hidden: Set<String>, order: List
 private fun ChipPager(
     pageCount: Int,
     initialPage: Int,
-    caption: (Int) -> String,
+    caption: @Composable (Int) -> String,
     rows: Int,
     onPage: (Int) -> Unit,
     content: @Composable (Int) -> Unit,
