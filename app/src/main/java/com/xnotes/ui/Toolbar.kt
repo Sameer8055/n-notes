@@ -227,25 +227,11 @@ fun Toolbar(
     }
 }
 
-/** One independently floating island in the three-zone editor toolbar. */
+/** A transparent layout group: the controls remain, without a separate island behind them. */
 @Composable
 private fun ToolbarSectionSurface(content: @Composable () -> Unit) {
-    val palette = LocalPalette.current
-    // Flat lower corners let each island sit flush on the bottom edge; the top corners
-    // retain the glass-panel silhouette and the horizontal gaps between islands stay untouched.
-    val shape = RoundedCornerShape(
-        topStart = 24.dp,
-        topEnd = 24.dp,
-        bottomStart = 0.dp,
-        bottomEnd = 0.dp,
-    )
     Row(
-        Modifier
-            .shadow(6.dp, shape)
-            .clip(shape)
-            .background(palette.panel.toComposeColor().copy(alpha = 0.82f))
-            .border(1.dp, palette.border.toComposeColor(), shape)
-            .padding(horizontal = 4.dp),
+        Modifier.padding(horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(0.dp),
     ) {
