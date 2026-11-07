@@ -1529,7 +1529,7 @@ class Editor(context: Context, val pane: Pane = Pane.PRIMARY) : ToolPopupHost, S
         withPdfSelectionText { text ->
             val cm = appContext.getSystemService(android.content.Context.CLIPBOARD_SERVICE)
                 as? android.content.ClipboardManager ?: return@withPdfSelectionText
-            runCatching { cm.setPrimaryClip(android.content.ClipData.newPlainText("xnotes text", text)) }
+            runCatching { cm.setPrimaryClip(android.content.ClipData.newPlainText("Saya text", text)) }
         }
         pdfText.clear()
     }
