@@ -1134,15 +1134,54 @@ private fun ExplorerSection(
                     Text("Saya", color = palette.text.toComposeColor(), fontFamily = FontFamily(brandTypeface), fontWeight = FontWeight.Bold, fontSize = 20.sp, letterSpacing = (-0.2).sp)
                 }
             }
-            Column(Modifier.weight(1f).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                Modifier.weight(1f).fillMaxWidth().padding(horizontal = 18.dp, vertical = 12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
                 Spacer(Modifier.weight(1f))
-                EmptyIllustration(EmptyArt.PAGES)
-                Spacer(Modifier.height(20.dp))
-                Text(stringResource(R.string.choose_folder_hint), color = palette.textDim.toComposeColor(), fontSize = 14.sp, textAlign = TextAlign.Center)
-                Spacer(Modifier.height(16.dp))
-                Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    PrimaryButton(XnotesIcons.folder, stringResource(R.string.choose_folder), Modifier.fillMaxHeight(), calls.pickRoot)
-                    PrimaryButton(XnotesIcons.database, stringResource(R.string.use_app_storage), Modifier.fillMaxHeight()) { editor.useInternalStorage() }
+                Box(
+                    Modifier.size(92.dp).clip(MaterialTheme.shapes.extraLarge)
+                        .background(palette.accent.toComposeColor().copy(alpha = 0.12f))
+                        .border(1.dp, palette.accent.toComposeColor().copy(alpha = 0.24f), MaterialTheme.shapes.extraLarge),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Image(
+                        painterResource(R.drawable.saya_mark),
+                        contentDescription = "Saya",
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.size(58.dp),
+                    )
+                }
+                Spacer(Modifier.height(22.dp))
+                Text(
+                    "Welcome to Saya",
+                    color = palette.text.toComposeColor(),
+                    fontFamily = FontFamily(brandTypeface),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 27.sp,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(Modifier.height(7.dp))
+                Text(
+                    "A home for every idea.",
+                    color = palette.accent.toComposeColor(),
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    stringResource(R.string.choose_folder_hint),
+                    color = palette.textDim.toComposeColor(),
+                    fontSize = 13.sp,
+                    lineHeight = 19.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.widthIn(max = 300.dp),
+                )
+                Spacer(Modifier.height(22.dp))
+                Column(Modifier.fillMaxWidth().widthIn(max = 340.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    PrimaryButton(XnotesIcons.folder, stringResource(R.string.choose_folder), Modifier.fillMaxWidth(), calls.pickRoot)
+                    PrimaryButton(XnotesIcons.database, stringResource(R.string.use_app_storage), Modifier.fillMaxWidth()) { editor.useInternalStorage() }
                 }
                 Spacer(Modifier.weight(1f))
             }
