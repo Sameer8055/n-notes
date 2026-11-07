@@ -562,6 +562,15 @@ internal fun FolderCardTile(b: ExplorerBody, e: BrowseEntry) {
     val active = b.host.isSelected(e) || b.host.isDropTarget(e)
     val code = b.colorOf(e)?.let { codeTint(it, palette) }
     val accent = code ?: palette.accent.toComposeColor()
+    val coverBrush = remember(accent, active, palette.surfaceHi) {
+        Brush.linearGradient(
+            listOf(
+                accent.copy(alpha = if (active) 0.34f else 0.22f),
+                palette.surfaceHi.toComposeColor().copy(alpha = 0.96f),
+                accent.copy(alpha = if (active) 0.16f else 0.08f),
+            ),
+        )
+    }
     val shape = RoundedCornerShape(17.dp)
     Column(
         Modifier
@@ -586,15 +595,7 @@ internal fun FolderCardTile(b: ExplorerBody, e: BrowseEntry) {
             Modifier.fillMaxWidth()
                 .aspectRatio(1.08f)
                 .clip(RoundedCornerShape(12.dp))
-                .background(
-                    Brush.linearGradient(
-                        listOf(
-                            accent.copy(alpha = if (active) 0.34f else 0.22f),
-                            palette.surfaceHi.toComposeColor().copy(alpha = 0.96f),
-                            accent.copy(alpha = if (active) 0.16f else 0.08f),
-                        ),
-                    ),
-                ),
+                .background(coverBrush),
             contentAlignment = Alignment.Center,
         ) {
             // Layered paper previews give the folder a recognisable cover, not a generic app icon.
