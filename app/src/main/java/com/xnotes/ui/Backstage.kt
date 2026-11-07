@@ -457,7 +457,7 @@ private fun BackstageContent(
             calls, createMode, { createMode = it }, onImportCodeTheme, onImportFont, onBackup, link, { selectView(BackstageView.PREFERENCES) },
             focusSync, { focusSync = false },
         )
-        BackstageRail(Modifier.width(RAIL_WIDTH).fillMaxHeight(), nav)
+        BackstageRail(Modifier.width(RAIL_WIDTH).fillMaxHeight(), editor, nav)
     }
 }
 
@@ -585,7 +585,7 @@ private fun BackstageSidebar(modifier: Modifier, editor: Editor, nav: SidebarNav
 
 /** The sidebar collapsed to icons on wide screens; its menu button expands it back. */
 @Composable
-private fun BackstageRail(modifier: Modifier, nav: SidebarNav) {
+private fun BackstageRail(modifier: Modifier, editor: Editor, nav: SidebarNav) {
     Column(modifier.fillMaxHeight().padding(vertical = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Image(
             painter = painterResource(R.drawable.saya_logo_transparent),
