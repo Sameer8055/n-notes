@@ -1743,7 +1743,7 @@ private fun ExplorerSection(
     val pinnedNow = rememberUpdatedState(pinned)
     Box(Modifier.fillMaxSize()) {
         if (shelves) {
-            Column(Modifier.fillMaxSize().background(Color(0xFF000000))) {
+            Column(Modifier.fillMaxSize()) {
                 Row(
                     Modifier.fillMaxWidth().height(72.dp).padding(horizontal = 28.dp),
                     verticalAlignment = Alignment.CenterVertically,
