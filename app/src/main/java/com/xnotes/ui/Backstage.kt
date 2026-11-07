@@ -264,7 +264,7 @@ fun Backstage(
     // Home must follow the user's saved appearance settings just like the editor.
     // Keep the established dark luxury layout, but derive its actual tones from Preferences.
     val homePrefs = editor.preferences
-    val homePalette = remember(editor.prefsVersion) {
+    val homePalette = remember(homePrefs.materialContrast) {
         // Saya's library is deliberately monochrome and OLED-black regardless of the
         // editor's chosen theme. The note editor remains fully preference-driven.
         val neutralSeed = com.xnotes.core.model.Rgba(232, 232, 232, 255)
