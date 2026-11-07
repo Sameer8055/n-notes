@@ -79,50 +79,29 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
 
     val shapes = ShapePresets.shown(editor.hostHiddenShapes, editor.hostShapeOrder)
         .flatMap { it.presets }
-    // Each horizontal stop shows a familiar 4 × 4 grid. The grid pages sit in one
-    // continuous horizontal strip; this avoids LazyRow's unsupported intrinsic measurement
-    // inside the dropdown while keeping the panel swipeable.
+    // Keep the same 4 × 4 horizontal pages, but compose only the visible page and its
+    // immediate neighbours. The old wide Row eagerly composed every shape chip each time the
+    // panel opened, which made first-open and repeated-open interactions unnecessarily heavy.
     val shapePages = remember(shapes) { shapes.chunked(16) }
-    var visibleShapePage by remember(shapes) {
-        mutableStateOf(config.shapePage.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0)))
-    }
-    val page = visibleShapePage.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
     val initialShapePage = config.shapePage.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
-    val shapeScrollState = rememberScrollState()
-    val shapeScrollScope = rememberCoroutineScope()
+    val shapePagerState = rememberPagerState(initialPage = initialShapePage, pageCount = { shapePages.size })
+    val shapePagerScope = rememberCoroutineScope()
+    val page = shapePagerState.currentPage.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
 
-    // Map the full scroll range to the available grid pages. This also works on narrow
-    // screens where the viewport is wider than a single grid page.
-    LaunchedEffect(shapeScrollState, shapes.size) {
-        snapshotFlow { shapeScrollState.value to shapeScrollState.maxValue }.collect { (offset, max) ->
-            val lastPage = (shapePages.lastIndex).coerceAtLeast(0)
-            val safePage = if (lastPage == 0 || max == 0) 0
-                else ((offset.toFloat() / max) * lastPage + 0.5f).toInt().coerceIn(0, lastPage)
-            if (visibleShapePage != safePage) {
-                visibleShapePage = safePage
-                if (config.shapePage != safePage) emit(config.copy(shapePage = safePage))
-            }
+    LaunchedEffect(shapePagerState, shapePages.size) {
+        snapshotFlow { shapePagerState.currentPage }.collect { safePage ->
+            if (config.shapePage != safePage) emit(config.copy(shapePage = safePage))
         }
     }
-    LaunchedEffect(shapeScrollState.maxValue, initialShapePage, shapePages.size) {
-        val lastPage = shapePages.lastIndex
-        if (lastPage > 0 && shapeScrollState.maxValue > 0) {
-            shapeScrollState.scrollTo(shapeScrollState.maxValue * initialShapePage / lastPage)
-        }
-    }
-    LaunchedEffect(page) {
-        if (config.shapePage != page) emit(config.copy(shapePage = page))
+    LaunchedEffect(config.shapePage, shapePages.size) {
+        val target = config.shapePage.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
+        if (shapePagerState.currentPage != target) shapePagerState.animateScrollToPage(target)
     }
 
     fun changeShapePage(next: Int) {
         val safePage = next.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
-        visibleShapePage = safePage
         if (config.shapePage != safePage) emit(config.copy(shapePage = safePage))
-        shapeScrollScope.launch {
-            val lastPage = shapePages.lastIndex
-            val target = if (lastPage <= 0) 0 else shapeScrollState.maxValue * safePage / lastPage
-            shapeScrollState.animateScrollTo(target)
-        }
+        shapePagerScope.launch { shapePagerState.animateScrollToPage(safePage) }
     }
 
     val paletteColors = listOf(
@@ -195,38 +174,36 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                             fontSize = 11.sp,
                         )
                         if (shapePages.isNotEmpty()) {
-                            // One continuous horizontal strip of 4 × 4 grids. A full grid
-                            // stays visible at once; swipe sideways or use the arrows to advance.
-                            Row(
-                                modifier = Modifier.fillMaxWidth().height(194.dp)
-                                    .horizontalScroll(shapeScrollState),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                verticalAlignment = Alignment.Top,
-                            ) {
-                                shapePages.forEach { gridPage ->
-                                    Column(
-                                        modifier = Modifier.width(244.dp),
-                                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                                    ) {
-                                        gridPage.chunked(4).forEach { gridRow ->
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
-                                                verticalAlignment = Alignment.CenterVertically,
-                                            ) {
-                                                gridRow.forEach { preset ->
-                                                    Box(
-                                                        modifier = Modifier.width(55.dp).height(44.dp),
-                                                        contentAlignment = Alignment.Center,
-                                                    ) {
-                                                        KindChip(
-                                                            ShapeIcons.of(preset),
-                                                            chipLabel(preset),
-                                                            selected = preset.key == config.preset,
-                                                            latex = chipLatex(preset),
-                                                            iconSize = 27.dp,
-                                                        ) { emit(config.choose(preset)) }
-                                                    }
+                            // A horizontally swipeable, lazily composed strip of 4 × 4 grids.
+                            HorizontalPager(
+                                state = shapePagerState,
+                                modifier = Modifier.fillMaxWidth().height(194.dp),
+                                pageSpacing = 12.dp,
+                                beyondViewportPageCount = 1,
+                            ) { gridPageIndex ->
+                                val gridPage = shapePages[gridPageIndex]
+                                Column(
+                                    modifier = Modifier.width(244.dp),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                                ) {
+                                    gridPage.chunked(4).forEach { gridRow ->
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                        ) {
+                                            gridRow.forEach { preset ->
+                                                Box(
+                                                    modifier = Modifier.width(55.dp).height(44.dp),
+                                                    contentAlignment = Alignment.Center,
+                                                ) {
+                                                    KindChip(
+                                                        ShapeIcons.of(preset),
+                                                        chipLabel(preset),
+                                                        selected = preset.key == config.preset,
+                                                        latex = chipLatex(preset),
+                                                        iconSize = 27.dp,
+                                                    ) { emit(config.choose(preset)) }
                                                 }
                                             }
                                         }
