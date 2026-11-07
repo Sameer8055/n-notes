@@ -3920,7 +3920,7 @@ class Editor(context: Context, val pane: Pane = Pane.PRIMARY) : ToolPopupHost, S
             noteOpen = true // push the editor on top of backstage (only on a successful open)
             rememberOpened(uri, name)
         } catch (e: XNoteFormatException) {
-            message = appContext.getString(R.string.err_not_xnotes)
+            message = appContext.getString(R.string.err_not_saya)
         } catch (e: Exception) {
             message = appContext.getString(R.string.err_open_note)
         } finally {
@@ -4956,7 +4956,7 @@ class Editor(context: Context, val pane: Pane = Pane.PRIMARY) : ToolPopupHost, S
         com.xnotes.platform.NotePorter(appContext, imageCodec, textMeasurer, tempDir("port"), java.io.File(appContext.getExternalFilesDir(null) ?: appContext.filesDir, "port-backups"))
     }
 
-    /** The notes under the browse root that still hold shapes from earlier n-notes versions; null without a root. */
+    /** The notes under the browse root that still hold shapes from earlier file-format revisions; null without a root. */
     suspend fun scanForkShapes(): List<com.xnotes.platform.NotePorter.Found>? {
         val root = browseRoot ?: return null
         return withContext(Dispatchers.IO) { porter.scan(root) }
