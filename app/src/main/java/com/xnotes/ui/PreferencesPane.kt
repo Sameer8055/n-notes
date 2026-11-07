@@ -1180,7 +1180,12 @@ private fun PrefSectionsPanel(titles: List<String>, current: String?, onPick: (S
         Modifier
             .width(224.dp)
             .fillMaxHeight()
-            .background(palette.panel.toComposeColor())
+            .liquidGlassSurface(
+                shape = MaterialTheme.shapes.extraLarge,
+                fill = palette.panel.toComposeColor(),
+                edge = palette.border.toComposeColor().copy(alpha = 0.78f),
+                elevation = 10.dp,
+            )
             .verticalScroll(rememberScrollState())
             .padding(vertical = 4.dp),
     ) {
