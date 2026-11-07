@@ -3054,7 +3054,7 @@ class InteractionController(
 
     /** A press with a connector chip: the connector sets off on the page under it, glued to the point under the pen if any. */
     private fun beginConnector(content: Pt) {
-        val pi = state.pageIndexAtContent(content) ?: return false
+        val pi = state.pageIndexAtContent(content) ?: return
         val page = state.document.pages[pi]
         clearSelection()
         val width = shapeConfig.strokeWidth * SHAPE_PEN_PARITY
@@ -3266,7 +3266,7 @@ class InteractionController(
      * decides which).
      */
     private fun beginTextBoxGesture(content: Pt) {
-        val pi = state.pageIndexAtContent(content) ?: return false
+        val pi = state.pageIndexAtContent(content) ?: return
         val local = state.toPageSpace(pi, content)
         val page = state.document.pages[pi]
         val existing = page.items.lastOrNull { it is TextItem && it.contains(local) } as? TextItem
@@ -3894,7 +3894,7 @@ class InteractionController(
         if (tool == Tool.SHAPE && shapeConfig.placesCorners) return false
         if (editingText != null || editingLabel != null) return false
         val content = state.viewportToContent(viewport)
-        val pi = state.pageIndexAtContent(content) ?: return
+        val pi = state.pageIndexAtContent(content) ?: return false
         val local = state.toPageSpace(pi, content)
         val reach = OUTLINE_GRAB / state.zoom
         val shape = state.document.pages[pi].items.lastOrNull { !it.locked && labelTargetHit(it, local, reach) } as? Labelled ?: return false
