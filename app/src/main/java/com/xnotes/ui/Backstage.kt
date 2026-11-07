@@ -1093,7 +1093,7 @@ private fun ExplorerSection(
                     contentAlignment = Alignment.Center,
                 ) {
                     Image(
-                        painterResource(R.drawable.saya_mark),
+                        painterResource(R.drawable.saya_logo_transparent),
                         contentDescription = "Saya",
                         contentScale = ContentScale.Fit,
                         modifier = Modifier.size(58.dp),
