@@ -846,9 +846,6 @@ class InteractionController(
         //  - a finger pans unless finger-draw is enabled;
         //  - otherwise the armed tool.
         val buttonHeld = stylusButtons.heldFor(e)
-        sideButtonEraseActive = buttonHeld && penButtonTool == Tool.ERASER && tool.isStroke && drawingIsStylus
-        sideButtonResumeTool = if (sideButtonEraseActive) tool else null
-        sideButtonHeldOnLastMove = buttonHeld
         val effectiveTool: Tool = when {
             readOnly -> Tool.PAN
             toolType == MotionEvent.TOOL_TYPE_ERASER -> Tool.ERASER
@@ -872,6 +869,10 @@ class InteractionController(
             toolType == MotionEvent.TOOL_TYPE_FINGER && !fingerDraws && tool.fingerPansWhenOff -> Tool.PAN
             else -> tool
         }
+        sideButtonEraseActive = buttonHeld && penButtonTool == Tool.ERASER &&
+            effectiveTool == Tool.ERASER && tool.isStroke && drawingIsStylus
+        sideButtonResumeTool = if (sideButtonEraseActive) tool else null
+        sideButtonHeldOnLastMove = buttonHeld
         val isFinger = toolType == MotionEvent.TOOL_TYPE_FINGER
         val free = FreePointer.isFree(tool, effectiveTool, isFinger)
 
