@@ -38,4 +38,4 @@ Saya includes open-source software and third-party components. Their required co
 
 ---
 
-Saya is developed independently as a branded application. The source repository retains required legal notices for the upstream code and dependencies.
+Saya is an independently branded application built on open-source foundations. Required upstream and third-party copyright and licence notices are retained in this repository.
