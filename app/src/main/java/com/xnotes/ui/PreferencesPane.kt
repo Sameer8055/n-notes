@@ -447,7 +447,7 @@ fun PreferencesPane(
                 CheckRow(stringResource(R.string.pref_start_fullscreen), editor.fullscreen) { editor.setFullscreenPref(it) }
                 CheckRow("Keep screen on while the app is open", prefs.keepScreenOn) { updateHome(prefs.copy(keepScreenOn = it)) }
                 CheckRow("Split settings into categories", prefs.prefsCategories) { updateHome(prefs.copy(prefsCategories = it)) }
-                GlassTextButton(onClick = { update(Preferences()) }) { Text(stringResource(R.string.reset_to_defaults), fontSize = 13.sp) }
+                GlassGlassTextButton(onClick = { update(Preferences()) }) { Text(stringResource(R.string.reset_to_defaults), fontSize = 13.sp) }
             }
             if (shown(PrefCategory.INPUT)) {
                 if (all) HorizontalDivider(color = palette.border.toComposeColor())
@@ -737,10 +737,10 @@ fun PreferencesPane(
                                 color = palette.text.toComposeColor(),
                                 fontSize = 13.sp,
                             )
-                            TextButton(onClick = { editor.resetCodeTheme() }) { Text(stringResource(R.string.reset), fontSize = 13.sp) }
+                            GlassTextButton(onClick = { editor.resetCodeTheme() }) { Text(stringResource(R.string.reset), fontSize = 13.sp) }
                         }
                     }
-                    TextButton(onClick = { onImportCodeTheme() }) { Text(stringResource(R.string.import_theme), fontSize = 13.sp) }
+                    GlassTextButton(onClick = { onImportCodeTheme() }) { Text(stringResource(R.string.import_theme), fontSize = 13.sp) }
                 }
             }
             if (shown(PrefCategory.APPEARANCE)) {
@@ -751,7 +751,7 @@ fun PreferencesPane(
                     color = palette.textDim.toComposeColor(),
                     fontSize = 12.sp,
                 )
-                TextButton(onClick = { onImportFont() }) { Text(stringResource(R.string.import_font), fontSize = 13.sp) }
+                GlassTextButton(onClick = { onImportFont() }) { Text(stringResource(R.string.import_font), fontSize = 13.sp) }
                 for (font in editor.customFonts) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
@@ -763,7 +763,7 @@ fun PreferencesPane(
                         if (font.mono) {
                             Text(stringResource(R.string.mono_suffix), color = palette.accent.toComposeColor(), fontSize = 11.sp)
                         }
-                        TextButton(onClick = { editor.removeCustomFont(font.face) }) { Text(stringResource(R.string.remove), fontSize = 12.sp) }
+                        GlassTextButton(onClick = { editor.removeCustomFont(font.face) }) { Text(stringResource(R.string.remove), fontSize = 12.sp) }
                     }
                 }
             }
@@ -802,7 +802,7 @@ fun PreferencesPane(
                     Chip("xnote", selected = !canvasTab) { showTab(false) }
                     Chip("xcanvas", selected = canvasTab) { showTab(true) }
                     Spacer(Modifier.weight(1f))
-                    TextButton(
+                    GlassTextButton(
                         onClick = {
                             applyEdited(if (canvasTab) ToolbarLayout.CANVAS_DEFAULT else ToolbarLayout.DEFAULT)
                         },
@@ -878,7 +878,7 @@ fun PreferencesPane(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     FieldLabel(stringResource(R.string.pref_hidden_shapes))
                     Spacer(Modifier.weight(1f))
-                    TextButton(onClick = { updateHome(prefs.copy(shapeOrder = emptyList())) }, enabled = prefs.shapeOrder.isNotEmpty()) {
+                    GlassTextButton(onClick = { updateHome(prefs.copy(shapeOrder = emptyList())) }, enabled = prefs.shapeOrder.isNotEmpty()) {
                         Text(stringResource(R.string.reset_order), fontSize = 13.sp)
                     }
                 }
@@ -937,8 +937,8 @@ fun PreferencesPane(
                 SectionTitle(stringResource(R.string.pref_backup))
                 Text(stringResource(R.string.pref_backup_help), color = palette.textDim.toComposeColor(), fontSize = 12.sp)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextButton(onClick = { onBackup(true) }) { Text(stringResource(R.string.export_settings), fontSize = 13.sp) }
-                    TextButton(onClick = { onBackup(false) }) { Text(stringResource(R.string.import_settings), fontSize = 13.sp) }
+                    GlassTextButton(onClick = { onBackup(true) }) { Text(stringResource(R.string.export_settings), fontSize = 13.sp) }
+                    GlassTextButton(onClick = { onBackup(false) }) { Text(stringResource(R.string.import_settings), fontSize = 13.sp) }
                 }
             }
             if (shown(PrefCategory.CLOUD_SYNC)) {
@@ -1023,22 +1023,22 @@ private fun MathAddonControls() {
     }
     when (val s = state) {
         MathOcr.State.Missing ->
-            TextButton(onClick = { MathOcr.startDownload(context) }) { Text("Download ($sizeMb MB)", fontSize = 13.sp) }
+            GlassTextButton(onClick = { MathOcr.startDownload(context) }) { Text("Download ($sizeMb MB)", fontSize = 13.sp) }
         is MathOcr.State.Downloading -> {
             LinearProgressIndicator(progress = { s.done.toFloat() / s.total }, modifier = Modifier.width(280.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("${s.done / 1_000_000} of ${s.total / 1_000_000} MB", color = palette.text.toComposeColor(), fontSize = 12.sp)
-                TextButton(onClick = { MathOcr.cancelDownload(context) }) { Text(stringResource(R.string.cancel), fontSize = 13.sp) }
+                GlassTextButton(onClick = { MathOcr.cancelDownload(context) }) { Text(stringResource(R.string.cancel), fontSize = 13.sp) }
             }
         }
         MathOcr.State.Installed ->
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Downloaded", color = palette.text.toComposeColor(), fontSize = 12.sp)
-                TextButton(onClick = { confirmDelete = true }) { Text("Delete", fontSize = 13.sp) }
+                GlassTextButton(onClick = { confirmDelete = true }) { Text("Delete", fontSize = 13.sp) }
             }
         is MathOcr.State.Failed -> {
             Text("Download failed: ${s.message}", color = palette.danger.toComposeColor(), fontSize = 12.sp)
-            TextButton(onClick = { MathOcr.startDownload(context) }) { Text("Retry", fontSize = 13.sp) }
+            GlassTextButton(onClick = { MathOcr.startDownload(context) }) { Text("Retry", fontSize = 13.sp) }
         }
     }
     if (confirmDelete) {
@@ -1046,8 +1046,8 @@ private fun MathAddonControls() {
             onDismissRequest = { confirmDelete = false },
             title = { Text("Delete the math model?") },
             text = { Text("Convert to math goes away until you download it again ($sizeMb MB).") },
-            confirmButton = { TextButton(onClick = { MathOcr.delete(context); confirmDelete = false }) { Text("Delete") } },
-            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.cancel)) } },
+            confirmButton = { GlassTextButton(onClick = { MathOcr.delete(context); confirmDelete = false }) { Text("Delete") } },
+            dismissButton = { GlassTextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.cancel)) } },
         )
     }
 }
@@ -1078,10 +1078,10 @@ private fun HandwritingLanguageControls(selected: String, onSelect: (String) -> 
     val isDownloaded = selected in downloaded
     Row(verticalAlignment = Alignment.CenterVertically) {
         OptionDropdown(options, selected, downloaded, onSelect)
-        TextButton(enabled = !busy && !isDownloaded, onClick = { act { HandwritingOcr.ensureModelDownloaded(selected) } }) {
+        GlassTextButton(enabled = !busy && !isDownloaded, onClick = { act { HandwritingOcr.ensureModelDownloaded(selected) } }) {
             Text(if (busy) "Working..." else "Download", fontSize = 13.sp)
         }
-        TextButton(enabled = !busy && isDownloaded, onClick = { act { HandwritingOcr.deleteModel(selected) } }) {
+        GlassTextButton(enabled = !busy && isDownloaded, onClick = { act { HandwritingOcr.deleteModel(selected) } }) {
             Text("Delete", fontSize = 13.sp)
         }
     }
@@ -1101,7 +1101,7 @@ private fun PortSection(editor: Editor) {
         SectionTitle(stringResource(R.string.pref_port))
         Text(stringResource(R.string.pref_port_help), color = palette.textDim.toComposeColor(), fontSize = 12.sp)
         Row {
-            TextButton(enabled = !busy, onClick = {
+            GlassTextButton(enabled = !busy, onClick = {
                 busy = true
                 status = context.getString(R.string.port_scanning)
                 scope.launch {
@@ -1117,7 +1117,7 @@ private fun PortSection(editor: Editor) {
             }) { Text(stringResource(R.string.port_scan), fontSize = 13.sp) }
             val todo = found
             if (!todo.isNullOrEmpty()) {
-                TextButton(enabled = !busy, onClick = {
+                GlassTextButton(enabled = !busy, onClick = {
                     busy = true
                     scope.launch {
                         val result = editor.portForkShapes(
@@ -1367,7 +1367,7 @@ private fun Chip(label: String, selected: Boolean, onClick: () -> Unit) {
 
 
 @Composable
-private fun GlassTextButton(
+private fun GlassGlassTextButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
