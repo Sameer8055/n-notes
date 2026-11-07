@@ -139,8 +139,8 @@ fun SidePanel(
             .fillMaxHeight()
             .liquidGlassSurface(
                 shape = panelShape,
-                fill = palette.panel.toComposeColor(),
-                edge = palette.border.toComposeColor().copy(alpha = 0.72f),
+                fill = palette.panel.toComposeColor().copy(alpha = if (palette.isDark) 0.66f else 0.72f),
+                edge = palette.border.toComposeColor().copy(alpha = 0.84f),
                 elevation = 12.dp,
             ),
     ) {
