@@ -982,7 +982,13 @@ class InteractionController(
         }
         when {
             effectiveTool == Tool.PAN -> beginPan(vx, vy, fromPenButton = buttonHeld && penButtonTool == Tool.PAN)
-            effectiveTool.isStroke -> beginDraw(content, resolvePressure(e, 0, toolType), effectiveTool, e.eventTime, Pt(vx, vy))
+            effectiveTool.isStroke -> {
+                beginDraw(content, resolvePressure(e, 0, toolType), effectiveTool, e.eventTime, Pt(vx, vy))
+                // Hold the stylus still briefly to erase without changing the selected pen.
+                if (drawingIsStylus && !buttonHeld && effectiveTool == tool && tool.isStroke && liveStroke != null) {
+                    armTemporaryEraser(Pt(vx, vy))
+                }
+            }
             effectiveTool == Tool.ERASER -> {
                 clearSelection()
                 erasingWithFinger = toolType == MotionEvent.TOOL_TYPE_FINGER
@@ -1131,6 +1137,9 @@ class InteractionController(
         val vy = e.getY(idx).toDouble()
         val content = state.viewportToContent(Pt(vx, vy))
         maybeCancelLongPress(Pt(vx, vy))
+        if (temporaryEraserRunnable != null && Pt(vx, vy).distanceTo(temporaryEraserDown) > LONG_PRESS_SLOP) {
+            cancelTemporaryEraser() // movement before the hold threshold remains an ordinary ink stroke
+        }
         when (mode) {
             PointerMode.DRAW -> extendDraw(e)
             PointerMode.PAN -> extendPan(vx, vy)
@@ -1187,6 +1196,7 @@ class InteractionController(
     }
 
     private fun handleUp(e: MotionEvent) {
+        cancelTemporaryEraser()
         cancelLongPress()
         val idx = e.findPointerIndex(drawingPointerId).coerceAtLeast(0)
         val content = state.viewportToContent(Pt(e.getX(idx).toDouble(), e.getY(idx).toDouble()))
@@ -3978,6 +3988,39 @@ class InteractionController(
 
     // --- LONG-PRESS GRAB ---
 
+    /**
+     * A stylus press held within the small movement tolerance becomes an erase gesture.
+     * The unfinished stroke is only a preview, so discard it before beginning the erase;
+     * the erase then follows the same pointer gesture and commits as one undo step on lift.
+     */
+    private fun armTemporaryEraser(down: Pt) {
+        cancelTemporaryEraser()
+        temporaryEraserDown = down
+        val task = Runnable {
+            temporaryEraserRunnable = null
+            if (mode != PointerMode.DRAW || !drawingIsStylus || liveStroke == null || !tool.isStroke) return@Runnable
+            cancelDwell()
+            dwellEligible = false
+            liveStroke = null
+            strokePageIndex = null
+            strokeDismissedSelection = false
+            snapEngaged = false
+            snapRunStartEdge = null
+            snapCurrentEdge = null
+            snapPenViewport = null
+            tapCandidate = false
+            erasingWithFinger = false
+            beginErase(temporaryEraserDown.x, temporaryEraserDown.y)
+        }
+        temporaryEraserRunnable = task
+        handler.postDelayed(task, TEMP_ERASER_HOLD_MS)
+    }
+
+    private fun cancelTemporaryEraser() {
+        temporaryEraserRunnable?.let { handler.removeCallbacks(it) }
+        temporaryEraserRunnable = null
+    }
+
     private fun armLongPress(viewport: Pt, content: Pt, isFinger: Boolean, free: Boolean) {
         cancelLongPress()
         // Long press (grab an item, select PDF text, or the paste menu on empty space) is a finger
@@ -5199,6 +5242,7 @@ class InteractionController(
     }
 
     private fun abortGesture() {
+        cancelTemporaryEraser()
         cancelLongPress()
         cancelDwell()
         dwellEligible = false
@@ -5750,6 +5794,7 @@ class InteractionController(
         const val TEXT_MIN_PT = 6.0
         const val TEXT_MAX_PT = 96.0
         const val LONG_PRESS_MS = 450L
+        const val TEMP_ERASER_HOLD_MS = 450L
         const val LONG_PRESS_SLOP = 6.0
 
         /** How near a lone selected shape's outline (device px) a drawing tool's press grabs it. */
