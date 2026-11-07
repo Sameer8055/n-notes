@@ -206,6 +206,9 @@ fun PreferencesPane(
     // With categories off, every setting sits in one long list as before.
     val categorized = prefs.prefsCategories
     var category by rememberSaveable { mutableStateOf<PrefCategory?>(null) }
+    LaunchedEffect(category) {
+        if (category != null && category !in visiblePrefCategories) category = null
+    }
     val searching = search.query.isNotBlank()
     val all = searching || !categorized
     fun shown(c: PrefCategory) = c in visiblePrefCategories && (all || category == c)
