@@ -295,7 +295,20 @@ fun PreferencesPane(
                 }
             }
             Spacer(Modifier.width(4.dp))
-            Text(open?.title ?: stringResource(R.string.preferences), color = palette.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 20.sp)
+            if (open == null) {
+                Box(
+                    Modifier.size(38.dp).clip(RoundedCornerShape(12.dp))
+                        .background(Brush.verticalGradient(listOf(Color(0xFF3A3F47), Color(0xFF171A1F))))
+                        .border(1.dp, Color.White.copy(alpha = 0.20f), RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(XnotesIcons.settings, "Saya settings", tint = Color.White, modifier = Modifier.size(20.dp))
+                }
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                Text("S A Y A   /   WORKSPACE", color = palette.accent.toComposeColor(), fontSize = 9.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 1.1.sp)
+                Text(open?.title ?: stringResource(R.string.preferences), color = palette.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 21.sp, letterSpacing = (-0.3).sp)
+            }
             Spacer(Modifier.weight(1f))
             IconButton(onClick = { search.open = !search.open; if (!search.open) search.query = "" }) {
                 Icon(XnotesIcons.search, stringResource(R.string.search_settings), tint = palette.text.toComposeColor(), modifier = Modifier.size(22.dp))
@@ -353,13 +366,30 @@ fun PreferencesPane(
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             if (categorized && category == null && !searching) {
+                Text(
+                    "CONTROL DECK",
+                    color = palette.textDim.toComposeColor(),
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = 1.5.sp,
+                    modifier = Modifier.padding(start = 4.dp, top = 4.dp, bottom = 2.dp),
+                )
                 for (c in PrefCategory.entries) {
-                    Text(
-                        c.title,
-                        color = palette.text.toComposeColor(),
-                        fontSize = 16.sp,
-                        modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.small).clickable { category = c }.padding(horizontal = 8.dp, vertical = 10.dp),
-                    )
+                    val cardShape = RoundedCornerShape(15.dp)
+                    Row(
+                        Modifier.fillMaxWidth().clip(cardShape)
+                            .background(Brush.verticalGradient(listOf(Color(0xFF292D33), Color(0xFF171A1F))))
+                            .border(1.dp, Color.White.copy(alpha = 0.12f), cardShape)
+                            .clickable { category = c }
+                            .padding(horizontal = 16.dp, vertical = 17.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                            Text(c.title, color = palette.text.toComposeColor(), fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                            Text("Configure this part of Saya", color = palette.textDim.toComposeColor(), fontSize = 11.sp)
+                        }
+                        Text("›", color = palette.accent.toComposeColor(), fontSize = 24.sp, fontWeight = FontWeight.Light)
+                    }
                 }
             }
             if (shown(PrefCategory.APPEARANCE)) {
