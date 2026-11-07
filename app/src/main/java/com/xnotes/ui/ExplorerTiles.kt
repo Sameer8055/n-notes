@@ -913,9 +913,54 @@ internal fun HomeShelves(
     onSeeAll: () -> Unit,
     onOpenRecent: (BrowseEntry) -> Unit,
     onOpenPin: (com.xnotes.settings.PinnedFolder) -> Unit,
+    onNewNote: () -> Unit,
+    onNewCanvas: () -> Unit,
+    onImportPdf: () -> Unit,
 ) {
     val palette = LocalPalette.current
-    Column(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 8.dp)) {
+    Column(Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 8.dp)) {
+        // A distinct Saya welcome panel: the home screen leads with creation, not a file-browser title.
+        Column(
+            Modifier.fillMaxWidth()
+                .clip(RoundedCornerShape(26.dp))
+                .background(Brush.linearGradient(listOf(
+                    palette.accent.toComposeColor().copy(alpha = 0.22f),
+                    palette.surface.toComposeColor(),
+                    palette.surfaceHi.toComposeColor(),
+                )))
+                .border(1.dp, palette.border.toComposeColor().copy(alpha = 0.72f), RoundedCornerShape(26.dp))
+                .padding(horizontal = 18.dp, vertical = 18.dp),
+        ) {
+            Text(
+                "S A Y A",
+                color = palette.accent.toComposeColor(),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 2.2.sp,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "A home for every idea.",
+                color = palette.text.toComposeColor(),
+                fontSize = 23.sp,
+                lineHeight = 28.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "Write it down. Sketch it out. Keep what matters.",
+                color = palette.textDim.toComposeColor(),
+                fontSize = 12.5.sp,
+                lineHeight = 18.sp,
+            )
+            Spacer(Modifier.height(18.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                SayaHomeAction(XnotesIcons.edit, "New note", Modifier.weight(1f), onNewNote)
+                SayaHomeAction(XnotesIcons.canvas, "Canvas", Modifier.weight(1f), onNewCanvas)
+                SayaHomeAction(XnotesIcons.importDoc, "Import PDF", Modifier.weight(1f), onImportPdf)
+            }
+        }
+        Spacer(Modifier.height(22.dp))
         if (recents.isNotEmpty()) {
             ShelfTitle(stringResource(R.string.recent), stringResource(R.string.see_all), onSeeAll)
             LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -956,6 +1001,25 @@ internal fun HomeShelves(
             Text(counts, color = palette.textDim.toComposeColor(), fontSize = 12.sp, fontWeight = FontWeight.Medium,
                 modifier = Modifier.clip(RoundedCornerShape(20.dp)).background(palette.surface.toComposeColor()).padding(horizontal = 10.dp, vertical = 5.dp))
         }
+    }
+}
+
+/** Compact creation shortcut used by Saya's welcome panel. */
+@Composable
+private fun SayaHomeAction(icon: ImageVector, label: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    val palette = LocalPalette.current
+    val shape = RoundedCornerShape(14.dp)
+    Column(
+        modifier.clip(shape)
+            .background(palette.surface.toComposeColor().copy(alpha = 0.78f))
+            .border(1.dp, palette.border.toComposeColor(), shape)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 5.dp, vertical = 11.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Icon(icon, null, tint = palette.accent.toComposeColor(), modifier = Modifier.size(20.dp))
+        Text(label, color = palette.text.toComposeColor(), fontSize = 10.5.sp, fontWeight = FontWeight.Medium, maxLines = 1)
     }
 }
 
