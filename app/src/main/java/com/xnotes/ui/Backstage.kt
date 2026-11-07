@@ -348,7 +348,10 @@ private fun BackstageContent(
 ) {
     val palette = LocalPalette.current
     // Keep the library shell consistently OLED-black while moving between Home and Settings.
-    val homeBackdrop = SolidColor(Color.Black)
+    val homeBackdrop = Brush.verticalGradient(
+        colors = listOf(Color(0xFF303236).copy(alpha = 0.58f), Color(0xFF17191C).copy(alpha = 0.30f), Color.Black),
+        startY = 0f, endY = 1500f,
+    )
     var createMode by remember { mutableStateOf(CreateMode.NONE) }
     var drawerOpen by remember { mutableStateOf(false) }
     val railed = editor.backstageRail
@@ -441,66 +444,20 @@ private fun BackstageContent(
         }
     }
 
-    if (compact) {
-        Box(Modifier.fillMaxSize().background(homeBackdrop)) {
-            BackstageMain(
-                Modifier.fillMaxSize(), editor, view, compact, drawerOpen, { animateClose = true; drawerOpen = true }, dismissDrawer, { selectView(BackstageView.HOME) },
-                calls, createMode, { createMode = it }, onImportCodeTheme, onImportFont, onBackup, link, { selectView(BackstageView.PREFERENCES) },
-                focusSync, { focusSync = false },
-            )
-            AnimatedVisibility(
-                visible = drawerOpen,
-                enter = fadeIn(animationSpec = tween(SIDEBAR_ANIM_MS)),
-                exit = if (animateClose) fadeOut(animationSpec = tween(SIDEBAR_ANIM_MS)) else ExitTransition.None,
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                Box(Modifier.fillMaxSize().background(palette.materialColors.scrim.withAlpha(82).toComposeColor()).clickable { dismissDrawer() }.swipeToClose(prefs, dismissDrawer))
-            }
-            AnimatedVisibility(
-                visible = drawerOpen,
-                enter = slideInHorizontally(animationSpec = tween(SIDEBAR_ANIM_MS), initialOffsetX = { -it }),
-                exit = if (animateClose) slideOutHorizontally(animationSpec = tween(SIDEBAR_ANIM_MS), targetOffsetX = { -it }) else ExitTransition.None,
-            ) {
-                BackstageSidebar(Modifier.width(DRAWER_WIDTH).swipeToClose(prefs, dismissDrawer), editor, nav, dismissDrawer)
-            }
-        }
-    } else {
-        // Expanding pushes the explorer along with the panel; collapsing hands it the room at once and the panel
-        // folds away over it, as the old sidebar did, since resizing the grid on every frame is what a fold costs.
-        // The width is read only in layout, so neither direction recomposes anything.
-        val width = animateDpAsState(if (railed) RAIL_WIDTH else SIDEBAR_WIDTH, tween(SIDEBAR_ANIM_MS), label = "sidebarWidth")
-        Box(Modifier.fillMaxSize().background(homeBackdrop)) {
-            // A navigation surface is always on screen here, so the panes never need their own menu button.
-            BackstageMain(
-                Modifier.fillMaxSize().layout { measurable, constraints ->
-                    val inset = (if (railed) RAIL_WIDTH else width.value).roundToPx().coerceIn(0, constraints.maxWidth)
-                    val w = constraints.maxWidth - inset
-                    val placeable = measurable.measure(constraints.copy(minWidth = w, maxWidth = w))
-                    layout(constraints.maxWidth, placeable.height) { placeable.place(inset, 0) }
-                },
-                editor, view, compact, true, { setRailed(false) }, { setRailed(true) }, { selectView(BackstageView.HOME) },
-                calls, createMode, { createMode = it }, onImportCodeTheme, onImportFont, onBackup, link, { selectView(BackstageView.PREFERENCES) },
-                focusSync, { focusSync = false },
-            )
-            // Both stay composed so a fold never pays to build one; only the current one is measured and placed.
-            Layout(
-                content = {
-                    BackstageRail(Modifier.width(RAIL_WIDTH), nav) { setRailed(false) }
-                    BackstageSidebar(Modifier.width(SIDEBAR_WIDTH), editor, nav) { setRailed(true) }
-                },
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .layout { measurable, constraints ->
-                        val w = width.value.roundToPx().coerceIn(constraints.minWidth, constraints.maxWidth)
-                        val placeable = measurable.measure(constraints.copy(minWidth = w, maxWidth = w))
-                        layout(w, placeable.height) { placeable.place(0, 0) }
-                    }
-                    .clipToBounds(),
-            ) { measurables, constraints ->
-                val shown = measurables[if (railed) 0 else 1].measure(Constraints(maxHeight = constraints.maxHeight, minHeight = constraints.maxHeight))
-                layout(constraints.maxWidth, constraints.maxHeight) { shown.place(0, 0) }
-            }
-        }
+    // One permanent compact rail replaces the old full panel and its squeeze/expand state.
+    Box(Modifier.fillMaxSize().background(homeBackdrop)) {
+        BackstageMain(
+            Modifier.fillMaxSize().layout { measurable, constraints ->
+                val inset = RAIL_WIDTH.roundToPx().coerceAtMost(constraints.maxWidth)
+                val paneWidth = (constraints.maxWidth - inset).coerceAtLeast(0)
+                val placeable = measurable.measure(constraints.copy(minWidth = paneWidth, maxWidth = paneWidth))
+                layout(constraints.maxWidth, placeable.height) { placeable.place(inset, 0) }
+            },
+            editor, view, compact, true, {}, {}, { selectView(BackstageView.HOME) },
+            calls, createMode, { createMode = it }, onImportCodeTheme, onImportFont, onBackup, link, { selectView(BackstageView.PREFERENCES) },
+            focusSync, { focusSync = false },
+        )
+        BackstageRail(Modifier.width(RAIL_WIDTH).fillMaxHeight(), nav)
     }
 }
 
@@ -628,22 +585,18 @@ private fun BackstageSidebar(modifier: Modifier, editor: Editor, nav: SidebarNav
 
 /** The sidebar collapsed to icons on wide screens; its menu button expands it back. */
 @Composable
-private fun BackstageRail(modifier: Modifier, nav: SidebarNav, onExpand: () -> Unit) {
-    val palette = LocalPalette.current
-    Column(
-        modifier.fillMaxHeight().liquidGlassSurface(MaterialTheme.shapes.extraLarge, palette.panel.toComposeColor(), elevation = 12.dp).padding(vertical = 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Tooltip(stringResource(R.string.expand_sidebar), side = TipSide.RIGHT) {
-            IconButton(onClick = onExpand, modifier = Modifier.size(48.dp)) {
-                Icon(XnotesIcons.menu, stringResource(R.string.expand_sidebar), tint = palette.text.toComposeColor(), modifier = Modifier.size(24.dp))
-            }
-        }
-        Spacer(Modifier.height(10.dp))
+private fun BackstageRail(modifier: Modifier, nav: SidebarNav) {
+    Column(modifier.fillMaxHeight().padding(vertical = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Image(
+            painter = painterResource(R.drawable.saya_logo_transparent),
+            contentDescription = "Saya logo",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.size(42.dp).padding(bottom = 10.dp),
+        )
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
-            nav.recent?.let { on -> RailItem(XnotesIcons.clock, stringResource(R.string.recent), selected = on) { nav.onRecent() } }
-            RailItem(XnotesIcons.home, stringResource(R.string.home), selected = nav.homeSelected) { nav.onHome() }
-            if (nav.trashCount >= 0) RailItem(XnotesIcons.trash, stringResource(R.string.trash), selected = nav.view == BackstageView.TRASH) { nav.onSelectView(BackstageView.TRASH) }
+            nav.recent?.let { on -> RailItem(XnotesIcons.clock, stringResource(R.string.recent), selected = on, labelled = true) { nav.onRecent() } }
+            RailItem(XnotesIcons.home, stringResource(R.string.home), selected = nav.homeSelected, labelled = true) { nav.onHome() }
+            if (nav.trashCount >= 0) RailItem(XnotesIcons.trash, stringResource(R.string.trash), selected = nav.view == BackstageView.TRASH, labelled = true) { nav.onSelectView(BackstageView.TRASH) }
             if (nav.pins.isNotEmpty()) Spacer(Modifier.height(8.dp))
             nav.pins.forEachIndexed { i, pin ->
                 key(pin.uri) {
@@ -658,8 +611,8 @@ private fun BackstageRail(modifier: Modifier, nav: SidebarNav, onExpand: () -> U
             }
         }
         if (nav.showSync) SyncRailItem(nav.onSyncSettings)
-        RailItem(XnotesIcons.sliders, stringResource(R.string.preferences), selected = nav.view == BackstageView.PREFERENCES) { nav.onSelectView(BackstageView.PREFERENCES) }
-        if (nav.showAbout) RailItem(XnotesIcons.info, stringResource(R.string.about), selected = nav.view == BackstageView.ABOUT) { nav.onSelectView(BackstageView.ABOUT) }
+        RailItem(XnotesIcons.settings, stringResource(R.string.preferences), selected = nav.view == BackstageView.PREFERENCES, labelled = true) { nav.onSelectView(BackstageView.PREFERENCES) }
+        if (nav.showAbout) RailItem(XnotesIcons.info, stringResource(R.string.about), selected = nav.view == BackstageView.ABOUT, labelled = true) { nav.onSelectView(BackstageView.ABOUT) }
     }
 }
 
@@ -772,26 +725,33 @@ private fun RailItem(icon: ImageVector, label: String, selected: Boolean = false
     val pill = MaterialTheme.shapes.large
     val item = @Composable {
         Column(
-            Modifier.width(RAIL_WIDTH).combinedClickable(onClick = onClick, onLongClick = onLongClick).padding(top = if (labelled) 6.dp else 8.dp, bottom = 8.dp),
+            Modifier.width(RAIL_WIDTH).combinedClickable(onClick = onClick, onLongClick = onLongClick).padding(top = 5.dp, bottom = 7.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(
-                Modifier.size(width = 56.dp, height = 32.dp).clip(pill)
-                    .background(if (selected) palette.selectionBackground.toComposeColor() else Color.Transparent),
+                Modifier.size(width = 52.dp, height = 42.dp)
+                    .shadow(if (selected) 10.dp else 6.dp, pill)
+                    .clip(pill)
+                    .background(Brush.verticalGradient(listOf(
+                        Color.White.copy(alpha = if (selected) 0.24f else 0.17f),
+                        Color(0xFF858B94).copy(alpha = if (selected) 0.16f else 0.09f),
+                        Color(0xFF24272C).copy(alpha = 0.18f),
+                    )))
+                    .border(1.dp, if (selected) palette.accent.toComposeColor().copy(alpha = 0.72f) else Color.White.copy(alpha = 0.22f), pill),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(icon, if (labelled) null else label, tint = (if (selected) palette.selectionForeground else palette.accent).toComposeColor(), modifier = Modifier.size(20.dp))
+                Icon(icon, label, tint = if (selected) Color.White else palette.text.toComposeColor().copy(alpha = 0.92f), modifier = Modifier.size(20.dp))
             }
             if (labelled) {
                 Spacer(Modifier.height(4.dp))
                 Text(
                     label,
-                    color = palette.text.toComposeColor(),
-                    fontSize = 11.sp,
-                    fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
+                    color = if (selected) Color.White else palette.textDim.toComposeColor(),
+                    fontSize = 10.sp,
+                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(horizontal = 4.dp),
+                    modifier = Modifier.padding(horizontal = 2.dp),
                 )
             }
         }
@@ -2030,50 +1990,53 @@ private fun ExplorerSection(
                         }
                     }
                     Spacer(Modifier.width(8.dp))
-                    ExplorerSearchField(query, { query = it }, expandedWidth = if (wide) 320.dp else (headerWidth - 144.dp).coerceAtLeast(160.dp), lift = liftNow)
-                    if (wide && switcherLayouts.size > 1) {
-                        Spacer(Modifier.width(8.dp))
-                        LayoutSwitcher(switcherLayouts, layout, liftNow) { setView(view.copy(layout = it)); columnsPick = null }
-                    }
-                    Spacer(Modifier.width(4.dp))
-                    var optionsOpen by remember { mutableStateOf(false) }
-                    Box(Modifier.floatingBacking(liftNow, CircleShape, floatFill, floatEdge)) {
-                        ExplorerIcon(XnotesIcons.sliders, stringResource(R.string.view_options)) { optionsOpen = true }
-                        DropdownMenu(expanded = optionsOpen, onDismissRequest = { optionsOpen = false }) {
-                            ViewOptionsContent(
-                                view = view.copy(layout = layout),
-                                layouts = ExplorerLayout.entries.filter { !(compactScreen && it == ExplorerLayout.COLUMNS) },
-                                everyFolder = !prefs.perFolderViews,
-                                hideDotItems = prefs.hideDotItems,
-                                // Results shown in the grid for now leave the folder's own layout alone unless another is picked.
-                                onChange = { v -> setView(if (v.layout == layout) v.copy(layout = view.layout) else v); if (v.layout != layout) columnsPick = null },
-                                onReset = { editor.setView(folderKey, null) },
-                                onEveryFolder = { every -> editor.applyHomePreferences(editor.preferences.copy(perFolderViews = !every)) },
-                                onHideDotItems = { editor.setHideDotItems(it) },
-                                onClose = { optionsOpen = false },
-                            )
+                    if (!showRecent) {
+                        ExplorerSearchField(query, { query = it }, expandedWidth = if (wide) 320.dp else (headerWidth - 144.dp).coerceAtLeast(160.dp), lift = liftNow)
+                        if (wide && switcherLayouts.size > 1) {
+                            Spacer(Modifier.width(8.dp))
+                            LayoutSwitcher(switcherLayouts, layout, liftNow) { setView(view.copy(layout = it)); columnsPick = null }
                         }
-                    }
-                    Spacer(Modifier.width(4.dp))
-                    var moreOpen by remember { mutableStateOf(false) }
-                    Box(Modifier.floatingBacking(liftNow, CircleShape, floatFill, floatEdge)) {
-                        ExplorerIcon(XnotesIcons.more, stringResource(R.string.more)) { moreOpen = true }
-                        DropdownMenu(expanded = moreOpen, onDismissRequest = { moreOpen = false }) {
-                            clipboard?.let { clip ->
-                                DropdownMenuItem(text = { Text(pluralStringResource(R.plurals.paste_items_here, clip.entries.size, clip.entries.size)) }, onClick = { moreOpen = false; paste(clip) })
+                        Spacer(Modifier.width(4.dp))
+                        var optionsOpen by remember { mutableStateOf(false) }
+                        Box(Modifier.floatingBacking(liftNow, CircleShape, floatFill, floatEdge)) {
+                            ExplorerIcon(XnotesIcons.sliders, stringResource(R.string.view_options)) { optionsOpen = true }
+                            DropdownMenu(expanded = optionsOpen, onDismissRequest = { optionsOpen = false }) {
+                                ViewOptionsContent(
+                                    view = view.copy(layout = layout),
+                                    layouts = ExplorerLayout.entries.filter { !(compactScreen && it == ExplorerLayout.COLUMNS) },
+                                    everyFolder = !prefs.perFolderViews,
+                                    hideDotItems = prefs.hideDotItems,
+                                    // Results shown in the grid for now leave the folder's own layout alone unless another is picked.
+                                    onChange = { v -> setView(if (v.layout == layout) v.copy(layout = view.layout) else v); if (v.layout != layout) columnsPick = null },
+                                    onReset = { editor.setView(folderKey, null) },
+                                    onEveryFolder = { every -> editor.applyHomePreferences(editor.preferences.copy(perFolderViews = !every)) },
+                                    onHideDotItems = { editor.setHideDotItems(it) },
+                                    onClose = { optionsOpen = false },
+                                )
                             }
-                            DropdownMenuItem(text = { Text(stringResource(R.string.select_all)) }, onClick = { moreOpen = false; selection.clear(); selection.addAll(arranged.orEmpty()) })
-                            DropdownMenuItem(text = { Text(stringResource(R.string.change_folder)) }, onClick = { moreOpen = false; calls.pickRoot() })
-                            DropdownMenuItem(text = { Text(stringResource(R.string.forget_folder)) }, onClick = { moreOpen = false; editor.clearBrowseRoot() })
+                        }
+                        Spacer(Modifier.width(4.dp))
+                        var moreOpen by remember { mutableStateOf(false) }
+                        Box(Modifier.floatingBacking(liftNow, CircleShape, floatFill, floatEdge)) {
+                            ExplorerIcon(XnotesIcons.more, stringResource(R.string.more)) { moreOpen = true }
+                            DropdownMenu(expanded = moreOpen, onDismissRequest = { moreOpen = false }) {
+                                clipboard?.let { clip ->
+                                    DropdownMenuItem(text = { Text(pluralStringResource(R.plurals.paste_items_here, clip.entries.size, clip.entries.size)) }, onClick = { moreOpen = false; paste(clip) })
+                                }
+                                DropdownMenuItem(text = { Text(stringResource(R.string.select_all)) }, onClick = { moreOpen = false; selection.clear(); selection.addAll(arranged.orEmpty()) })
+                                DropdownMenuItem(text = { Text(stringResource(R.string.change_folder)) }, onClick = { moreOpen = false; calls.pickRoot() })
+                                DropdownMenuItem(text = { Text(stringResource(R.string.forget_folder)) }, onClick = { moreOpen = false; editor.clearBrowseRoot() })
+                            }
                         }
                     }
                 }
-            }
+    
+                    }
             // While items are picked, the selection bar stays pinned where the chip row starts.
             if (selection.isNotEmpty()) Box(Modifier.fillMaxWidth().height(48.dp), contentAlignment = Alignment.CenterStart) {
                 // Registered when the bar appears, after the search field's, so Back clears the picks first.
                 BackHandler { selection.clear() }
-                SelectionBar(selection.size, onClear = { selection.clear() }, onSelectAll = { selection.clear(); selection.addAll(arranged.orEmpty()) }) {
+                SelectionBar(selection.size, onClear = { selection.clear() }, onSelectAll = if (showRecent) null else { { selection.clear(); selection.addAll(arranged.orEmpty()) } }) {
                     val files = selection.filterNot { it.isDir }
                     val fg = palette.selectionForeground.toComposeColor()
                     if (selection.size == 1) ExplorerIcon(XnotesIcons.edit, stringResource(R.string.rename), fg) { renaming = selection.first(); selection.clear() }
