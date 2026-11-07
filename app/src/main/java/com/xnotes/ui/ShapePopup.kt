@@ -25,7 +25,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -106,19 +108,29 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
 }
 
 /**
- * The shape chips, [ShapePresets.COLUMNS] to a row, one family to a page, without the chips and
- * pages Preferences hides, in its order. The remembered page is an index into every page, hidden ones too.
+ * All visible shapes in one uninterrupted horizontal sequence. Each swipe/page shows a compact
+ * four-by-four grid; family boundaries do not interrupt navigation.
  */
+private const val SHAPE_GRID_COLUMNS = 4
+private const val SHAPE_GRID_ROWS = 4
+private const val SHAPE_GRID_PAGE_SIZE = SHAPE_GRID_COLUMNS * SHAPE_GRID_ROWS
+
 @Composable
 private fun ShapePager(config: ShapeConfig, hidden: Set<String>, order: List<String>, onPage: (Int) -> Unit, onPick: (ShapePreset) -> Unit) {
-    val pages = ShapePresets.shown(hidden, order)
-    if (pages.isEmpty()) return
-    val all = ShapePresets.pages.map { it.key }
-    val initial = pages.indexOfFirst { it.key == all.getOrNull(config.shapePage) }.coerceAtLeast(0)
-    val rows = pages.maxOf { (it.presets.size + ShapePresets.COLUMNS - 1) / ShapePresets.COLUMNS }
-    ChipPager(pages.size, initial, { pageLabel(pages[it]) }, rows, { onPage(all.indexOf(pages[it].key)) }) { page ->
-        for (row in pages[page].presets.chunked(ShapePresets.COLUMNS)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(GAP.dp)) {
+    val presets = ShapePresets.shown(hidden, order).flatMap { it.presets }
+    if (presets.isEmpty()) return
+    val pageCount = (presets.size + SHAPE_GRID_PAGE_SIZE - 1) / SHAPE_GRID_PAGE_SIZE
+    val selectedIndex = presets.indexOfFirst { it.key == config.preset }.coerceAtLeast(0)
+    val initial = selectedIndex / SHAPE_GRID_PAGE_SIZE
+    ChipPager(pageCount, initial, { page ->
+        val first = page * SHAPE_GRID_PAGE_SIZE + 1
+        val last = (first + SHAPE_GRID_PAGE_SIZE - 1).coerceAtMost(presets.size)
+        "Shapes $first–$last of ${presets.size}"
+    }, SHAPE_GRID_ROWS, { page ->
+        presets.getOrNull(page * SHAPE_GRID_PAGE_SIZE)?.let { onPage(ShapePresets.pageOf(it)) }
+    }) { page ->
+        for (row in presets.drop(page * SHAPE_GRID_PAGE_SIZE).take(SHAPE_GRID_PAGE_SIZE).chunked(SHAPE_GRID_COLUMNS)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(GAP.dp, Alignment.CenterHorizontally)) {
                 for (p in row) KindChip(ShapeIcons.of(p), chipLabel(p), selected = p.key == config.preset, latex = chipLatex(p)) { onPick(p) }
             }
         }
@@ -132,7 +144,7 @@ private fun ConnectorPager(config: ShapeConfig, hidden: Set<String>, order: List
     if (pages.isEmpty()) return
     val all = ConnectorPresets.pages.map { it.key }
     val initial = pages.indexOfFirst { it.key == all.getOrNull(config.connectorPage) }.coerceAtLeast(0)
-    ChipPager(pages.size, initial, { connectorPageLabel(pages[it]) }, ConnectorPresets.ROWS, { onPage(all.indexOf(pages[it].key)) }) { page ->
+    ChipPager(pages.size, initial, { stringResource(connectorPageLabel(pages[it])) }, ConnectorPresets.ROWS, { onPage(all.indexOf(pages[it].key)) }) { page ->
         for (row in pages[page].presets.chunked(ConnectorPresets.COLUMNS)) {
             Row(horizontalArrangement = Arrangement.spacedBy(GAP.dp)) {
                 for (p in row) KindChip(ShapeIcons.connector(p), stringResource(connectorLabel(p.key)), selected = p.key == config.preset) { onPick(p) }
@@ -142,23 +154,24 @@ private fun ConnectorPager(config: ShapeConfig, hidden: Set<String>, order: List
 }
 
 /**
- * Chips swiped sideways a page at a time: the page's caption above, the dots below, and every page
- * [rows] chips tall so a swipe never makes the popup jump. Remembers its page through [onPage].
+ * Horizontally paged chip grid with persistent previous/next controls and page indicators.
  */
 @Composable
 private fun ChipPager(
     pageCount: Int,
     initialPage: Int,
-    caption: (Int) -> Int,
+    caption: @Composable (Int) -> String,
     rows: Int,
     onPage: (Int) -> Unit,
     content: @Composable (Int) -> Unit,
 ) {
+    if (pageCount <= 0) return
     val state = rememberPagerState(initialPage = initialPage.coerceIn(0, pageCount - 1)) { pageCount }
+    val scope = rememberCoroutineScope()
     LaunchedEffect(state.settledPage) { if (state.settledPage != initialPage) onPage(state.settledPage) }
     val palette = LocalPalette.current
     Text(
-        stringResource(caption(state.currentPage)),
+        caption(state.currentPage),
         color = palette.textDim.toComposeColor(),
         fontSize = 12.sp,
         modifier = Modifier.padding(bottom = 4.dp),
@@ -166,15 +179,27 @@ private fun ChipPager(
     HorizontalPager(state = state, modifier = Modifier.fillMaxWidth().height((rows * CHIP + (rows - 1) * GAP).dp)) { page ->
         Column(verticalArrangement = Arrangement.spacedBy(GAP.dp)) { content(page) }
     }
-    if (pageCount > 1) {
-        Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), horizontalArrangement = Arrangement.Center) {
-            for (i in 0 until pageCount) {
-                val on = i == state.currentPage
-                Box(
-                    Modifier.padding(horizontal = 3.dp).size(6.dp).clip(CircleShape)
-                        .background((if (on) palette.accent else palette.border).toComposeColor()),
-                )
+    Row(
+        Modifier.fillMaxWidth().padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        StepButton("‹", "Previous page", enabled = state.currentPage > 0) {
+            scope.launch { state.animateScrollToPage((state.currentPage - 1).coerceAtLeast(0)) }
+        }
+        if (pageCount > 1) {
+            Row(horizontalArrangement = Arrangement.Center) {
+                for (i in 0 until pageCount) {
+                    val on = i == state.currentPage
+                    Box(
+                        Modifier.padding(horizontal = 3.dp).size(6.dp).clip(CircleShape)
+                            .background((if (on) palette.accent else palette.border).toComposeColor()),
+                    )
+                }
             }
+        }
+        StepButton("›", "Next page", enabled = state.currentPage < pageCount - 1) {
+            scope.launch { state.animateScrollToPage((state.currentPage + 1).coerceAtMost(pageCount - 1)) }
         }
     }
 }

@@ -1,7 +1,7 @@
-<h1 align="center">n-notes</h1>
+<h1 align="center">Saya</h1>
 
 <p align="center">
-  A handwriting-first notebook for Android, built for pen and stylus. A customized fork of xnotes.
+  Saya — a personal notebook for Android, thoughtfully built for pen and stylus.
 </p>
 
 <p align="center">
