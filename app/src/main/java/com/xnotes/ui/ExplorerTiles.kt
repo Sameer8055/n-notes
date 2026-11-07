@@ -917,114 +917,223 @@ internal fun HomeShelves(
     onNewCanvas: () -> Unit,
     onImportPdf: () -> Unit,
 ) {
+    // Monochrome library styling is intentionally scoped to this home shelf.
+    // The editor and its toolbars keep their existing appearance and behaviour.
     val ink = Color(0xFF000000)
-    val surface = Color(0xFF090909)
-    val glass = Color(0xFF111111)
-    val white = Color(0xFFF5F5F5)
-    val muted = Color(0xFF969696)
-    val edge = Color.White.copy(alpha = 0.14f)
+    val card = Color(0xFF080808)
+    val previewWell = Color(0xFF101010)
+    val white = Color(0xFFF7F7F7)
+    val secondary = Color(0xFF929292)
+    val hairline = Color.White.copy(alpha = 0.13f)
     val notes = remember(recents, pinnedNotes, b.groups, b.pinned) {
         (recents.map { it.entry } + pinnedNotes + b.pinned + b.groups.flatMap { it.items })
             .filterNot { it.isDir }
             .distinctBy { it.documentUri }
-            .take(8)
+            .take(4)
     }
     val folders = b.folders
     Column(
-        Modifier.fillMaxWidth().background(ink).padding(horizontal = 10.dp, vertical = 18.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp),
+        Modifier.fillMaxWidth().background(ink).padding(horizontal = 22.dp, vertical = 22.dp),
+        verticalArrangement = Arrangement.spacedBy(28.dp),
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text("My Notes", color = white, fontSize = 28.sp, fontWeight = FontWeight.SemiBold, letterSpacing = (-0.6).sp, modifier = Modifier.weight(1f))
-            Text(stringResource(R.string.see_all), color = muted, fontSize = 13.sp,
-                modifier = Modifier.clip(RoundedCornerShape(18.dp)).clickable { onSeeAll() }.padding(horizontal = 10.dp, vertical = 7.dp))
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    "My Notes",
+                    color = white,
+                    fontSize = 29.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = (-0.7).sp,
+                )
+                Text(
+                    "Your library",
+                    color = secondary,
+                    fontSize = 12.sp,
+                    letterSpacing = 0.2.sp,
+                )
+            }
+            Text(
+                stringResource(R.string.see_all),
+                color = secondary,
+                fontSize = 13.sp,
+                modifier = Modifier.clip(RoundedCornerShape(18.dp))
+                    .clickable { onSeeAll() }
+                    .padding(horizontal = 13.dp, vertical = 9.dp),
+            )
         }
+
         if (notes.isNotEmpty()) {
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(end = 8.dp)) {
-                items(notes, key = { it.documentUri }) { entry ->
-                    val shape = RoundedCornerShape(18.dp)
-                    Column(
-                        Modifier.width(232.dp).clip(shape).background(surface)
-                            .border(1.dp, edge, shape)
-                            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onOpenRecent(entry) }
-                            .padding(7.dp),
-                    ) {
-                        Box(
-                            Modifier.fillMaxWidth().aspectRatio(1.12f).clip(RoundedCornerShape(13.dp))
-                                .background(glass),
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val gap = 16.dp
+                val cardWidth = ((maxWidth - gap * (notes.size - 1)) / notes.size).coerceAtMost(250.dp)
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(gap),
+                ) {
+                    notes.forEach { entry ->
+                        val shape = RoundedCornerShape(15.dp)
+                        Column(
+                            Modifier.width(cardWidth)
+                                .clip(shape)
+                                .background(card)
+                                .border(1.dp, hairline, shape)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                ) { onOpenRecent(entry) }
+                                .padding(8.dp),
                         ) {
-                            EntryThumb(b.editor, entry, ThumbShape.TOP, Modifier.fillMaxSize())
-                        }
-                        Row(
-                            Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                                Text(b.label(entry), color = white, fontSize = 14.sp, fontWeight = FontWeight.Medium,
-                                    maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                Text(b.metaText(entry), color = muted, fontSize = 11.5.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Box(
+                                Modifier.fillMaxWidth()
+                                    .aspectRatio(0.82f)
+                                    .clip(RoundedCornerShape(9.dp))
+                                    .background(previewWell),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                EntryThumb(
+                                    b.editor,
+                                    entry,
+                                    ThumbShape.PAGE,
+                                    Modifier.fillMaxSize().padding(5.dp),
+                                )
                             }
-                            IconButton(onClick = { b.host.menu.preview(entry) }, modifier = Modifier.size(30.dp)) {
-                                Icon(XnotesIcons.more, null, tint = muted, modifier = Modifier.size(17.dp))
+                            Row(
+                                Modifier.fillMaxWidth().padding(start = 7.dp, end = 3.dp, top = 12.dp, bottom = 7.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Column(
+                                    Modifier.weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                                ) {
+                                    Text(
+                                        b.label(entry),
+                                        color = white,
+                                        fontSize = 13.5.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                    Text(
+                                        b.metaText(entry),
+                                        color = secondary,
+                                        fontSize = 11.sp,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                                IconButton(
+                                    onClick = { b.host.menu.preview(entry) },
+                                    modifier = Modifier.size(30.dp),
+                                ) {
+                                    Icon(XnotesIcons.more, null, tint = secondary, modifier = Modifier.size(17.dp))
+                                }
                             }
                         }
+                    }
+                    if (notes.size < 4) {
+                        // Keep the library visually balanced without inventing placeholder documents.
+                        Spacer(Modifier.weight(1f))
                     }
                 }
             }
         } else {
             Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(surface)
-                    .border(1.dp, edge, RoundedCornerShape(16.dp)).padding(18.dp),
+                Modifier.fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(card)
+                    .border(1.dp, hairline, RoundedCornerShape(14.dp))
+                    .padding(horizontal = 18.dp, vertical = 17.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Your notes will appear here.", color = muted, fontSize = 13.sp, modifier = Modifier.weight(1f))
-                Text("New note", color = white, fontSize = 13.sp, modifier = Modifier.clip(RoundedCornerShape(16.dp)).clickable(onClick = onNewNote).padding(horizontal = 10.dp, vertical = 7.dp))
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("Your notes will appear here.", color = white, fontSize = 13.sp)
+                    Text("Create a note to start your library.", color = secondary, fontSize = 11.5.sp)
+                }
+                Text(
+                    "New note",
+                    color = white,
+                    fontSize = 12.5.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.clip(RoundedCornerShape(20.dp))
+                        .border(1.dp, hairline, RoundedCornerShape(20.dp))
+                        .clickable(onClick = onNewNote)
+                        .padding(horizontal = 14.dp, vertical = 9.dp),
+                )
             }
         }
+
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text("Recent Folders", color = white, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
-            Text(stringResource(R.string.see_all), color = muted, fontSize = 13.sp)
+            Text(
+                "Recent Folders",
+                color = white,
+                fontSize = 21.sp,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = (-0.3).sp,
+                modifier = Modifier.weight(1f),
+            )
+            Text(stringResource(R.string.see_all), color = secondary, fontSize = 13.sp)
         }
         if (folders.isNotEmpty()) {
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(14.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(end = 8.dp)) {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(13.dp),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(end = 8.dp),
+            ) {
                 items(folders, key = { it.documentUri }) { folder ->
-                    val shape = RoundedCornerShape(17.dp)
+                    val shape = RoundedCornerShape(13.dp)
                     Row(
-                        Modifier.width(210.dp).height(76.dp).clip(shape).background(surface)
-                            .border(1.dp, edge, shape).clickable { b.host.onClick(folder) }
+                        Modifier.width(218.dp).height(78.dp)
+                            .clip(shape)
+                            .background(card)
+                            .border(1.dp, hairline, shape)
+                            .clickable { b.host.onClick(folder) }
                             .padding(horizontal = 17.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(13.dp),
                     ) {
-                        Icon(XnotesIcons.folder, null, tint = white, modifier = Modifier.size(30.dp))
-                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                            Text(b.label(folder), color = white, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 1)
-                            Text(b.counts[folder.documentUri]?.let { itemsLabel(b.words, it) } ?: "Folder",
-                                color = muted, fontSize = 11.5.sp, maxLines = 1)
+                        Icon(XnotesIcons.folder, null, tint = white, modifier = Modifier.size(27.dp))
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(
+                                b.label(folder),
+                                color = white,
+                                fontSize = 13.5.sp,
+                                fontWeight = FontWeight.Medium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Text(
+                                b.counts[folder.documentUri]?.let { itemsLabel(b.words, it) } ?: "Folder",
+                                color = secondary,
+                                fontSize = 11.sp,
+                                maxLines = 1,
+                            )
                         }
                     }
                 }
             }
         } else if (pins.isNotEmpty()) {
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(13.dp)) {
                 items(pins, key = { it.uri }) { pin ->
-                    val shape = RoundedCornerShape(17.dp)
+                    val shape = RoundedCornerShape(13.dp)
                     Row(
-                        Modifier.width(210.dp).height(76.dp).clip(shape).background(surface)
-                            .border(1.dp, edge, shape).clickable { onOpenPin(pin) }.padding(horizontal = 17.dp),
+                        Modifier.width(218.dp).height(78.dp)
+                            .clip(shape)
+                            .background(card)
+                            .border(1.dp, hairline, shape)
+                            .clickable { onOpenPin(pin) }
+                            .padding(horizontal = 17.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(13.dp),
                     ) {
-                        Icon(XnotesIcons.folder, null, tint = white, modifier = Modifier.size(30.dp))
-                        Text(pin.name, color = white, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 1)
+                        Icon(XnotesIcons.folder, null, tint = white, modifier = Modifier.size(27.dp))
+                        Text(pin.name, color = white, fontSize = 13.5.sp, fontWeight = FontWeight.Medium, maxLines = 1)
                     }
                 }
             }
         }
-        // The root folder's regular file listing continues below this curated library surface.
+
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(rootName, color = muted, fontSize = 12.sp, modifier = Modifier.weight(1f))
-            Text(counts, color = muted, fontSize = 11.sp)
+            Text(rootName, color = secondary, fontSize = 11.5.sp, modifier = Modifier.weight(1f))
+            Text(counts, color = secondary, fontSize = 11.sp)
         }
     }
 }
