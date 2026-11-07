@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "xnotes"
+rootProject.name = "Saya"
 include(":app")
