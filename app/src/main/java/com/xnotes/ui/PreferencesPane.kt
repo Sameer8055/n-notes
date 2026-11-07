@@ -1140,12 +1140,39 @@ internal fun scrollForSection(y: Int, maxScroll: Int, height: Float, top: Float)
 
 @Composable
 private fun SectionTitle(text: String) {
-    Text(text, color = LocalPalette.current.text.toComposeColor(), fontWeight = FontWeight.Bold, fontSize = 15.sp, modifier = Modifier.searchAnchor(text).sectionAnchor(text))
+    val palette = LocalPalette.current
+    Row(
+        Modifier.fillMaxWidth().padding(top = 7.dp, bottom = 2.dp).sectionAnchor(text),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            Modifier.width(3.dp).height(19.dp).clip(RoundedCornerShape(2.dp))
+                .background(Brush.verticalGradient(listOf(Color(0xFFE4E8EF), palette.accent.toComposeColor()))),
+        )
+        Spacer(Modifier.width(10.dp))
+        Text(
+            text.uppercase(),
+            color = palette.text.toComposeColor(),
+            fontWeight = FontWeight.Bold,
+            fontSize = 12.sp,
+            letterSpacing = 1.15.sp,
+            modifier = Modifier.weight(1f).searchAnchor(text),
+        )
+        Box(Modifier.width(34.dp).height(1.dp).background(Color.White.copy(alpha = 0.18f)))
+    }
 }
 
 @Composable
 private fun FieldLabel(text: String) {
-    Text(text, color = LocalPalette.current.accent.toComposeColor(), fontSize = 13.sp, modifier = Modifier.searchAnchor(text))
+    val palette = LocalPalette.current
+    Text(
+        text.uppercase(),
+        color = palette.textDim.toComposeColor(),
+        fontSize = 10.sp,
+        fontWeight = FontWeight.SemiBold,
+        letterSpacing = 0.85.sp,
+        modifier = Modifier.padding(top = 3.dp).searchAnchor(text),
+    )
 }
 
 /**
@@ -1304,19 +1331,26 @@ internal fun CheckChip(label: String, on: Boolean, onClick: () -> Unit) {
 @Composable
 private fun Chip(label: String, selected: Boolean, onClick: () -> Unit) {
     val palette = LocalPalette.current
+    val shape = RoundedCornerShape(11.dp)
     Box(
         Modifier
-            .clip(MaterialTheme.shapes.small)
-            .background(if (selected) palette.selectionBackground.toComposeColor() else palette.surface.toComposeColor())
-            .border(1.dp, if (selected) palette.accent.toComposeColor() else palette.border.toComposeColor(), MaterialTheme.shapes.small)
+            .clip(shape)
+            .background(
+                Brush.verticalGradient(
+                    if (selected) listOf(Color(0xFF4A515C), Color(0xFF252A31))
+                    else listOf(Color(0xFF292D33), Color(0xFF191C21)),
+                ),
+            )
+            .border(1.dp, if (selected) palette.accent.toComposeColor().copy(alpha = 0.88f) else Color.White.copy(alpha = 0.13f), shape)
             .semantics { this.selected = selected }
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .padding(horizontal = 13.dp, vertical = 8.dp),
     ) {
         Text(
             label,
-            color = if (selected) palette.selectionForeground.toComposeColor() else palette.text.toComposeColor(),
-            fontSize = 14.sp,
+            color = if (selected) Color.White else palette.text.toComposeColor(),
+            fontSize = 12.sp,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
             maxLines = 1,
             softWrap = false,
         )
