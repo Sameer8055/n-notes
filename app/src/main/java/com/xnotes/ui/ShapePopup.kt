@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -31,6 +34,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,6 +58,7 @@ import com.xnotes.core.tools.ToolConversions
 import com.xnotes.ui.icons.XnotesIcons
 import com.xnotes.ui.theme.LocalPalette
 import com.xnotes.ui.theme.toComposeColor
+import kotlinx.coroutines.launch
 
 /**
  * The shape tool's popup: its chips page by page, swiped sideways, the connectors below them the
@@ -79,6 +85,21 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
     val shapePages = remember(shapes) { shapes.chunked(15) }
     var visibleShapePage by remember(shapes) { mutableStateOf(config.shapePage.coerceAtLeast(0)) }
     val page = visibleShapePage.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
+    val shapeListState = rememberLazyListState(
+        initialFirstVisibleItemIndex = (config.shapePage.coerceAtLeast(0) * 15)
+            .coerceIn(0, (shapes.lastIndex).coerceAtLeast(0)),
+    )
+    val shapeScrollScope = rememberCoroutineScope()
+
+    LaunchedEffect(shapeListState, shapes.size) {
+        snapshotFlow { shapeListState.firstVisibleItemIndex / 15 }.collect { visible ->
+            val safePage = visible.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
+            if (visibleShapePage != safePage) {
+                visibleShapePage = safePage
+                if (config.shapePage != safePage) emit(config.copy(shapePage = safePage))
+            }
+        }
+    }
     LaunchedEffect(page) {
         if (config.shapePage != page) emit(config.copy(shapePage = page))
     }
@@ -87,6 +108,11 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
         val safePage = next.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
         visibleShapePage = safePage
         if (config.shapePage != safePage) emit(config.copy(shapePage = safePage))
+        if (shapes.isNotEmpty()) {
+            shapeScrollScope.launch {
+                shapeListState.animateScrollToItem((safePage * 15).coerceAtMost(shapes.lastIndex))
+            }
+        }
     }
 
     val paletteColors = listOf(
@@ -159,21 +185,22 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                             fontSize = 11.sp,
                         )
                         if (shapePages.isNotEmpty()) {
-                            shapePages[page].chunked(5).forEach { rowShapes ->
-                                Row(
-                                    Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    rowShapes.forEach { preset ->
-                                        KindChip(
-                                            ShapeIcons.of(preset),
-                                            chipLabel(preset),
-                                            selected = preset.key == config.preset,
-                                            latex = chipLatex(preset),
-                                            iconSize = 27.dp,
-                                        ) { emit(config.choose(preset)) }
-                                    }
+                            // A single continuous strip lets the user flick through every shape;
+                            // the arrows below still jump cleanly between the original 15-shape groups.
+                            LazyRow(
+                                state = shapeListState,
+                                modifier = Modifier.fillMaxWidth().height(52.dp),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                itemsIndexed(shapes, key = { _, preset -> preset.key }) { _, preset ->
+                                    KindChip(
+                                        ShapeIcons.of(preset),
+                                        chipLabel(preset),
+                                        selected = preset.key == config.preset,
+                                        latex = chipLatex(preset),
+                                        iconSize = 27.dp,
+                                    ) { emit(config.choose(preset)) }
                                 }
                             }
                             Row(
