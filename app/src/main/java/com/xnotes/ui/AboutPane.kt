@@ -148,8 +148,13 @@ fun AboutPane() {
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                "Original core code copyright © 2026 Saya · MIT License",
+                "Saya modifications copyright © 2026 Saya",
                 color = palette.textDim.toComposeColor(), fontSize = 11.5.sp, textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "Original core code copyright © 2026 Shardul Vikram Singh · MIT License",
+                color = palette.textDim.toComposeColor(), fontSize = 10.5.sp, textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(22.dp))
             Row(
