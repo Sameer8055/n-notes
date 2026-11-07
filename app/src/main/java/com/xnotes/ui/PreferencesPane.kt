@@ -144,7 +144,6 @@ private enum class PrefCategory(val title: String) {
     TOOLBAR("Toolbar"),
     CLOUD_SYNC("Cloud sync"),
     MAINTENANCE("Maintenance"),
-    UPDATES("Updates"),
 }
 
 /**
@@ -902,10 +901,6 @@ fun PreferencesPane(
             if (shown(PrefCategory.MAINTENANCE)) {
                 if (all) HorizontalDivider(color = palette.border.toComposeColor())
                 Box(Modifier.searchAnchor(stringResource(R.string.search_keywords_port))) { PortSection(editor) }
-            }
-            if (shown(PrefCategory.UPDATES)) {
-                if (all) HorizontalDivider(color = palette.border.toComposeColor())
-                Box(Modifier.searchAnchor(stringResource(R.string.search_keywords_update)).sectionAnchor("Updates")) { UpdateSection() }
             }
             Spacer(Modifier.size(8.dp))
         }

@@ -350,8 +350,7 @@ private fun BackstageContent(
 ) {
     val palette = LocalPalette.current
     val homeBackdrop = remember(palette, view) {
-        if (view == BackstageView.HOME) SolidColor(Color.Black)
-        else SolidColor(palette.bg.toComposeColor())
+        SolidColor(Color.Black)
     }
     var createMode by remember { mutableStateOf(CreateMode.NONE) }
     var drawerOpen by remember { mutableStateOf(false) }
@@ -565,7 +564,7 @@ private fun BackstageSidebar(modifier: Modifier, editor: Editor, nav: SidebarNav
         ) {
             // Use the supplied transparent brand asset and the app's standard typography.
             Image(
-                painter = painterResource(R.drawable.saya_mark),
+                painter = painterResource(R.drawable.saya_logo_transparent),
                 contentDescription = "Saya logo",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.size(30.dp),
@@ -624,7 +623,7 @@ private fun BackstageSidebar(modifier: Modifier, editor: Editor, nav: SidebarNav
         }
         RailDivider()
         if (nav.showSync) SyncNowCommand(nav.onSyncSettings)
-        Command(XnotesIcons.sliders, stringResource(R.string.preferences), selected = nav.view == BackstageView.PREFERENCES) { nav.onSelectView(BackstageView.PREFERENCES) }
+        Command(XnotesIcons.settings, stringResource(R.string.preferences), selected = nav.view == BackstageView.PREFERENCES) { nav.onSelectView(BackstageView.PREFERENCES) }
         if (nav.showAbout) Command(XnotesIcons.info, stringResource(R.string.about), selected = nav.view == BackstageView.ABOUT) { nav.onSelectView(BackstageView.ABOUT) }
         SyncSidebarStatus()
     }

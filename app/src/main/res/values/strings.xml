@@ -382,7 +382,7 @@
     <!-- Preferences -->
     <string name="back_to_home">Back to home</string>
     <string name="show_sidebar">Show sidebar</string>
-    <string name="preferences">Preferences</string>
+    <string name="preferences">Settings</string>
     <string name="reset_to_defaults">Reset to defaults</string>
     <string name="pref_general">General</string>
     <string name="pref_ui_theme">UI theme</string>

@@ -132,11 +132,12 @@ fun SidePanel(
             },
         )
     }
-    val panelShape = RoundedCornerShape(topEnd = 20.dp, bottomEnd = 20.dp)
+    val panelShape = RoundedCornerShape(22.dp)
     Column(
         Modifier
             .width(224.dp)
             .fillMaxHeight()
+            .padding(horizontal = 8.dp, vertical = 12.dp)
             .liquidGlassSurface(
                 shape = panelShape,
                 fill = palette.panel.toComposeColor().copy(alpha = if (palette.isDark) 0.66f else 0.72f),

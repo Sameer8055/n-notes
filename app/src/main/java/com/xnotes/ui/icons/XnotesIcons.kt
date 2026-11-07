@@ -240,7 +240,11 @@ object XnotesIcons {
     // "Save as" / save-to-device uses the download glyph (a tray with a down arrow) so it reads
     // distinctly from Share's up-and-out arrow; same picture as importDoc, named for the action.
     val download = importDoc
-    val sliders = icon("M4 21v-7", "M4 10V3", "M12 21v-9", "M12 8V3", "M20 21v-5", "M20 12V3", "M1 14h6", "M9 8h6", "M17 16h6")
+    // A clean gear glyph for the Settings destination.
+    val settings = icon(
+        "M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z",
+        "M10 2.8h4l.55 2.1c.55.18 1.06.47 1.52.83l2.08-.62 2 3.46-1.55 1.45c.1.62.1 1.24 0 1.86l1.55 1.45-2 3.46-2.08-.62c-.46.36-.97.65-1.52.83L14 19.2h-4l-.55-2.1a6.6 6.6 0 0 1-1.52-.83l-2.08.62-2-3.46 1.55-1.45a6 6 0 0 1 0-1.86L3.85 8.67l2-3.46 2.08.62c.46-.36.97-.65 1.52-.83Z",
+    )
     // Page margins: the sheet, with L brackets marking where the content area starts on each edge.
     val margins = icon(
         roundRect(3.0, 2.0, 18.0, 20.0, 2.0),
