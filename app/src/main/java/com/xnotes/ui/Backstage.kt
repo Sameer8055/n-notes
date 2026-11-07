@@ -1179,7 +1179,7 @@ private fun ExplorerSection(
                     modifier = Modifier.widthIn(max = 300.dp),
                 )
                 Spacer(Modifier.height(22.dp))
-                Column(Modifier.fillMaxWidth().widthIn(max = 340.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(Modifier.widthIn(max = 340.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     PrimaryButton(XnotesIcons.folder, stringResource(R.string.choose_folder), Modifier.fillMaxWidth(), calls.pickRoot)
                     PrimaryButton(XnotesIcons.database, stringResource(R.string.use_app_storage), Modifier.fillMaxWidth()) { editor.useInternalStorage() }
                 }
