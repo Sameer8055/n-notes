@@ -538,6 +538,8 @@ class InteractionController(
 
     // LONG-PRESS GRAB
     private val handler by lazy { Handler(Looper.getMainLooper()) } // lazy: see [choreographer]
+    private var temporaryEraserRunnable: Runnable? = null
+    private var temporaryEraserDown = Pt.ZERO
     private var longPressRunnable: Runnable? = null
     private var longPressStart = Pt.ZERO
     private var longPressIsFinger = false
