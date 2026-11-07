@@ -879,6 +879,12 @@ class Editor(context: Context, val pane: Pane = Pane.PRIMARY) : ToolPopupHost, S
                 it.recentColors = recentColors
             }
             it.onSay = { text -> say(text) }
+            it.interaction.onFingerDoubleTapAction = {
+                preferences.stylusDoubleTap.takeIf { action -> action != "none" }?.let { action -> dispatchTapGesture(action); true } ?: false
+            }
+            it.interaction.onFingerLongPressAction = {
+                preferences.stylusButtonTap.takeIf { action -> action != "none" }?.let { action -> dispatchTapGesture(action); true } ?: false
+            }
             it.view.onTwoFingerTap = { dispatchTapGesture(preferences.twoFingerTap) }
             it.view.onThreeFingerTap = { dispatchTapGesture(preferences.threeFingerTap) }
         }
@@ -1765,6 +1771,12 @@ class Editor(context: Context, val pane: Pane = Pane.PRIMARY) : ToolPopupHost, S
                 }
             }
             controller.onTouch(ev)
+        }
+        controller.onFingerDoubleTapAction = {
+            preferences.stylusDoubleTap.takeIf { action -> action != "none" }?.let { action -> dispatchTapGesture(action); true } ?: false
+        }
+        controller.onFingerLongPressAction = {
+            preferences.stylusButtonTap.takeIf { action -> action != "none" }?.let { action -> dispatchTapGesture(action); true } ?: false
         }
         view.onTwoFingerTap = { dispatchTapGesture(preferences.twoFingerTap) }
         view.onThreeFingerTap = { dispatchTapGesture(preferences.threeFingerTap) }
