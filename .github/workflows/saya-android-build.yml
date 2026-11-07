@@ -1,9 +1,6 @@
 name: Saya Android Build
 
 on:
-  push:
-    branches:
-      - feature/sameer-notes-shape-branding
   workflow_dispatch:
 
 permissions:
