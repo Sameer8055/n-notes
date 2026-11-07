@@ -350,15 +350,8 @@ private fun BackstageContent(
 ) {
     val palette = LocalPalette.current
     val homeBackdrop = remember(palette, view) {
-        if (view == BackstageView.HOME) {
-            Brush.radialGradient(
-                colors = listOf(palette.accent.toComposeColor().copy(alpha = 0.065f), palette.bg.toComposeColor()),
-                center = Offset.Zero,
-                radius = 1200f,
-            )
-        } else {
-            SolidColor(palette.bg.toComposeColor())
-        }
+        if (view == BackstageView.HOME) SolidColor(Color.Black)
+        else SolidColor(palette.bg.toComposeColor())
     }
     var createMode by remember { mutableStateOf(CreateMode.NONE) }
     var drawerOpen by remember { mutableStateOf(false) }
