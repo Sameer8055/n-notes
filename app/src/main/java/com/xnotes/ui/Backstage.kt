@@ -577,7 +577,7 @@ private fun BackstageSidebar(modifier: Modifier, editor: Editor, nav: SidebarNav
         ) {
             // Use the supplied transparent brand asset and the app's standard typography.
             Image(
-                painter = painterResource(R.drawable.sameer_notes_logo),
+                painter = painterResource(R.drawable.saya_mark),
                 contentDescription = "Saya logo",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.size(30.dp),
@@ -1311,7 +1311,7 @@ private fun ExplorerSection(
         if (layout != ExplorerLayout.TIMELINE) return@produceState
         value = withContext(Dispatchers.IO) { editor.filesUnder(root, currentDocId, includeSubfolders) }
     }
-    val shelves = prefs.homeOpensTo == "shelves" && stack.isEmpty() && !flat &&
+    val shelves = prefs.homeOpensTo != "last" && stack.isEmpty() && !flat &&
         (layout == ExplorerLayout.GRID || layout == ExplorerLayout.GALLERY || layout == ExplorerLayout.LIST)
     val recents by produceState<List<RecentEntry>?>(null, root, showRecent || shelves, editor.recentDocs, refreshKey, editor.noteOpen, editor.treeVersion) {
         if (showRecent || shelves) value = withContext(Dispatchers.IO) { editor.recentEntries(root) }
@@ -1859,6 +1859,9 @@ private fun ExplorerSection(
                     onSeeAll = { showRecent = true; selection.clear() },
                     onOpenRecent = { host.onClick(it) },
                     onOpenPin = { openChain(it.uri) },
+                    onNewNote = { onCreateMode(CreateMode.FILE) },
+                    onNewCanvas = { onCreateMode(CreateMode.CANVAS) },
+                    onImportPdf = calls.importPdf,
                 )
             })
             val gridTop: (LazyGridScope.() -> Unit)? = shelfBlock?.let { c -> { item(key = "shelves", span = { GridItemSpan(maxLineSpan) }, contentType = "shelves") { c() } } }
