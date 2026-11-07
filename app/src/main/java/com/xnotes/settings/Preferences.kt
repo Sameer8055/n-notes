@@ -128,7 +128,7 @@ data class Preferences(
     val sidebarSync: Boolean = true,
     val sidebarAbout: Boolean = true,
     /** Where Home opens: "top" (the notes folder), "last" (the folder last shown) or "shelves" (the notes folder under Recent and Pinned). */
-    val homeOpensTo: String = "top",
+    val homeOpensTo: String = "shelves",
     /** What a swipe right / left on Home does: one of [HOME_SWIPES]. */
     val homeSwipeRight: String = "sidebar_open",
     val homeSwipeLeft: String = "sidebar_close",
@@ -380,7 +380,7 @@ data class Preferences(
                 sidebarFiles = o.optBoolean("sidebar_files", true),
                 sidebarSync = o.optBoolean("sidebar_sync", true),
                 sidebarAbout = o.optBoolean("sidebar_about", true),
-                homeOpensTo = o.optString("home_opens_to", "top").let { if (it == "last" || it == "shelves") it else "top" },
+                homeOpensTo = o.optString("home_opens_to", "shelves").let { if (it == "last" || it == "shelves") it else "shelves" },
                 homeSwipeRight = o.optString("home_swipe_right", "sidebar_open").takeIf { it in HOME_SWIPES } ?: "sidebar_open",
                 homeSwipeLeft = o.optString("home_swipe_left", "sidebar_close").takeIf { it in HOME_SWIPES } ?: "sidebar_close",
                 dateStyle = o.optString("date_style", "day").let { if (it == "relative" || it == "date") it else "day" },
