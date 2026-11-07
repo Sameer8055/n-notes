@@ -426,7 +426,7 @@
     <string name="search_settings">搜索设置</string>
     <string name="search_keywords_port">迁移 旧笔记 形状 坐标轴 数轴 曲线 函数 图像 升级 检查</string>
     <string name="pref_port">迁移旧笔记</string>
-    <string name="pref_port_help">n-notes 早期版本把坐标轴、数轴、平滑曲线和函数图像画成自己的形状。打开笔记时它们会显示为现在的形状，但文件里仍是旧形状，直到再次保存。扫描会找出这些笔记，迁移会重写它们。每个文件写入后都会检查，旧副本会先保存；检查不通过或期间被修改的文件会保持原样。正在编辑器中打开的笔记会被跳过。</string>
+    <string name="pref_port_help">Saya 早期版本把坐标轴、数轴、平滑曲线和函数图像画成自己的形状。打开笔记时它们会显示为现在的形状，但文件里仍是旧形状，直到再次保存。扫描会找出这些笔记，迁移会重写它们。每个文件写入后都会检查，旧副本会先保存；检查不通过或期间被修改的文件会保持原样。正在编辑器中打开的笔记会被跳过。</string>
     <string name="port_scan">扫描</string>
     <string name="port_run">迁移</string>
     <string name="port_scanning">正在扫描...</string>
@@ -473,7 +473,7 @@
     <string name="save">保存</string>
     <string name="create">创建</string>
     <string name="err_save_that_note">无法保存该笔记。</string>
-    <string name="err_pdf_password">该 PDF 受密码保护，xnotes 无法打开。</string>
+    <string name="err_pdf_password">该 PDF 受密码保护，Saya 无法打开。</string>
     <string name="err_create_folder">无法创建该文件夹。</string>
     <string name="err_create_canvas">无法创建画布。</string>
     <string name="err_create_note">无法创建笔记。</string>
@@ -609,7 +609,7 @@
     <string name="settings_exported">设置已导出。</string>
     <string name="settings_imported">设置已导入。</string>
     <string name="err_export_settings">无法导出设置。</string>
-    <string name="err_import_settings">该文件不含 xnotes 设置。</string>
+    <string name="err_import_settings">该文件不含 Saya 设置。</string>
     <string name="replace">替换</string>
     <string name="crop">裁剪</string>
     <string name="group">组合</string>
@@ -633,7 +633,7 @@
     <string name="err_clipboard_no_image">剪贴板中没有可粘贴的图片。</string>
     <string name="err_read_sticker">无法读取贴纸。</string>
     <string name="err_open_that_note">无法打开该笔记。</string>
-    <string name="err_not_xnotes">该文件不是 xnotes 文档。</string>
+    <string name="err_not_saya">该文件不是 Saya 文档。</string>
     <string name="err_open_note">无法打开笔记。</string>
     <string name="note_forked">此笔记已在其他位置更改。你的编辑现已保存在“%1$s”中。</string>
     <string name="canvas_forked">此画布已在其他位置更改。你的编辑现已保存在“%1$s”中。</string>
@@ -715,11 +715,11 @@
     <!-- About -->
     <string name="app_tagline">Android 手写笔记与素描应用</string>
     <string name="copy_version">复制版本号</string>
-    <string name="help_make_better">帮助改进 xnotes</string>
+    <string name="help_make_better">帮助改进 Saya</string>
     <string name="report_bug">报告问题</string>
     <string name="request_feature">功能建议</string>
     <string name="sponsor">赞助</string>
-    <string name="enjoying_xnotes">喜欢 xnotes？</string>
+    <string name="enjoying_saya">喜欢 Saya？</string>
     <string name="star_on_github">在 GitHub 上加星</string>
     <string name="mit_license">MIT 许可证</string>
     <string name="version_n">版本 %1$s</string>
