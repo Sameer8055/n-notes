@@ -85,25 +85,17 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
     // panel opened, which made first-open and repeated-open interactions unnecessarily heavy.
     val shapePages = remember(shapes) { shapes.chunked(16) }
     val initialShapePage = config.shapePage.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
-    val shapePagerState = rememberPagerState(initialPage = initialShapePage, pageCount = { shapePages.size })
-    val shapePagerScope = rememberCoroutineScope()
-    val latestConfig by rememberUpdatedState(config)
-    val page = shapePagerState.currentPage.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
+    var visibleShapePage by remember(shapes) { mutableStateOf(initialShapePage) }
+    val page = visibleShapePage.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
 
-    LaunchedEffect(shapePagerState, shapePages.size) {
-        snapshotFlow { shapePagerState.currentPage }.collect { safePage ->
-            if (latestConfig.shapePage != safePage) emit(latestConfig.copy(shapePage = safePage))
-        }
-    }
     LaunchedEffect(config.shapePage, shapePages.size) {
-        val target = config.shapePage.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
-        if (shapePagerState.currentPage != target) shapePagerState.animateScrollToPage(target)
+        visibleShapePage = config.shapePage.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
     }
 
     fun changeShapePage(next: Int) {
         val safePage = next.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
+        visibleShapePage = safePage
         if (config.shapePage != safePage) emit(config.copy(shapePage = safePage))
-        shapePagerScope.launch { shapePagerState.animateScrollToPage(safePage) }
     }
 
     val paletteColors = listOf(
@@ -176,19 +168,30 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                             fontSize = 11.sp,
                         )
                         if (shapePages.isNotEmpty()) {
-                            // A horizontally swipeable, lazily composed strip of 4 × 4 grids.
-                            HorizontalPager(
-                                state = shapePagerState,
-                                modifier = Modifier.fillMaxWidth().height(194.dp),
-                                pageSpacing = 12.dp,
-                                beyondViewportPageCount = 1,
-                            ) { gridPageIndex ->
-                                val gridPage = shapePages[gridPageIndex]
+                            // Compose one 4 × 4 grid at a time. Avoids nested pager measurement
+                            // inside Material's dropdown popup, a known source of layout crashes.
+                            // Horizontal swipes and the arrows both switch the lightweight page state.
+                            var horizontalDrag by remember { mutableStateOf(0f) }
+                            Box(
+                                Modifier.fillMaxWidth().height(194.dp).pointerInput(page, shapePages.size) {
+                                    detectHorizontalDragGestures(
+                                        onDragEnd = {
+                                            if (horizontalDrag < -48f) changeShapePage(page + 1)
+                                            else if (horizontalDrag > 48f) changeShapePage(page - 1)
+                                            horizontalDrag = 0f
+                                        },
+                                        onHorizontalDrag = { change, amount ->
+                                            change.consume()
+                                            horizontalDrag += amount
+                                        },
+                                    )
+                                },
+                            ) {
                                 Column(
-                                    modifier = Modifier.width(244.dp),
+                                    modifier = Modifier.width(244.dp).align(Alignment.TopCenter),
                                     verticalArrangement = Arrangement.spacedBy(6.dp),
                                 ) {
-                                    gridPage.chunked(4).forEach { gridRow ->
+                                    shapePages[page].chunked(4).forEach { gridRow ->
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
