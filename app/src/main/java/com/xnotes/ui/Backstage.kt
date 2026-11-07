@@ -1914,7 +1914,7 @@ private fun ExplorerSection(
                 ),
         ) {
             // Saya's library is rendered as its own home surface below, never as a tile above the old Explorer.
-            val gridTop: (LazyGridScope.() -> Unit)? = shelfBlock?.let { c -> { item(key = "shelves", span = { GridItemSpan(maxLineSpan) }, contentType = "shelves") { c() } } }
+            val gridTop: (LazyGridScope.() -> Unit)? = null
             when {
                 empty != null && !shelves -> Column(Modifier.fillMaxSize()) {
                     Spacer(Modifier.height(EXPLORER_HEADER))
@@ -1932,7 +1932,7 @@ private fun ExplorerSection(
                         body, listState, wide = maxWidth >= 720.dp,
                         onSort = if (showRecent) null else ({ k -> setView(if (view.sortKey == k) view.copy(descending = !view.descending) else view.copy(sortKey = k, descending = k != ExplorerSortKey.NAME)) }),
                         chips = chipRow,
-                        top = shelfBlock?.let { c -> { item(key = "shelves", contentType = "shelves") { c() } } }, modifier = Modifier.fillMaxSize(),
+                        top = null, modifier = Modifier.fillMaxSize(),
                     )
                 }
                 layout == ExplorerLayout.TIMELINE -> TimelineBody(body, arranged.orEmpty().filterNot { it.isDir }, shownMonth, { timelineMonth = it }, timelineState, chipRow, Modifier.fillMaxSize())
