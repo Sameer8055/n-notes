@@ -284,7 +284,7 @@ class MainActivity : ComponentActivity() {
         editor?.persist()
     }
 
-    // Playback never goes on with xnotes off screen; a split window that only lost focus is still on it.
+    // Playback never goes on with Saya off screen; a split window that only lost focus is still on it.
     override fun onStop() {
         super.onStop()
         com.xnotes.ui.AudioPlayback.pause()
