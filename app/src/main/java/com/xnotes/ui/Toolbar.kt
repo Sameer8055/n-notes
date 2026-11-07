@@ -31,6 +31,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material3.DropdownMenuItem
@@ -230,7 +231,14 @@ fun Toolbar(
 @Composable
 private fun ToolbarSectionSurface(content: @Composable () -> Unit) {
     val palette = LocalPalette.current
-    val shape = MaterialTheme.shapes.extraLarge
+    // Flat lower corners let each island sit flush on the bottom edge; the top corners
+    // retain the glass-panel silhouette and the horizontal gaps between islands stay untouched.
+    val shape = RoundedCornerShape(
+        topStart = 24.dp,
+        topEnd = 24.dp,
+        bottomStart = 0.dp,
+        bottomEnd = 0.dp,
+    )
     Row(
         Modifier
             .shadow(6.dp, shape)
