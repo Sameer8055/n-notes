@@ -116,7 +116,7 @@ class InfiniteInteraction(
     /** A tool this layer armed by itself, so the chrome can follow: a long-press grab and its end. */
     private val onToolChanged: (Tool) -> Unit = {},
     /** Two quick taps in one place, at this viewport point, by this pointer type, with what was selected as the first went down. */
-    private val onDoubleTap: (Pt, Int, Set<CanvasItem>) -> Unit = { _, _, _ -> },
+    private val onDoubleTap: (Pt, Int, Set<CanvasItem>) -> Boolean = { _, _, _ -> false },
     /** Whether a shape's label is open in the text overlay. */
     private val isEditingText: () -> Boolean = { false },
     /** End that edit, keeping what was typed. */
@@ -128,6 +128,10 @@ class InfiniteInteraction(
     /** The view was panned or pinched by hand, as distinct from moved by the app. */
     private val onUserMovedView: () -> Unit = {},
 ) {
+
+    /** Touch mappings supplied by the editor; default long-press behavior remains when unset. */
+    var onFingerDoubleTapAction: (() -> Boolean)? = null
+    var onFingerLongPressAction: (() -> Boolean)? = null
 
     private val choreographer = Choreographer.getInstance()
 
@@ -399,7 +403,8 @@ class InfiniteInteraction(
             prev.distanceTo(at) <= InteractionController.DOUBLE_TAP_SLOP_DP * devicePxPerDp()
         ) {
             lastTapAt = null
-            onDoubleTap(at, e.getToolType(0), lastTapSelected)
+            val handled = onDoubleTap(at, e.getToolType(0), lastTapSelected)
+            if (!handled && e.getToolType(0) == MotionEvent.TOOL_TYPE_FINGER) onFingerDoubleTapAction?.invoke()
             return
         }
         lastTapAt = at
@@ -603,6 +608,10 @@ class InfiniteInteraction(
         if (mode == CanvasPointerMode.CONNECT) abandonConnector()
         mode = CanvasPointerMode.IDLE
         panMayDismiss = false
+        if (onFingerLongPressAction?.invoke() == true) {
+            requestRender()
+            return
+        }
         if (candidate != null) {
             grabItem(candidate)
         } else {
