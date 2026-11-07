@@ -54,7 +54,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:mimeType="application/pdf" />
             </intent-filter>
-            <!-- "Share" a PDF to xnotes: same import. -->
+            <!-- "Share" a PDF to Saya: same import. -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
