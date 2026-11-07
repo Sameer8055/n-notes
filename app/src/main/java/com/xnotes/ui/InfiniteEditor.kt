@@ -916,9 +916,11 @@ class InfiniteEditor(context: Context) : ToolPopupHost, SelectionMenuHost, LongP
     private var textPointSize: Double = TextItem.DEFAULT_POINT_SIZE
 
     /** A double tap on an unselected shape that takes a label types it, with the tools a note allows. */
-    private fun onDoubleTap(vp: com.xnotes.core.geometry.Pt, toolType: Int, selectedBefore: Set<CanvasItem>) {
-        if (editingLabel != null) return
-        interaction.labelTargetAt(vp, toolType, selectedBefore)?.let { startLabelEdit(it) }
+    private fun onDoubleTap(vp: com.xnotes.core.geometry.Pt, toolType: Int, selectedBefore: Set<CanvasItem>): Boolean {
+        if (editingLabel != null) return false
+        val target = interaction.labelTargetAt(vp, toolType, selectedBefore) ?: return false
+        startLabelEdit(target)
+        return true
     }
 
     /**
