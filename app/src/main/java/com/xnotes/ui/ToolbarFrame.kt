@@ -143,13 +143,19 @@ internal fun ToolbarFrame(
     val shape = MaterialTheme.shapes.extraLarge
     // Docked, the strip fills its edge; floating, a pill only as long as its tools, up to that edge.
     val surface = when {
-        !look.floating -> Modifier.background(palette.panel.toComposeColor())
         separateSections -> Modifier
-        else -> Modifier
-            .shadow(6.dp, shape)
-            .clip(shape)
-            .background(palette.panel.toComposeColor())
-            .border(1.dp, palette.border.toComposeColor(), shape)
+        !look.floating -> Modifier.liquidGlassSurface(
+            shape = shape,
+            fill = palette.panel.toComposeColor(),
+            edge = palette.border.toComposeColor().copy(alpha = 0.78f),
+            elevation = 10.dp,
+        )
+        else -> Modifier.liquidGlassSurface(
+            shape = shape,
+            fill = palette.panel.toComposeColor(),
+            edge = palette.border.toComposeColor().copy(alpha = 0.86f),
+            elevation = 12.dp,
+        )
     }
     val stretch = when {
         look.floating -> Modifier
