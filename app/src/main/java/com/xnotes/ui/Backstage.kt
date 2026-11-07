@@ -687,8 +687,14 @@ private fun Command(
         Modifier
             .fillMaxWidth()
             .height(46.dp)
+            .shadow(if (selected) 5.dp else 0.dp, MaterialTheme.shapes.medium)
             .clip(MaterialTheme.shapes.medium)
-            .then(if (selected) Modifier.background(palette.selectionBackground.toComposeColor()) else Modifier)
+            .then(if (selected) Modifier.background(Color.White.copy(alpha = 0.075f)) else Modifier)
+            .border(
+                1.dp,
+                if (selected) Color.White.copy(alpha = 0.17f) else Color.White.copy(alpha = 0.035f),
+                MaterialTheme.shapes.medium,
+            )
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
