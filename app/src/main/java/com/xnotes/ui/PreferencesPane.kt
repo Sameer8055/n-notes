@@ -1047,7 +1047,7 @@ private fun HandwritingLanguageControls(selected: String, onSelect: (String) -> 
     error?.let { Text("Failed: $it", color = palette.danger.toComposeColor(), fontSize = 12.sp) }
 }
 
-/** Find and rewrite the notes that still hold shapes from earlier n-notes versions. */
+/** Find and rewrite the notes that still hold shapes from earlier file-format revisions. */
 @Composable
 private fun PortSection(editor: Editor) {
     val palette = LocalPalette.current
