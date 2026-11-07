@@ -189,7 +189,7 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /** Which pane the backstage shows on the right. */
-enum class BackstageView { HOME, PREFERENCES, ABOUT, TRASH }
+enum class BackstageView { HOME, PREFERENCES, TRASH }
 
 /** Whether the Home explorer is awaiting a new file/folder name. */
 private enum class CreateMode { NONE, FILE, CANVAS, FOLDER }
@@ -348,10 +348,7 @@ private fun BackstageContent(
 ) {
     val palette = LocalPalette.current
     // Keep the library shell consistently OLED-black while moving between Home and Settings.
-    val homeBackdrop = Brush.verticalGradient(
-        colors = listOf(Color(0xFF303236).copy(alpha = 0.58f), Color(0xFF17191C).copy(alpha = 0.30f), Color.Black),
-        startY = 0f, endY = 1500f,
-    )
+    val homeBackdrop = Color.Black
     var createMode by remember { mutableStateOf(CreateMode.NONE) }
     var drawerOpen by remember { mutableStateOf(false) }
     val railed = editor.backstageRail
@@ -423,7 +420,6 @@ private fun BackstageContent(
             pinsOpen = pinsOpen,
             showFiles = prefs.sidebarFiles,
             showSync = prefs.sidebarSync,
-            showAbout = true,
         )
     }
     renamingColor?.let { c -> ColorNameDialog(editor, c) { renamingColor = null } }
@@ -500,7 +496,6 @@ private class SidebarNav(
     val pinsOpen: MutableState<Boolean>,
     val showFiles: Boolean,
     val showSync: Boolean,
-    val showAbout: Boolean,
 )
 
 /** The full sidebar: a pane on wide screens, a slide-over drawer on phones. */
@@ -577,8 +572,8 @@ private fun BackstageSidebar(modifier: Modifier, editor: Editor, nav: SidebarNav
         }
         RailDivider()
         if (nav.showSync) SyncNowCommand(nav.onSyncSettings)
+        // Settings occupies the former About destination at the bottom of the sidebar.
         Command(XnotesIcons.settings, stringResource(R.string.preferences), selected = nav.view == BackstageView.PREFERENCES) { nav.onSelectView(BackstageView.PREFERENCES) }
-        if (nav.showAbout) Command(XnotesIcons.info, stringResource(R.string.about), selected = nav.view == BackstageView.ABOUT) { nav.onSelectView(BackstageView.ABOUT) }
         SyncSidebarStatus()
     }
 }
@@ -612,8 +607,8 @@ private fun BackstageRail(modifier: Modifier, editor: Editor, nav: SidebarNav) {
             }
         }
         if (nav.showSync) SyncRailItem(nav.onSyncSettings)
+        // Settings occupies the former About destination at the bottom of the rail.
         RailItem(XnotesIcons.settings, stringResource(R.string.preferences), selected = nav.view == BackstageView.PREFERENCES, labelled = true) { nav.onSelectView(BackstageView.PREFERENCES) }
-        if (nav.showAbout) RailItem(XnotesIcons.info, stringResource(R.string.about), selected = nav.view == BackstageView.ABOUT, labelled = true) { nav.onSelectView(BackstageView.ABOUT) }
     }
 }
 
@@ -663,34 +658,11 @@ private fun BackstageMain(
 ) {
     val palette = LocalPalette.current
     Column(modifier) {
-        // About's slim top bar (constant height so toggling the sidebar never shifts it) holds the
-        // same leading control as Home/Preferences: a Back arrow to Home on compact, else a hamburger.
-        if (view == BackstageView.ABOUT) {
-            Box(
-                Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(start = 6.dp, end = 12.dp),
-                contentAlignment = Alignment.CenterStart,
-            ) {
-                if (compact) {
-                    Tooltip(stringResource(R.string.back_to_home)) {
-                        IconButton(onClick = onBackToHome) {
-                            Icon(XnotesIcons.prev, stringResource(R.string.back_to_home), tint = palette.text.toComposeColor(), modifier = Modifier.size(24.dp))
-                        }
-                    }
-                } else if (!sidebarOpen) {
-                    Tooltip(stringResource(R.string.show_sidebar)) {
-                        IconButton(onClick = onShowSidebar) {
-                            Icon(XnotesIcons.menu, stringResource(R.string.show_sidebar), tint = palette.text.toComposeColor(), modifier = Modifier.size(24.dp))
-                        }
-                    }
-                }
-            }
-        }
         Box(Modifier.weight(1f).fillMaxWidth().padding(start = PANE_GUTTER, end = PANE_GUTTER, top = 4.dp, bottom = 12.dp)) {
             when (view) {
                 BackstageView.HOME -> HomePane(editor, calls, createMode, onCreateMode, sidebarOpen, onShowSidebar, onHideSidebar, link)
                 BackstageView.PREFERENCES -> PreferencesPane(editor, compact, sidebarOpen, onShowSidebar, onBackToHome, onImportCodeTheme, onImportFont, focusSync, onSyncFocused, onBackup)
                 BackstageView.TRASH -> TrashPane(editor, sidebarOpen, onShowSidebar, onOpenPreferences)
-                BackstageView.ABOUT -> AboutPane()
             }
         }
     }
