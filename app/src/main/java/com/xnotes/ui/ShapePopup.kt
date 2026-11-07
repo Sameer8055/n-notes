@@ -37,7 +37,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -80,29 +79,35 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
 
     val shapes = ShapePresets.shown(editor.hostHiddenShapes, editor.hostShapeOrder)
         .flatMap { it.presets }
-    // Fifteen shapes per page gives the selector a balanced five-by-three grid.
-    // Persist the page in ShapeConfig so reopening the popup returns to the same page.
-    val shapePages = remember(shapes) { shapes.chunked(15) }
-    var visibleShapePage by remember(shapes) { mutableStateOf(config.shapePage.coerceAtLeast(0)) }
+    // Each horizontal stop shows a familiar 4 × 4 grid. The grid pages sit in one
+    // continuous horizontal strip; this avoids LazyRow's unsupported intrinsic measurement
+    // inside the dropdown while keeping the panel swipeable.
+    val shapePages = remember(shapes) { shapes.chunked(16) }
+    var visibleShapePage by remember(shapes) {
+        mutableStateOf(config.shapePage.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0)))
+    }
     val page = visibleShapePage.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
-    // A regular horizontally scrolling Row is used here instead of LazyRow: Material dropdown
-    // menus query child intrinsics while measuring, and a LazyRow cannot answer those queries.
-    // That unsupported intrinsic measurement was crashing the app as soon as this popup opened.
-    val pageStridePx = with(LocalDensity.current) { 49.dp.roundToPx() * 15 }
     val initialShapePage = config.shapePage.coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
-    val shapeScrollState = rememberScrollState(
-        initial = initialShapePage * pageStridePx,
-    )
+    val shapeScrollState = rememberScrollState()
     val shapeScrollScope = rememberCoroutineScope()
 
+    // Map the full scroll range to the available grid pages. This also works on narrow
+    // screens where the viewport is wider than a single grid page.
     LaunchedEffect(shapeScrollState, shapes.size) {
-        snapshotFlow { shapeScrollState.value }.collect { offset ->
-            val safePage = (offset / pageStridePx.coerceAtLeast(1))
-                .coerceIn(0, (shapePages.lastIndex).coerceAtLeast(0))
+        snapshotFlow { shapeScrollState.value to shapeScrollState.maxValue }.collect { (offset, max) ->
+            val lastPage = (shapePages.lastIndex).coerceAtLeast(0)
+            val safePage = if (lastPage == 0 || max == 0) 0
+                else ((offset.toFloat() / max) * lastPage + 0.5f).toInt().coerceIn(0, lastPage)
             if (visibleShapePage != safePage) {
                 visibleShapePage = safePage
                 if (config.shapePage != safePage) emit(config.copy(shapePage = safePage))
             }
+        }
+    }
+    LaunchedEffect(shapeScrollState.maxValue, initialShapePage, shapePages.size) {
+        val lastPage = shapePages.lastIndex
+        if (lastPage > 0 && shapeScrollState.maxValue > 0) {
+            shapeScrollState.scrollTo(shapeScrollState.maxValue * initialShapePage / lastPage)
         }
     }
     LaunchedEffect(page) {
@@ -114,9 +119,9 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
         visibleShapePage = safePage
         if (config.shapePage != safePage) emit(config.copy(shapePage = safePage))
         shapeScrollScope.launch {
-            shapeScrollState.animateScrollTo(
-                (safePage * pageStridePx).coerceAtMost(shapeScrollState.maxValue),
-            )
+            val lastPage = shapePages.lastIndex
+            val target = if (lastPage <= 0) 0 else shapeScrollState.maxValue * safePage / lastPage
+            shapeScrollState.animateScrollTo(target)
         }
     }
 
@@ -190,22 +195,42 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                             fontSize = 11.sp,
                         )
                         if (shapePages.isNotEmpty()) {
-                            // A single continuous strip lets the user flick through every shape;
-                            // the arrows below still jump cleanly between the original 15-shape groups.
+                            // One continuous horizontal strip of 4 × 4 grids. A full grid
+                            // stays visible at once; swipe sideways or use the arrows to advance.
                             Row(
-                                modifier = Modifier.fillMaxWidth().height(52.dp)
+                                modifier = Modifier.fillMaxWidth().height(194.dp)
                                     .horizontalScroll(shapeScrollState),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.Top,
                             ) {
-                                shapes.forEach { preset ->
-                                    KindChip(
-                                        ShapeIcons.of(preset),
-                                        chipLabel(preset),
-                                        selected = preset.key == config.preset,
-                                        latex = chipLatex(preset),
-                                        iconSize = 27.dp,
-                                    ) { emit(config.choose(preset)) }
+                                shapePages.forEach { gridPage ->
+                                    Column(
+                                        modifier = Modifier.width(244.dp),
+                                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                                    ) {
+                                        gridPage.chunked(4).forEach { gridRow ->
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                            ) {
+                                                gridRow.forEach { preset ->
+                                                    Box(
+                                                        modifier = Modifier.width(55.dp).height(44.dp),
+                                                        contentAlignment = Alignment.Center,
+                                                    ) {
+                                                        KindChip(
+                                                            ShapeIcons.of(preset),
+                                                            chipLabel(preset),
+                                                            selected = preset.key == config.preset,
+                                                            latex = chipLatex(preset),
+                                                            iconSize = 27.dp,
+                                                        ) { emit(config.choose(preset)) }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                             Row(
@@ -222,7 +247,9 @@ fun ShapeConfigPopup(editor: ToolPopupHost, onDismiss: () -> Unit) {
                                     }.padding(horizontal = 12.dp, vertical = 1.dp),
                                 )
                                 Text(
-                                    if (shapePages.size > 1) "${page + 1} / ${shapePages.size}" else "All shapes",
+                                    if (shapePages.size > 1) {
+                                        "${page * 16 + 1}–${minOf((page + 1) * 16, shapes.size)} of ${shapes.size}"
+                                    } else "All shapes",
                                     color = LocalPalette.current.textDim.toComposeColor(),
                                     fontSize = 11.sp,
                                 )
