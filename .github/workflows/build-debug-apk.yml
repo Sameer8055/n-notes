@@ -2,6 +2,9 @@ name: Build Debug APK
 
 # Manual dispatch only; prevents unrelated pushes from starting builds.
 on:
+  push:
+    branches:
+      - feature/sameer-notes-shape-branding
   workflow_dispatch:
 
 permissions:
