@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import com.xnotes.R
 
@@ -18,7 +17,6 @@ import com.xnotes.R
  */
 @Composable
 fun XnotesLoader(modifier: Modifier = Modifier) {
-    val context = LocalContext.current
     AndroidView(
         modifier = modifier.fillMaxSize().background(Color.Black),
         factory = { viewContext ->
