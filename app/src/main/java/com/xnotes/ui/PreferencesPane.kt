@@ -1597,10 +1597,15 @@ private fun ChipDragGhost(chip: @Composable () -> Unit) {
 
 @Composable
 private fun CheckRow(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+    val palette = LocalPalette.current
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onChange(!checked) }) {
-        Checkbox(checked = checked, onCheckedChange = onChange)
+        Checkbox(
+            checked = checked,
+            onCheckedChange = onChange,
+            modifier = Modifier.liquidGlassSurface(RoundedCornerShape(5.dp), palette.surface.toComposeColor(), edge = Color.White.copy(alpha = 0.18f), elevation = 2.dp),
+        )
         Spacer(Modifier.width(2.dp))
-        Text(label, color = LocalPalette.current.text.toComposeColor(), fontSize = 14.sp, modifier = Modifier.searchAnchor(label))
+        Text(label, color = palette.text.toComposeColor(), fontSize = 14.sp, modifier = Modifier.searchAnchor(label))
     }
 }
 
